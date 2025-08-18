@@ -276,24 +276,30 @@ export default function Login() {
                         )}
                       />
 
-                      <div className="flex items-center justify-between pt-2">
-                        <div className="flex items-center">
-                          <input
-                            id="remember-me"
-                            name="remember-me"
-                            type="checkbox"
-                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-400 dark:border-slate-500 rounded-md bg-white/50 dark:bg-slate-700/50"
-                          />
-                          <label htmlFor="remember-me" className="ml-3 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                            Keep me signed in
+                      <div className="flex items-center justify-between pt-4">
+                        <div className="flex items-center gap-3">
+                          <div className="relative">
+                            <input
+                              id="remember-me"
+                              name="remember-me"
+                              type="checkbox"
+                              className="peer h-5 w-5 text-blue-600 bg-white/70 dark:bg-slate-700/70 border-2 border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500/25 focus:border-blue-400 transition-all duration-300 cursor-pointer"
+                            />
+                            <div className="absolute inset-0 pointer-events-none peer-checked:bg-blue-600 peer-checked:border-blue-600 rounded-lg transition-all duration-300"></div>
+                            <svg className="absolute top-0.5 left-0.5 w-4 h-4 text-white opacity-0 peer-checked:opacity-100 transition-opacity duration-300 pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <label htmlFor="remember-me" className="text-sm font-medium text-slate-700 dark:text-slate-300 cursor-pointer select-none">
+                            Keep me signed in for 7 days
                           </label>
                         </div>
                         <div className="text-sm">
                           <button
                             type="button"
-                            className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-semibold transition-colors duration-200"
+                            className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-semibold transition-colors duration-200 underline-offset-4 hover:underline"
                           >
-                            Forgot your password?
+                            Forgot password?
                           </button>
                         </div>
                       </div>
@@ -487,10 +493,25 @@ export default function Login() {
                                 <SelectValue placeholder="Select your role" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent>
-                              <SelectItem value="STUDENT">Student</SelectItem>
-                              <SelectItem value="FACULTY">Faculty</SelectItem>
-                              <SelectItem value="ADMIN">Administrator</SelectItem>
+                            <SelectContent className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-2xl border border-slate-200/50 dark:border-slate-700/50 rounded-xl shadow-2xl z-50">
+                              <SelectItem value="STUDENT" className="hover:bg-slate-100/70 dark:hover:bg-slate-700/70 rounded-lg cursor-pointer transition-colors duration-200">
+                                <div className="flex items-center gap-2">
+                                  <User className="w-4 h-4 text-blue-600" />
+                                  Student
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="FACULTY" className="hover:bg-slate-100/70 dark:hover:bg-slate-700/70 rounded-lg cursor-pointer transition-colors duration-200">
+                                <div className="flex items-center gap-2">
+                                  <GraduationCap className="w-4 h-4 text-green-600" />
+                                  Faculty
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="ADMIN" className="hover:bg-slate-100/70 dark:hover:bg-slate-700/70 rounded-lg cursor-pointer transition-colors duration-200">
+                                <div className="flex items-center gap-2">
+                                  <Shield className="w-4 h-4 text-purple-600" />
+                                  Administrator
+                                </div>
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
