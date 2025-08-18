@@ -74,32 +74,6 @@ export type ProjectWithDetails = Project & {
   collaborators: User[];
   starCount: number;
   commentCount: number;
-  isStarred: boolean;
-  assignment?: FacultyAssignment;
-};
-
-export type DashboardStats = {
-  totalProjects: number;
-  inReview: number;
-  approved: number;
-  collaborators: number;
-};
-
-export type InsertUser = Omit<User, 'id' | 'createdAt' | 'updatedAt'>;
-export type InsertProject = z.infer<typeof insertProjectSchema>;
-export type InsertComment = z.infer<typeof insertCommentSchema>;
-export type InsertProject = z.infer<typeof insertProjectSchema>;
-export type InsertComment = z.infer<typeof insertCommentSchema>;
-export type InsertFacultyAssignment = z.infer<typeof insertFacultyAssignmentSchema>;
-export type LoginData = z.infer<typeof loginSchema>;
-export type RegisterData = z.infer<typeof registerSchema>;
-
-// Extended types for API responses
-export type ProjectWithDetails = Project & {
-  owner: User;
-  collaborators: User[];
-  starCount: number;
-  commentCount: number;
   isStarred?: boolean;
   assignment?: FacultyAssignment;
 };
@@ -110,3 +84,10 @@ export type DashboardStats = {
   approved: number;
   collaborators: number;
 };
+
+// Type definitions
+export type InsertUser = Omit<User, 'id' | 'createdAt' | 'updatedAt'>;
+export type InsertProject = z.infer<typeof insertProjectSchema>;
+export type InsertComment = z.infer<typeof insertCommentSchema>;
+export type LoginData = z.infer<typeof loginSchema>;
+export type RegisterData = z.infer<typeof registerSchema>;
