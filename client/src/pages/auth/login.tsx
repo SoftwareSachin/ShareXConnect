@@ -31,7 +31,6 @@ export default function Login() {
     defaultValues: {
       email: "",
       password: "",
-      captchaVerified: false,
     },
   });
 
@@ -46,7 +45,6 @@ export default function Login() {
       lastName: "",
       role: "STUDENT",
       institution: "",
-      captchaVerified: false,
     },
   });
 
@@ -309,31 +307,6 @@ export default function Login() {
                           </button>
                         </div>
                       </div>
-
-                      {/* Captcha Verification */}
-                      <FormField
-                        control={loginForm.control}
-                        name="captchaVerified"
-                        render={({ field }) => (
-                          <FormItem>
-                            <div className="flex items-center space-x-3 pt-4">
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                  className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
-                                  data-testid="checkbox-captcha-login"
-                                />
-                              </FormControl>
-                              <FormLabel className="text-sm font-medium text-slate-700 dark:text-slate-300 cursor-pointer select-none flex items-center gap-2">
-                                <Shield className="w-4 h-4 text-green-600 dark:text-green-400" />
-                                I am not a robot
-                              </FormLabel>
-                            </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
                     </div>
 
                     <Button
@@ -648,30 +621,7 @@ export default function Login() {
                       )}
                     />
 
-                    {/* Captcha Verification */}
-                    <FormField
-                      control={registerForm.control}
-                      name="captchaVerified"
-                      render={({ field }) => (
-                        <FormItem>
-                          <div className="flex items-center space-x-3 pt-4">
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                                className="data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
-                                data-testid="checkbox-captcha-register"
-                              />
-                            </FormControl>
-                            <FormLabel className="text-sm font-medium text-slate-700 dark:text-slate-300 cursor-pointer select-none flex items-center gap-2">
-                              <Shield className="w-4 h-4 text-green-600 dark:text-green-400" />
-                              I am not a robot
-                            </FormLabel>
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+
 
                     <Button
                       type="submit"

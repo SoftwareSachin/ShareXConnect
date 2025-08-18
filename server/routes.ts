@@ -50,7 +50,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
   app.post("/api/auth/register", async (req, res) => {
     try {
-      const { captchaVerified, confirmPassword, ...userData } = registerSchema.parse(req.body);
+      const { confirmPassword, ...userData } = registerSchema.parse(req.body);
       
       // Check if email already exists
       const existingUser = await storage.getUserByEmail(userData.email);
@@ -70,6 +70,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { password, ...userWithoutPassword } = user;
       res.json({ user: userWithoutPassword, token });
     } catch (error) {
+      console.error('Registration error:', error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid input", errors: error.errors });
       }
@@ -79,7 +80,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/auth/login", async (req, res) => {
     try {
-      const { email, password, captchaVerified } = loginSchema.parse(req.body);
+      const { email, password } = loginSchema.parse(req.body);
       
       const user = await storage.getUserByEmail(email);
       if (!user) {
@@ -96,6 +97,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({ user: userWithoutPassword, token });
     } catch (error) {
+      console.error('Login error:', error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid input", errors: error.errors });
       }
@@ -129,7 +131,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         filters.ownerId = req.user.id;
       } else {
         // Apply visibility rules based on user role and institution
-        if (req.user.role === "admin") {
+        if (req.user.role === "ADMIN") {
           filters.institution = req.user.institution;
         } else if (visibility) {
           filters.visibility = visibility;
@@ -137,8 +139,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Default: show public + institution projects for the user's institution
           const projects = await storage.getProjects();
           const filteredProjects = projects.filter(p => 
-            p.visibility === "public" || 
-            (p.visibility === "institution" && p.owner.institution === req.user.institution) ||
+            p.visibility === "PUBLIC" || 
+            (p.visibility === "INSTITUTION" && p.owner.institution === req.user.institution) ||
             p.ownerId === req.user.id
           );
           return res.json(filteredProjects);
@@ -164,10 +166,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check permissions
-      if (project.visibility === "private" && project.ownerId !== req.user.id) {
+      if (project.visibility === "PRIVATE" && project.ownerId !== req.user.id) {
         return res.status(403).json({ message: "Access denied" });
       }
-      if (project.visibility === "institution" && project.owner.institution !== req.user.institution && project.ownerId !== req.user.id) {
+      if (project.visibility === "INSTITUTION" && project.owner.institution !== req.user.institution && project.ownerId !== req.user.id) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -309,7 +311,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Verify the faculty member exists and is faculty
       const faculty = await storage.getUser(facultyId);
-      if (!faculty || faculty.role !== "faculty") {
+      if (!faculty || faculty.role !== "FACULTY") {
         return res.status(400).json({ message: "Invalid faculty member" });
       }
 
@@ -322,7 +324,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/faculty/assignments", authenticateToken, async (req: AuthRequest, res) => {
     try {
-      if (req.user.role !== "faculty") {
+      if (req.user.role !== "FACULTY") {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -335,7 +337,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/assignments/:id/review", authenticateToken, async (req: AuthRequest, res) => {
     try {
-      if (req.user.role !== "faculty") {
+      if (req.user.role !== "FACULTY") {
         return res.status(403).json({ message: "Access denied" });
       }
 

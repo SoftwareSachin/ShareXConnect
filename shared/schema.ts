@@ -13,9 +13,6 @@ export const loginSchema = z.object({
   password: z.string()
     .min(1, "Password is required")
     .max(128, "Password is too long"),
-  captchaVerified: z.boolean().refine(val => val === true, {
-    message: "Please verify that you are not a robot",
-  }),
 });
 
 export const registerSchema = z.object({
@@ -47,9 +44,6 @@ export const registerSchema = z.object({
   institution: z.string()
     .min(1, "Institution is required")
     .max(100, "Institution name must be less than 100 characters"),
-  captchaVerified: z.boolean().refine(val => val === true, {
-    message: "Please verify that you are not a robot",
-  }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
