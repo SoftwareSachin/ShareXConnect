@@ -14,6 +14,17 @@ ShareX is a comprehensive academic project management platform designed for educ
 - Implemented secure client/server separation with proper authentication middleware
 - Updated UI with modern glassmorphism effects, backdrop blur, and subtle animations
 
+**UI Enhancement Update (August 18, 2025)**
+- Redesigned login/signup page with professional glassmorphism aesthetic
+- Added proper form field icons (Mail, Lock, User, Building2, Eye/EyeOff)
+- Implemented password visibility toggle with eye icons
+- Enhanced dark mode support with proper color transitions
+- Added animated gradient backgrounds with floating orbs
+- Improved form styling with backdrop blur effects and proper spacing
+- Added "Remember me" checkbox and "Forgot password" link
+- Enhanced button designs with hover effects and subtle scaling
+- Optimized input field heights and padding for better UX
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
