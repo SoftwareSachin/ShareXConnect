@@ -624,9 +624,14 @@ export default function Login() {
                   </p>
                   <p className="text-xs text-slate-500 dark:text-slate-500">
                     Designed and developed by{" "}
-                    <span className="font-semibold text-blue-600 dark:text-blue-400">
+                    <a 
+                      href="https://aptivonsolin.vercel.app/" 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200 underline-offset-2 hover:underline"
+                    >
                       Aptivon Solution
-                    </span>
+                    </a>
                     <span className="italic text-slate-400 dark:text-slate-500 ml-1">
                       (Building Trust...)
                     </span>

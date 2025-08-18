@@ -353,9 +353,14 @@ export default function Register() {
             </p>
             <p className="text-xs text-slate-500">
               Designed and developed by{" "}
-              <span className="font-semibold text-blue-600">
+              <a 
+                href="https://aptivonsolin.vercel.app/" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="font-semibold text-blue-600 hover:text-blue-700 transition-colors duration-200 underline-offset-2 hover:underline"
+              >
                 Aptivon Solution
-              </span>
+              </a>
               <span className="italic text-slate-400 ml-1">
                 (Building Trust...)
               </span>
