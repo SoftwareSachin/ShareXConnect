@@ -11,7 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { loginSchema, registerSchema } from "@shared/schema";
 import { apiPost } from "@/lib/api";
-import { GraduationCap, BookOpen, Users, Shield, Mail, Lock, Eye, EyeOff, User, Building2 } from "lucide-react";
+import { GraduationCap, BookOpen, Users, Shield, Mail, Lock, Eye, EyeOff, User, Building2, UserCheck, AtSign, KeyRound } from "lucide-react";
 import { useAuthStore } from "@/store/auth-store";
 import { useToast } from "@/hooks/use-toast";
 import type { LoginData, RegisterData } from "@shared/schema";
@@ -161,116 +161,133 @@ export default function Login() {
               <h1 className="text-2xl font-bold text-slate-800 dark:text-white">ShareX</h1>
             </div>
 
-            {/* Glassmorphism Card */}
-            <div className="bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl border border-white/20 dark:border-slate-700/20 rounded-2xl p-8 shadow-2xl">
-              <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Welcome Back</h2>
-                <p className="text-slate-600 dark:text-slate-400">Access your academic workspace</p>
+            {/* Main Auth Card */}
+            <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-2xl border border-white/30 dark:border-slate-700/30 rounded-3xl p-10 shadow-2xl ring-1 ring-black/5 dark:ring-white/5">
+              <div className="text-center mb-10">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl mb-4 shadow-lg">
+                  <GraduationCap className="w-8 h-8 text-white" />
+                </div>
+                <h2 className="text-3xl font-bold text-slate-800 dark:text-white mb-3">Welcome to ShareX</h2>
+                <p className="text-slate-600 dark:text-slate-400 text-lg">Your Academic Excellence Platform</p>
               </div>
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <div className="flex bg-white/10 dark:bg-black/10 backdrop-blur-sm rounded-lg p-1 mb-8">
+                <div className="flex bg-slate-100/60 dark:bg-slate-700/40 backdrop-blur-sm rounded-xl p-1.5 mb-10 border border-slate-200/40 dark:border-slate-600/40">
                   <button
                     type="button"
                     onClick={() => setActiveTab("login")}
-                    className={`flex-1 px-4 py-2.5 text-sm font-medium rounded-md transition-all duration-200 ${
+                    className={`flex-1 px-6 py-3 text-sm font-semibold rounded-lg transition-all duration-300 ${
                       activeTab === "login"
-                        ? "bg-white dark:bg-white/90 text-slate-900 shadow-lg"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
+                        ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-lg shadow-blue-500/10 border border-blue-200/50 dark:border-blue-700/50"
+                        : "text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/30 dark:hover:bg-slate-600/30"
                     }`}
                     data-testid="tab-login"
                   >
-                    Sign In
+                    <div className="flex items-center justify-center gap-2">
+                      <UserCheck className="w-4 h-4" />
+                      Sign In
+                    </div>
                   </button>
                   <button
                     type="button"
                     onClick={() => setActiveTab("register")}
-                    className={`flex-1 px-4 py-2.5 text-sm font-medium rounded-md transition-all duration-200 ${
+                    className={`flex-1 px-6 py-3 text-sm font-semibold rounded-lg transition-all duration-300 ${
                       activeTab === "register"
-                        ? "bg-white dark:bg-white/90 text-slate-900 shadow-lg"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
+                        ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-lg shadow-blue-500/10 border border-blue-200/50 dark:border-blue-700/50"
+                        : "text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/30 dark:hover:bg-slate-600/30"
                     }`}
                     data-testid="tab-register"
                   >
-                    Create Account
+                    <div className="flex items-center justify-center gap-2">
+                      <User className="w-4 h-4" />
+                      Create Account
+                    </div>
                   </button>
                 </div>
 
                 {activeTab === "login" && (
                   <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-6">
-                    <div className="space-y-5">
-                      <div>
-                        <Label htmlFor="login-email" className="text-slate-700 dark:text-slate-300 font-medium text-sm">Email Address</Label>
-                        <div className="relative mt-2">
-                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Mail className="h-4 w-4 text-slate-400 dark:text-slate-500" />
+                    <div className="space-y-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="login-email" className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2">
+                          <AtSign className="w-4 h-4 text-blue-600" />
+                          Email Address
+                        </Label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                            <Mail className="h-5 w-5 text-slate-400 dark:text-slate-500" />
                           </div>
                           <Input
                             id="login-email"
                             type="email"
                             {...loginForm.register("email")}
-                            placeholder="Enter your email"
-                            className="pl-10 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border-slate-200/50 dark:border-slate-600/50 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-lg h-12 transition-all duration-200"
+                            placeholder="student@university.edu"
+                            className="pl-12 pr-4 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl h-14 text-base font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
                             data-testid="input-login-email"
                           />
                         </div>
                         {loginForm.formState.errors.email && (
-                          <p className="text-sm text-red-500 mt-2 font-medium">
+                          <p className="text-sm text-red-500 mt-2 font-medium flex items-center gap-1">
+                            <span className="w-1 h-1 bg-red-500 rounded-full"></span>
                             {loginForm.formState.errors.email.message}
                           </p>
                         )}
                       </div>
                       
-                      <div>
-                        <Label htmlFor="login-password" className="text-slate-700 dark:text-slate-300 font-medium text-sm">Password</Label>
-                        <div className="relative mt-2">
-                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Lock className="h-4 w-4 text-slate-400 dark:text-slate-500" />
+                      <div className="space-y-2">
+                        <Label htmlFor="login-password" className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2">
+                          <KeyRound className="w-4 h-4 text-blue-600" />
+                          Password
+                        </Label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                            <Lock className="h-5 w-5 text-slate-400 dark:text-slate-500" />
                           </div>
                           <Input
                             id="login-password"
                             type={showPassword ? "text" : "password"}
                             {...loginForm.register("password")}
-                            placeholder="Enter your password"
-                            className="pl-10 pr-10 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border-slate-200/50 dark:border-slate-600/50 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-lg h-12 transition-all duration-200"
+                            placeholder="Enter your secure password"
+                            className="pl-12 pr-12 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl h-14 text-base font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
                             data-testid="input-login-password"
                           />
                           <button
                             type="button"
-                            className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                            className="absolute inset-y-0 right-0 pr-4 flex items-center z-10 hover:bg-slate-100/50 dark:hover:bg-slate-600/50 rounded-r-xl transition-colors duration-200"
                             onClick={() => setShowPassword(!showPassword)}
                           >
                             {showPassword ? (
-                              <EyeOff className="h-4 w-4 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300" />
+                              <EyeOff className="h-5 w-5 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300" />
                             ) : (
-                              <Eye className="h-4 w-4 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300" />
+                              <Eye className="h-5 w-5 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300" />
                             )}
                           </button>
                         </div>
                         {loginForm.formState.errors.password && (
-                          <p className="text-sm text-red-500 mt-2 font-medium">
+                          <p className="text-sm text-red-500 mt-2 font-medium flex items-center gap-1">
+                            <span className="w-1 h-1 bg-red-500 rounded-full"></span>
                             {loginForm.formState.errors.password.message}
                           </p>
                         )}
                       </div>
 
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between pt-2">
                         <div className="flex items-center">
                           <input
                             id="remember-me"
                             name="remember-me"
                             type="checkbox"
-                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 dark:border-slate-600 rounded bg-white/50 dark:bg-slate-800/50"
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-400 dark:border-slate-500 rounded-md bg-white/50 dark:bg-slate-700/50"
                           />
-                          <label htmlFor="remember-me" className="ml-2 block text-sm text-slate-700 dark:text-slate-300">
-                            Remember me
+                          <label htmlFor="remember-me" className="ml-3 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                            Keep me signed in
                           </label>
                         </div>
                         <div className="text-sm">
                           <button
                             type="button"
-                            className="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+                            className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-semibold transition-colors duration-200"
                           >
-                            Forgot password?
+                            Forgot your password?
                           </button>
                         </div>
                       </div>
@@ -278,159 +295,188 @@ export default function Login() {
                     
                     <Button 
                       type="submit" 
-                      className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 py-3 font-medium rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-[1.02] transform h-12" 
+                      className="w-full bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 hover:from-blue-700 hover:via-blue-800 hover:to-blue-900 text-white border-0 font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.02] transform h-14 text-base" 
                       disabled={loginMutation.isPending}
                       data-testid="button-login"
                     >
-                      {loginMutation.isPending ? "Signing In..." : "Sign In"}
+                      <div className="flex items-center justify-center gap-2">
+                        {loginMutation.isPending ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                            Signing you in...
+                          </>
+                        ) : (
+                          <>
+                            <UserCheck className="w-5 h-5" />
+                            Sign In to ShareX
+                          </>
+                        )}
+                      </div>
                     </Button>
                   </form>
                 )}
 
                 {activeTab === "register" && (
                   <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-6">
-                    <div className="space-y-4">
+                    <div className="space-y-5">
                       <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="firstName" className="text-slate-700 dark:text-slate-300 font-medium text-sm">First Name</Label>
-                          <div className="relative mt-2">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <div className="space-y-2">
+                          <Label htmlFor="firstName" className="text-slate-800 dark:text-slate-200 font-semibold text-sm">First Name</Label>
+                          <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
                               <User className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                             </div>
                             <Input
                               id="firstName"
                               {...registerForm.register("firstName")}
-                              placeholder="First name"
-                              className="pl-10 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border-slate-200/50 dark:border-slate-600/50 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-lg h-11 transition-all duration-200"
+                              placeholder="John"
+                              className="pl-11 pr-4 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl h-12 font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
                               data-testid="input-firstname"
                             />
                           </div>
                           {registerForm.formState.errors.firstName && (
-                            <p className="text-sm text-red-500 mt-2 font-medium">
+                            <p className="text-sm text-red-500 mt-2 font-medium flex items-center gap-1">
+                              <span className="w-1 h-1 bg-red-500 rounded-full"></span>
                               {registerForm.formState.errors.firstName.message}
                             </p>
                           )}
                         </div>
                         
-                        <div>
-                          <Label htmlFor="lastName" className="text-slate-700 dark:text-slate-300 font-medium text-sm">Last Name</Label>
-                          <div className="relative mt-2">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <div className="space-y-2">
+                          <Label htmlFor="lastName" className="text-slate-800 dark:text-slate-200 font-semibold text-sm">Last Name</Label>
+                          <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
                               <User className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                             </div>
                             <Input
                               id="lastName"
                               {...registerForm.register("lastName")}
-                              placeholder="Last name"
-                              className="pl-10 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border-slate-200/50 dark:border-slate-600/50 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-lg h-11 transition-all duration-200"
+                              placeholder="Doe"
+                              className="pl-11 pr-4 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl h-12 font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
                               data-testid="input-lastname"
                             />
                           </div>
                           {registerForm.formState.errors.lastName && (
-                            <p className="text-sm text-red-500 mt-2 font-medium">
+                            <p className="text-sm text-red-500 mt-2 font-medium flex items-center gap-1">
+                              <span className="w-1 h-1 bg-red-500 rounded-full"></span>
                               {registerForm.formState.errors.lastName.message}
                             </p>
                           )}
                         </div>
                       </div>
 
-                      <div>
-                        <Label htmlFor="username" className="text-slate-700 dark:text-slate-300 font-medium text-sm">Username</Label>
-                        <div className="relative mt-2">
-                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <div className="space-y-2">
+                        <Label htmlFor="username" className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2">
+                          <AtSign className="w-4 h-4 text-blue-600" />
+                          Username
+                        </Label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
                             <User className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                           </div>
                           <Input
                             id="username"
                             {...registerForm.register("username")}
-                            placeholder="Choose username"
-                            className="pl-10 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border-slate-200/50 dark:border-slate-600/50 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-lg h-11 transition-all duration-200"
+                            placeholder="johndoe123"
+                            className="pl-11 pr-4 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl h-12 font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
                             data-testid="input-username"
                           />
                         </div>
                         {registerForm.formState.errors.username && (
-                          <p className="text-sm text-red-500 mt-2 font-medium">
+                          <p className="text-sm text-red-500 mt-2 font-medium flex items-center gap-1">
+                            <span className="w-1 h-1 bg-red-500 rounded-full"></span>
                             {registerForm.formState.errors.username.message}
                           </p>
                         )}
                       </div>
                       
-                      <div>
-                        <Label htmlFor="register-email" className="text-slate-700 dark:text-slate-300 font-medium text-sm">Email Address</Label>
-                        <div className="relative mt-2">
-                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <div className="space-y-2">
+                        <Label htmlFor="register-email" className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2">
+                          <AtSign className="w-4 h-4 text-blue-600" />
+                          Email Address
+                        </Label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
                             <Mail className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                           </div>
                           <Input
                             id="register-email"
                             type="email"
                             {...registerForm.register("email")}
-                            placeholder="Enter your email"
-                            className="pl-10 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border-slate-200/50 dark:border-slate-600/50 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-lg h-11 transition-all duration-200"
+                            placeholder="student@university.edu"
+                            className="pl-11 pr-4 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl h-12 font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
                             data-testid="input-register-email"
                           />
                         </div>
                         {registerForm.formState.errors.email && (
-                          <p className="text-sm text-red-500 mt-2 font-medium">
+                          <p className="text-sm text-red-500 mt-2 font-medium flex items-center gap-1">
+                            <span className="w-1 h-1 bg-red-500 rounded-full"></span>
                             {registerForm.formState.errors.email.message}
                           </p>
                         )}
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="role" className="text-slate-700 dark:text-slate-300 font-medium text-sm">Role</Label>
+                        <div className="space-y-2">
+                          <Label htmlFor="role" className="text-slate-800 dark:text-slate-200 font-semibold text-sm">Academic Role</Label>
                           <Select onValueChange={(value) => registerForm.setValue("role", value as any)} defaultValue="STUDENT">
-                            <SelectTrigger className="mt-2 h-11 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border-slate-200/50 dark:border-slate-600/50 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white rounded-lg" data-testid="select-role">
+                            <SelectTrigger className="h-12 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white rounded-xl font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg" data-testid="select-role">
                               <SelectValue />
                             </SelectTrigger>
-                            <SelectContent className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl border-slate-200/50 dark:border-slate-600/50">
-                              <SelectItem value="STUDENT">Student</SelectItem>
-                              <SelectItem value="FACULTY">Faculty</SelectItem>
-                              <SelectItem value="ADMIN">College Admin</SelectItem>
+                            <SelectContent className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl border-slate-300/60 dark:border-slate-600/60 rounded-xl">
+                              <SelectItem value="STUDENT" className="font-medium">🎓 Student</SelectItem>
+                              <SelectItem value="FACULTY" className="font-medium">👨‍🏫 Faculty</SelectItem>
+                              <SelectItem value="ADMIN" className="font-medium">🏛️ College Admin</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
                         
-                        <div>
-                          <Label htmlFor="institution" className="text-slate-700 dark:text-slate-300 font-medium text-sm">Institution</Label>
-                          <div className="relative mt-2">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <div className="space-y-2">
+                          <Label htmlFor="institution" className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2">
+                            <Building2 className="w-4 h-4 text-blue-600" />
+                            Institution
+                          </Label>
+                          <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
                               <Building2 className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                             </div>
                             <Input
                               id="institution"
                               {...registerForm.register("institution")}
-                              placeholder="Your university"
-                              className="pl-10 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border-slate-200/50 dark:border-slate-600/50 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-lg h-11 transition-all duration-200"
+                              placeholder="Stanford University"
+                              className="pl-11 pr-4 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl h-12 font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
                               data-testid="input-institution"
                             />
                           </div>
                           {registerForm.formState.errors.institution && (
-                            <p className="text-sm text-red-500 mt-2 font-medium">
+                            <p className="text-sm text-red-500 mt-2 font-medium flex items-center gap-1">
+                              <span className="w-1 h-1 bg-red-500 rounded-full"></span>
                               {registerForm.formState.errors.institution.message}
                             </p>
                           )}
                         </div>
                       </div>
                       
-                      <div>
-                        <Label htmlFor="register-password" className="text-slate-700 dark:text-slate-300 font-medium text-sm">Password</Label>
-                        <div className="relative mt-2">
-                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <div className="space-y-2">
+                        <Label htmlFor="register-password" className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2">
+                          <KeyRound className="w-4 h-4 text-blue-600" />
+                          Password
+                        </Label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
                             <Lock className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                           </div>
                           <Input
                             id="register-password"
                             type={showPassword ? "text" : "password"}
                             {...registerForm.register("password")}
-                            placeholder="Create password"
-                            className="pl-10 pr-10 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border-slate-200/50 dark:border-slate-600/50 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-lg h-11 transition-all duration-200"
+                            placeholder="Create a strong password"
+                            className="pl-11 pr-12 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl h-12 font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
                             data-testid="input-register-password"
                           />
                           <button
                             type="button"
-                            className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                            className="absolute inset-y-0 right-0 pr-4 flex items-center z-10 hover:bg-slate-100/50 dark:hover:bg-slate-600/50 rounded-r-xl transition-colors duration-200"
                             onClick={() => setShowPassword(!showPassword)}
                           >
                             {showPassword ? (
@@ -441,29 +487,33 @@ export default function Login() {
                           </button>
                         </div>
                         {registerForm.formState.errors.password && (
-                          <p className="text-sm text-red-500 mt-2 font-medium">
+                          <p className="text-sm text-red-500 mt-2 font-medium flex items-center gap-1">
+                            <span className="w-1 h-1 bg-red-500 rounded-full"></span>
                             {registerForm.formState.errors.password.message}
                           </p>
                         )}
                       </div>
 
-                      <div>
-                        <Label htmlFor="confirm-password" className="text-slate-700 dark:text-slate-300 font-medium text-sm">Confirm Password</Label>
-                        <div className="relative mt-2">
-                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <div className="space-y-2">
+                        <Label htmlFor="confirm-password" className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2">
+                          <KeyRound className="w-4 h-4 text-blue-600" />
+                          Confirm Password
+                        </Label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
                             <Lock className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                           </div>
                           <Input
                             id="confirm-password"
                             type={showConfirmPassword ? "text" : "password"}
                             {...registerForm.register("confirmPassword")}
-                            placeholder="Confirm password"
-                            className="pl-10 pr-10 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border-slate-200/50 dark:border-slate-600/50 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-lg h-11 transition-all duration-200"
+                            placeholder="Confirm your password"
+                            className="pl-11 pr-12 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl h-12 font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
                             data-testid="input-confirm-password"
                           />
                           <button
                             type="button"
-                            className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                            className="absolute inset-y-0 right-0 pr-4 flex items-center z-10 hover:bg-slate-100/50 dark:hover:bg-slate-600/50 rounded-r-xl transition-colors duration-200"
                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                           >
                             {showConfirmPassword ? (
@@ -474,7 +524,8 @@ export default function Login() {
                           </button>
                         </div>
                         {registerForm.formState.errors.confirmPassword && (
-                          <p className="text-sm text-red-500 mt-2 font-medium">
+                          <p className="text-sm text-red-500 mt-2 font-medium flex items-center gap-1">
+                            <span className="w-1 h-1 bg-red-500 rounded-full"></span>
                             {registerForm.formState.errors.confirmPassword.message}
                           </p>
                         )}
@@ -483,11 +534,23 @@ export default function Login() {
                     
                     <Button 
                       type="submit" 
-                      className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 py-3 font-medium rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-[1.02] transform h-12" 
+                      className="w-full bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 hover:from-blue-700 hover:via-blue-800 hover:to-blue-900 text-white border-0 font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.02] transform h-14 text-base mt-6" 
                       disabled={registerMutation.isPending}
                       data-testid="button-register"
                     >
-                      {registerMutation.isPending ? "Creating Account..." : "Create Account"}
+                      <div className="flex items-center justify-center gap-2">
+                        {registerMutation.isPending ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                            Creating your account...
+                          </>
+                        ) : (
+                          <>
+                            <User className="w-5 h-5" />
+                            Create ShareX Account
+                          </>
+                        )}
+                      </div>
                     </Button>
                   </form>
                 )}
