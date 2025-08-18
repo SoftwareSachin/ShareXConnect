@@ -1,6 +1,6 @@
 # Overview
 
-ShareX is a comprehensive academic project management platform designed for educational institutions. The application facilitates student project creation, collaboration, and faculty review workflows. Students can create and manage academic projects with various visibility settings, while faculty members can review, grade, and provide feedback. The platform includes features for project discovery, collaboration through comments and contributors, and a star system for bookmarking projects.
+ShareXConnect is a comprehensive academic project management platform designed for educational institutions. The application facilitates student project creation, collaboration, and faculty review workflows. Students can create and manage academic projects with various visibility settings, while faculty members can review, grade, and provide feedback. The platform includes features for project discovery, collaboration through comments and contributors, and a star system for bookmarking projects.
 
 ## Recent Changes
 
@@ -15,6 +15,8 @@ ShareX is a comprehensive academic project management platform designed for educ
 - Updated UI with modern glassmorphism effects, backdrop blur, and subtle animations
 - Rebranded to "ShareXConnect" with improved typography and professional alignment
 - Enhanced form field spacing, icon alignment, and consistent label styling
+- Removed unused duplicate login page and fixed checkbox text alignment issues
+- Optimized form field icon sizes and positioning for better visual consistency
 
 **UI Enhancement Update (August 18, 2025)**
 - Redesigned login/signup page with professional glassmorphism aesthetic
