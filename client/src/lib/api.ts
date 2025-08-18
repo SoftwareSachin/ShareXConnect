@@ -43,8 +43,8 @@ export async function apiGet<T>(url: string): Promise<T> {
   return response.json();
 }
 
-export async function apiPost<T>(url: string, data?: unknown): Promise<T> {
-  const response = await apiRequest('POST', url, data);
+export async function apiPost<T>(url: string, data?: unknown, options: { skipAuth?: boolean } = {}): Promise<T> {
+  const response = await apiRequest('POST', url, data, options);
   return response.json();
 }
 

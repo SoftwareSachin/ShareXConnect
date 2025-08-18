@@ -16,28 +16,33 @@ declare global {
   }
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+interface AuthRequest extends Request {
+  user: User;
+}
+
+// Use a secure JWT secret - in production this should be a long, random string
+const JWT_SECRET = process.env.JWT_SECRET || "your-super-secure-jwt-secret-key-change-this-in-production-minimum-32-characters";
 const upload = multer({ dest: "uploads/" });
 
 // Middleware for JWT authentication
-const authenticateToken = async (req: any, res: any, next: any) => {
+const authenticateToken = async (req: Request, res: any, next: any) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
-    return res.sendStatus(401);
+    return res.status(401).json({ message: "Authentication token required" });
   }
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as any;
     const user = await storage.getUser(decoded.userId);
     if (!user) {
-      return res.sendStatus(401);
+      return res.status(401).json({ message: "Invalid token" });
     }
     req.user = user;
     next();
   } catch (err) {
-    return res.sendStatus(403);
+    return res.status(403).json({ message: "Invalid or expired token" });
   }
 };
 
@@ -60,7 +65,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const user = await storage.createUser(userData);
-      const token = jwt.sign({ userId: user.id }, JWT_SECRET);
+      const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
       
       const { password, ...userWithoutPassword } = user;
       res.json({ user: userWithoutPassword, token });
@@ -86,7 +91,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
-      const token = jwt.sign({ userId: user.id }, JWT_SECRET);
+      const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
       const { password: _, ...userWithoutPassword } = user;
       
       res.json({ user: userWithoutPassword, token });
@@ -98,13 +103,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/auth/me", authenticateToken, async (req, res) => {
+  app.get("/api/auth/me", authenticateToken, async (req: AuthRequest, res) => {
     const { password, ...userWithoutPassword } = req.user;
     res.json(userWithoutPassword);
   });
 
   // Dashboard stats
-  app.get("/api/dashboard/stats", authenticateToken, async (req, res) => {
+  app.get("/api/dashboard/stats", authenticateToken, async (req: AuthRequest, res) => {
     try {
       const stats = await storage.getDashboardStats(req.user.id, req.user.role);
       res.json(stats);
@@ -114,7 +119,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Project routes
-  app.get("/api/projects", authenticateToken, async (req, res) => {
+  app.get("/api/projects", authenticateToken, async (req: AuthRequest, res) => {
     try {
       const { visibility, status, category, search, my } = req.query;
       
@@ -151,7 +156,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/projects/:id", authenticateToken, async (req, res) => {
+  app.get("/api/projects/:id", authenticateToken, async (req: AuthRequest, res) => {
     try {
       const project = await storage.getProjectWithDetails(req.params.id, req.user.id);
       if (!project) {
@@ -172,7 +177,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/projects", authenticateToken, async (req, res) => {
+  app.post("/api/projects", authenticateToken, async (req: AuthRequest, res) => {
     try {
       const projectData = insertProjectSchema.parse({
         ...req.body,
@@ -192,7 +197,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/projects/:id", authenticateToken, async (req, res) => {
+  app.patch("/api/projects/:id", authenticateToken, async (req: AuthRequest, res) => {
     try {
       const project = await storage.getProject(req.params.id);
       if (!project) {
@@ -221,7 +226,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/projects/:id", authenticateToken, async (req, res) => {
+  app.delete("/api/projects/:id", authenticateToken, async (req: AuthRequest, res) => {
     try {
       const project = await storage.getProject(req.params.id);
       if (!project) {
@@ -241,7 +246,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Star/unstar projects
-  app.post("/api/projects/:id/star", authenticateToken, async (req, res) => {
+  app.post("/api/projects/:id/star", authenticateToken, async (req: AuthRequest, res) => {
     try {
       await storage.starProject(req.params.id, req.user.id);
       res.status(204).send();
@@ -250,7 +255,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/projects/:id/star", authenticateToken, async (req, res) => {
+  app.delete("/api/projects/:id/star", authenticateToken, async (req: AuthRequest, res) => {
     try {
       await storage.unstarProject(req.params.id, req.user.id);
       res.status(204).send();
@@ -260,7 +265,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get starred projects
-  app.get("/api/projects/starred/all", authenticateToken, async (req, res) => {
+  app.get("/api/projects/starred/all", authenticateToken, async (req: AuthRequest, res) => {
     try {
       const starredProjects = await storage.getStarredProjects(req.user.id);
       res.json(starredProjects);
@@ -270,7 +275,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Comments
-  app.get("/api/projects/:id/comments", authenticateToken, async (req, res) => {
+  app.get("/api/projects/:id/comments", authenticateToken, async (req: AuthRequest, res) => {
     try {
       const comments = await storage.getComments(req.params.id);
       res.json(comments);
@@ -279,7 +284,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/projects/:id/comments", authenticateToken, async (req, res) => {
+  app.post("/api/projects/:id/comments", authenticateToken, async (req: AuthRequest, res) => {
     try {
       const commentData = insertCommentSchema.parse({
         ...req.body,
@@ -298,7 +303,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Faculty assignment routes
-  app.post("/api/projects/:id/assign", authenticateToken, async (req, res) => {
+  app.post("/api/projects/:id/assign", authenticateToken, async (req: AuthRequest, res) => {
     try {
       const { facultyId } = req.body;
       
@@ -315,7 +320,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/faculty/assignments", authenticateToken, async (req, res) => {
+  app.get("/api/faculty/assignments", authenticateToken, async (req: AuthRequest, res) => {
     try {
       if (req.user.role !== "faculty") {
         return res.status(403).json({ message: "Access denied" });
@@ -328,7 +333,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/assignments/:id/review", authenticateToken, async (req, res) => {
+  app.post("/api/assignments/:id/review", authenticateToken, async (req: AuthRequest, res) => {
     try {
       if (req.user.role !== "faculty") {
         return res.status(403).json({ message: "Access denied" });
@@ -351,7 +356,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Project collaborators
-  app.post("/api/projects/:id/collaborators", authenticateToken, async (req, res) => {
+  app.post("/api/projects/:id/collaborators", authenticateToken, async (req: AuthRequest, res) => {
     try {
       const { userId } = req.body;
       
@@ -372,7 +377,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/projects/:id/collaborators/:userId", authenticateToken, async (req, res) => {
+  app.delete("/api/projects/:id/collaborators/:userId", authenticateToken, async (req: AuthRequest, res) => {
     try {
       const project = await storage.getProject(req.params.id);
       if (!project) {
@@ -392,7 +397,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // File upload
-  app.post("/api/projects/:id/files", authenticateToken, upload.single("file"), async (req, res) => {
+  app.post("/api/projects/:id/files", authenticateToken, upload.single("file"), async (req: AuthRequest, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });

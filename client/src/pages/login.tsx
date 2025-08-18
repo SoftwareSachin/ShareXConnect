@@ -11,6 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { loginSchema, registerSchema } from "@shared/schema";
 import { apiPost } from "@/lib/api";
+import { GraduationCap, BookOpen, Users, Shield } from "lucide-react";
 import { useAuthStore } from "@/store/auth-store";
 import { useToast } from "@/hooks/use-toast";
 import type { LoginData, RegisterData } from "@shared/schema";
@@ -89,12 +90,74 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-gray-900 mb-2">ShareX</CardTitle>
-          <p className="text-muted-foreground">Academic Project Platform</p>
-        </CardHeader>
+    <div className="min-h-screen w-full flex bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      {/* Left side - Branding */}
+      <div className="hidden lg:flex lg:flex-1 lg:flex-col lg:justify-center lg:px-20 lg:py-12">
+        <div className="mx-auto max-w-md">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
+              <GraduationCap className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                ShareX
+              </h1>
+              <p className="text-sm text-muted-foreground">Academic Excellence Platform</p>
+            </div>
+          </div>
+          
+          <div className="space-y-6">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <BookOpen className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-1">Project Management</h3>
+                <p className="text-sm text-gray-600">Create, manage, and showcase your academic projects with ease.</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Users className="w-5 h-5 text-purple-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-1">Collaboration</h3>
+                <p className="text-sm text-gray-600">Work together with peers and get feedback from faculty.</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Shield className="w-5 h-5 text-indigo-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-1">Secure Reviews</h3>
+                <p className="text-sm text-gray-600">Professional faculty review system with secure grading.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Right side - Login Form */}
+      <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:px-20 xl:px-24">
+        <div className="mx-auto w-full max-w-sm lg:w-96">
+          <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
+            <CardHeader className="text-center pb-6">
+              <div className="flex lg:hidden items-center justify-center gap-3 mb-4">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                  <GraduationCap className="w-5 h-5 text-white" />
+                </div>
+                <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  ShareX
+                </CardTitle>
+              </div>
+              <div className="hidden lg:block">
+                <CardTitle className="text-2xl font-bold text-gray-900 mb-2">Welcome back</CardTitle>
+                <p className="text-muted-foreground">Sign in to your academic platform</p>
+              </div>
+            </CardHeader>
         
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -269,8 +332,10 @@ export default function Login() {
               </form>
             </TabsContent>
           </Tabs>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

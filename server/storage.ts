@@ -1,6 +1,9 @@
-import { type User, type InsertUser, type Project, type InsertProject, type Comment, type InsertComment, type FacultyAssignment, type InsertFacultyAssignment, type ProjectWithDetails, type DashboardStats, type ProjectCollaborator, type ProjectStar, type ProjectFile } from "@shared/schema";
+import { type User, type InsertUser, type Project, type InsertProject, type Comment, type InsertComment, type FacultyAssignment, type InsertFacultyAssignment, type ProjectWithDetails, type DashboardStats, type ProjectCollaborator, type ProjectStar, type ProjectFile, users, projects, comments, facultyAssignments, projectCollaborators, projectStars, projectFiles } from "@shared/schema";
 import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
+import { db } from "./db";
+import { eq, and, like, or, desc, count } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 
 export interface IStorage {
   // User operations
@@ -52,53 +55,34 @@ export interface IStorage {
   getDashboardStats(userId: string, role: string): Promise<DashboardStats>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-  private projects: Map<string, Project>;
-  private comments: Map<string, Comment>;
-  private facultyAssignments: Map<string, FacultyAssignment>;
-  private projectCollaborators: Map<string, ProjectCollaborator>;
-  private projectStars: Map<string, ProjectStar>;
-  private projectFiles: Map<string, ProjectFile>;
-
-  constructor() {
-    this.users = new Map();
-    this.projects = new Map();
-    this.comments = new Map();
-    this.facultyAssignments = new Map();
-    this.projectCollaborators = new Map();
-    this.projectStars = new Map();
-    this.projectFiles = new Map();
-  }
-
+export class DatabaseStorage implements IStorage {
+  // User operations
   async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.email === email);
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.username === username);
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
     const hashedPassword = await this.hashPassword(insertUser.password);
-    const user: User = { 
-      ...insertUser, 
-      id, 
-      password: hashedPassword,
-      createdAt: new Date(),
-      role: insertUser.role as "student" | "faculty" | "admin"
-    };
-    this.users.set(id, user);
+    const [user] = await db.insert(users).values({
+      ...insertUser,
+      password: hashedPassword
+    }).returning();
     return user;
   }
 
   async getUsersByInstitution(institution: string): Promise<User[]> {
-    return Array.from(this.users.values()).filter(user => user.institution === institution);
+    return await db.select().from(users).where(eq(users.institution, institution));
   }
 
   async hashPassword(password: string): Promise<string> {
@@ -110,30 +94,40 @@ export class MemStorage implements IStorage {
   }
 
   async getProject(id: string): Promise<Project | undefined> {
-    return this.projects.get(id);
+    const [project] = await db.select().from(projects).where(eq(projects.id, id));
+    return project;
   }
 
   async getProjectWithDetails(id: string, userId?: string): Promise<ProjectWithDetails | undefined> {
-    const project = this.projects.get(id);
+    const project = await this.getProject(id);
     if (!project) return undefined;
 
     const owner = await this.getUser(project.ownerId);
     if (!owner) return undefined;
 
     const collaborators = await this.getProjectCollaborators(id);
-    const starCount = Array.from(this.projectStars.values())
-      .filter(star => star.projectId === id).length;
-    const commentCount = Array.from(this.comments.values())
-      .filter(comment => comment.projectId === id).length;
+    
+    const [starCountResult] = await db.select({ count: count() })
+      .from(projectStars)
+      .where(eq(projectStars.projectId, id));
+    const starCount = starCountResult?.count || 0;
+
+    const [commentCountResult] = await db.select({ count: count() })
+      .from(comments)
+      .where(eq(comments.projectId, id));
+    const commentCount = commentCountResult?.count || 0;
     
     let isStarred = false;
     if (userId) {
-      isStarred = Array.from(this.projectStars.values())
-        .some(star => star.projectId === id && star.userId === userId);
+      const [star] = await db.select()
+        .from(projectStars)
+        .where(and(eq(projectStars.projectId, id), eq(projectStars.userId, userId)));
+      isStarred = !!star;
     }
 
-    const assignment = Array.from(this.facultyAssignments.values())
-      .find(a => a.projectId === id);
+    const [assignment] = await db.select()
+      .from(facultyAssignments)
+      .where(eq(facultyAssignments.projectId, id));
 
     return {
       ...project,
@@ -154,195 +148,151 @@ export class MemStorage implements IStorage {
     search?: string;
     institution?: string;
   }): Promise<ProjectWithDetails[]> {
-    let projects = Array.from(this.projects.values());
+    let query = db.select().from(projects).$dynamic();
 
     if (filters) {
       if (filters.ownerId) {
-        projects = projects.filter(p => p.ownerId === filters.ownerId);
+        query = query.where(eq(projects.ownerId, filters.ownerId));
       }
       if (filters.visibility) {
-        projects = projects.filter(p => p.visibility === filters.visibility);
+        query = query.where(eq(projects.visibility, filters.visibility));
       }
       if (filters.status) {
-        projects = projects.filter(p => p.status === filters.status);
+        query = query.where(eq(projects.status, filters.status));
       }
       if (filters.category) {
-        projects = projects.filter(p => p.category === filters.category);
+        query = query.where(eq(projects.category, filters.category));
       }
       if (filters.search) {
-        const search = filters.search.toLowerCase();
-        projects = projects.filter(p => 
-          p.title.toLowerCase().includes(search) ||
-          p.description.toLowerCase().includes(search) ||
-          (p.techStack && p.techStack.some(tech => tech.toLowerCase().includes(search)))
+        const search = `%${filters.search.toLowerCase()}%`;
+        query = query.where(
+          or(
+            like(projects.title, search),
+            like(projects.description, search)
+          )
         );
-      }
-      if (filters.institution) {
-        const institutionUsers = await this.getUsersByInstitution(filters.institution);
-        const institutionUserIds = new Set(institutionUsers.map(u => u.id));
-        projects = projects.filter(p => institutionUserIds.has(p.ownerId));
       }
     }
 
+    const projectsList = await query.orderBy(desc(projects.createdAt));
+
     const projectDetails = await Promise.all(
-      projects.map(p => this.getProjectWithDetails(p.id))
+      projectsList.map(p => this.getProjectWithDetails(p.id))
     );
 
     return projectDetails.filter(p => p !== undefined) as ProjectWithDetails[];
   }
 
   async createProject(project: InsertProject): Promise<Project> {
-    const id = randomUUID();
-    const now = new Date();
-    const newProject: Project = { 
-      ...project, 
-      id, 
-      createdAt: now,
-      updatedAt: now,
-      visibility: project.visibility as "private" | "institution" | "public",
-      status: project.status as "draft" | "submitted" | "under_review" | "approved",
-      techStack: project.techStack || []
-    };
-    this.projects.set(id, newProject);
+    const [newProject] = await db.insert(projects).values(project).returning();
     return newProject;
   }
 
   async updateProject(id: string, updates: Partial<InsertProject>): Promise<Project | undefined> {
-    const project = this.projects.get(id);
-    if (!project) return undefined;
-
-    const updatedProject: Project = {
-      ...project,
-      ...updates,
-      updatedAt: new Date(),
-      visibility: (updates.visibility || project.visibility) as "private" | "institution" | "public",
-      status: (updates.status || project.status) as "draft" | "submitted" | "under_review" | "approved",
-      techStack: updates.techStack || project.techStack || []
-    };
-    this.projects.set(id, updatedProject);
+    const [updatedProject] = await db.update(projects)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(projects.id, id))
+      .returning();
     return updatedProject;
   }
 
   async deleteProject(id: string): Promise<boolean> {
-    return this.projects.delete(id);
+    const result = await db.delete(projects).where(eq(projects.id, id));
+    return result.rowCount > 0;
   }
 
   async addCollaborator(projectId: string, userId: string): Promise<void> {
-    const id = randomUUID();
-    const collaborator: ProjectCollaborator = {
-      id,
+    await db.insert(projectCollaborators).values({
       projectId,
-      userId,
-      addedAt: new Date()
-    };
-    this.projectCollaborators.set(id, collaborator);
+      userId
+    });
   }
 
   async removeCollaborator(projectId: string, userId: string): Promise<void> {
-    const collaborators = Array.from(this.projectCollaborators.entries());
-    for (const [id, collaborator] of collaborators) {
-      if (collaborator.projectId === projectId && collaborator.userId === userId) {
-        this.projectCollaborators.delete(id);
-        break;
-      }
-    }
+    await db.delete(projectCollaborators)
+      .where(and(
+        eq(projectCollaborators.projectId, projectId),
+        eq(projectCollaborators.userId, userId)
+      ));
   }
 
   async getProjectCollaborators(projectId: string): Promise<User[]> {
-    const collaboratorIds = Array.from(this.projectCollaborators.values())
-      .filter(c => c.projectId === projectId)
-      .map(c => c.userId);
+    const collaborators = await db.select({ user: users })
+      .from(projectCollaborators)
+      .innerJoin(users, eq(projectCollaborators.userId, users.id))
+      .where(eq(projectCollaborators.projectId, projectId));
     
-    const collaborators = await Promise.all(
-      collaboratorIds.map(id => this.getUser(id))
-    );
-    
-    return collaborators.filter(u => u !== undefined) as User[];
+    return collaborators.map(c => c.user);
   }
 
   async starProject(projectId: string, userId: string): Promise<void> {
     // Check if already starred
-    const existing = Array.from(this.projectStars.values())
-      .find(star => star.projectId === projectId && star.userId === userId);
+    const [existing] = await db.select()
+      .from(projectStars)
+      .where(and(
+        eq(projectStars.projectId, projectId),
+        eq(projectStars.userId, userId)
+      ));
     
     if (!existing) {
-      const id = randomUUID();
-      const star: ProjectStar = {
-        id,
+      await db.insert(projectStars).values({
         projectId,
-        userId,
-        createdAt: new Date()
-      };
-      this.projectStars.set(id, star);
+        userId
+      });
     }
   }
 
   async unstarProject(projectId: string, userId: string): Promise<void> {
-    const stars = Array.from(this.projectStars.entries());
-    for (const [id, star] of stars) {
-      if (star.projectId === projectId && star.userId === userId) {
-        this.projectStars.delete(id);
-        break;
-      }
-    }
+    await db.delete(projectStars)
+      .where(and(
+        eq(projectStars.projectId, projectId),
+        eq(projectStars.userId, userId)
+      ));
   }
 
   async getStarredProjects(userId: string): Promise<ProjectWithDetails[]> {
-    const starredProjectIds = Array.from(this.projectStars.values())
-      .filter(star => star.userId === userId)
-      .map(star => star.projectId);
+    const starredProjects = await db.select({ projectId: projectStars.projectId })
+      .from(projectStars)
+      .where(eq(projectStars.userId, userId));
     
     const projects = await Promise.all(
-      starredProjectIds.map(id => this.getProjectWithDetails(id, userId))
+      starredProjects.map(star => this.getProjectWithDetails(star.projectId, userId))
     );
     
     return projects.filter(p => p !== undefined) as ProjectWithDetails[];
   }
 
   async getComments(projectId: string): Promise<(Comment & { user: User })[]> {
-    const comments = Array.from(this.comments.values())
-      .filter(comment => comment.projectId === projectId);
+    const commentsWithUsers = await db.select({ 
+      comment: comments,
+      user: users 
+    })
+      .from(comments)
+      .innerJoin(users, eq(comments.userId, users.id))
+      .where(eq(comments.projectId, projectId))
+      .orderBy(desc(comments.createdAt));
     
-    const commentsWithUsers = await Promise.all(
-      comments.map(async comment => {
-        const user = await this.getUser(comment.userId);
-        return user ? { ...comment, user } : null;
-      })
-    );
-    
-    return commentsWithUsers.filter(c => c !== null) as (Comment & { user: User })[];
+    return commentsWithUsers.map(row => ({ ...row.comment, user: row.user }));
   }
 
   async createComment(comment: InsertComment): Promise<Comment> {
-    const id = randomUUID();
-    const newComment: Comment = { 
-      ...comment, 
-      id, 
-      createdAt: new Date()
-    };
-    this.comments.set(id, newComment);
+    const [newComment] = await db.insert(comments).values(comment).returning();
     return newComment;
   }
 
   async assignProjectToFaculty(projectId: string, facultyId: string): Promise<FacultyAssignment> {
-    const id = randomUUID();
-    const assignment: FacultyAssignment = {
-      id,
+    const [assignment] = await db.insert(facultyAssignments).values({
       projectId,
       facultyId,
-      assignedAt: new Date(),
-      reviewStatus: "pending",
-      grade: null,
-      feedback: null,
-      reviewedAt: null
-    };
-    this.facultyAssignments.set(id, assignment);
+      reviewStatus: "pending"
+    }).returning();
     return assignment;
   }
 
   async getFacultyAssignments(facultyId: string): Promise<(FacultyAssignment & { project: ProjectWithDetails })[]> {
-    const assignments = Array.from(this.facultyAssignments.values())
-      .filter(assignment => assignment.facultyId === facultyId);
+    const assignments = await db.select()
+      .from(facultyAssignments)
+      .where(eq(facultyAssignments.facultyId, facultyId));
     
     const assignmentsWithProjects = await Promise.all(
       assignments.map(async assignment => {
@@ -355,52 +305,82 @@ export class MemStorage implements IStorage {
   }
 
   async submitReview(assignmentId: string, grade: string, feedback: string): Promise<FacultyAssignment | undefined> {
-    const assignment = this.facultyAssignments.get(assignmentId);
-    if (!assignment) return undefined;
-
-    const updatedAssignment = {
-      ...assignment,
-      grade,
-      feedback,
-      reviewStatus: "completed" as const,
-      reviewedAt: new Date()
-    };
-    this.facultyAssignments.set(assignmentId, updatedAssignment);
+    const [updatedAssignment] = await db.update(facultyAssignments)
+      .set({
+        grade,
+        feedback,
+        reviewStatus: "completed",
+        reviewedAt: new Date()
+      })
+      .where(eq(facultyAssignments.id, assignmentId))
+      .returning();
+    
     return updatedAssignment;
   }
 
   async getDashboardStats(userId: string, role: string): Promise<DashboardStats> {
     if (role === "student") {
-      const userProjects = Array.from(this.projects.values())
-        .filter(p => p.ownerId === userId);
+      const [totalCount] = await db.select({ count: count() })
+        .from(projects)
+        .where(eq(projects.ownerId, userId));
+      
+      const [inReviewCount] = await db.select({ count: count() })
+        .from(projects)
+        .where(and(eq(projects.ownerId, userId), eq(projects.status, "under_review")));
+      
+      const [approvedCount] = await db.select({ count: count() })
+        .from(projects)
+        .where(and(eq(projects.ownerId, userId), eq(projects.status, "approved")));
+      
+      const [collaboratorsCount] = await db.select({ count: count() })
+        .from(projectCollaborators)
+        .innerJoin(projects, eq(projectCollaborators.projectId, projects.id))
+        .where(eq(projects.ownerId, userId));
       
       return {
-        totalProjects: userProjects.length,
-        inReview: userProjects.filter(p => p.status === "under_review").length,
-        approved: userProjects.filter(p => p.status === "approved").length,
-        collaborators: Array.from(this.projectCollaborators.values())
-          .filter(c => userProjects.some(p => p.id === c.projectId)).length
+        totalProjects: totalCount?.count || 0,
+        inReview: inReviewCount?.count || 0,
+        approved: approvedCount?.count || 0,
+        collaborators: collaboratorsCount?.count || 0
       };
     } else if (role === "faculty") {
-      const assignments = Array.from(this.facultyAssignments.values())
-        .filter(a => a.facultyId === userId);
+      const [totalCount] = await db.select({ count: count() })
+        .from(facultyAssignments)
+        .where(eq(facultyAssignments.facultyId, userId));
+      
+      const [inReviewCount] = await db.select({ count: count() })
+        .from(facultyAssignments)
+        .where(and(eq(facultyAssignments.facultyId, userId), eq(facultyAssignments.reviewStatus, "pending")));
+      
+      const [approvedCount] = await db.select({ count: count() })
+        .from(facultyAssignments)
+        .where(and(eq(facultyAssignments.facultyId, userId), eq(facultyAssignments.reviewStatus, "completed")));
       
       return {
-        totalProjects: assignments.length,
-        inReview: assignments.filter(a => a.reviewStatus === "pending").length,
-        approved: assignments.filter(a => a.reviewStatus === "completed").length,
+        totalProjects: totalCount?.count || 0,
+        inReview: inReviewCount?.count || 0,
+        approved: approvedCount?.count || 0,
         collaborators: 0
       };
     } else {
       // Admin stats - institution wide
+      const [totalCount] = await db.select({ count: count() }).from(projects);
+      const [inReviewCount] = await db.select({ count: count() })
+        .from(projects)
+        .where(eq(projects.status, "under_review"));
+      const [approvedCount] = await db.select({ count: count() })
+        .from(projects)
+        .where(eq(projects.status, "approved"));
+      const [usersCount] = await db.select({ count: count() }).from(users);
+      
       return {
-        totalProjects: this.projects.size,
-        inReview: Array.from(this.projects.values()).filter(p => p.status === "under_review").length,
-        approved: Array.from(this.projects.values()).filter(p => p.status === "approved").length,
-        collaborators: this.users.size
+        totalProjects: totalCount?.count || 0,
+        inReview: inReviewCount?.count || 0,
+        approved: approvedCount?.count || 0,
+        collaborators: usersCount?.count || 0
       };
     }
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
