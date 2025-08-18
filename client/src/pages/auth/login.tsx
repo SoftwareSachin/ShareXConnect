@@ -615,6 +615,24 @@ export default function Login() {
                   </form>
                 </Form>
               )}
+
+              {/* Professional Footer Branding */}
+              <div className="mt-8 pt-6 border-t border-slate-200/30 dark:border-slate-700/30">
+                <div className="text-center space-y-2">
+                  <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                    © 2025 ShareXConnect. All rights reserved.
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-500">
+                    Designed and developed by{" "}
+                    <span className="font-semibold text-blue-600 dark:text-blue-400">
+                      Aptivon Solution
+                    </span>
+                    <span className="italic text-slate-400 dark:text-slate-500 ml-1">
+                      (Building Trust...)
+                    </span>
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>

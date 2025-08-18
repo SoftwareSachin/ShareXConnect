@@ -66,7 +66,7 @@ export default function Register() {
             <UserCheck className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-slate-900 mb-2">Create your account</h1>
-          <p className="text-slate-600">Join ShareX to start managing your academic projects</p>
+          <p className="text-slate-600">Join ShareXConnect to start managing your academic projects</p>
         </div>
 
         <Card className="border-0 shadow-xl">
@@ -344,6 +344,24 @@ export default function Register() {
             </ul>
           </CardContent>
         </Card>
+
+        {/* Professional Footer Branding */}
+        <div className="mt-8 pt-6 border-t border-slate-200/50">
+          <div className="text-center space-y-2">
+            <p className="text-xs font-medium text-slate-600">
+              © 2025 ShareXConnect. All rights reserved.
+            </p>
+            <p className="text-xs text-slate-500">
+              Designed and developed by{" "}
+              <span className="font-semibold text-blue-600">
+                Aptivon Solution
+              </span>
+              <span className="italic text-slate-400 ml-1">
+                (Building Trust...)
+              </span>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
