@@ -1,0 +1,186 @@
+# ShareX - Academic Project Platform
+
+## Project Overview
+
+ShareX is a comprehensive academic platform for student project management with multi-role authentication, faculty review workflows, and project collaboration features. The platform enables students to upload and manage academic projects, collaborate with peers, and receive feedback from faculty members through a structured review system.
+
+## Project Architecture
+
+### Backend (Node.js + Express + TypeScript)
+- **Server Framework**: Express.js with TypeScript
+- **Authentication**: JWT-based authentication with bcryptjs for password hashing
+- **Storage**: In-memory storage implementation (MemStorage) with interface for future database integration
+- **File Uploads**: Multer for handling file uploads
+- **API Structure**: RESTful API with versioned endpoints
+
+### Frontend (React + TypeScript + Vite)
+- **Framework**: React 18 with TypeScript
+- **Routing**: Wouter for client-side routing
+- **State Management**: Zustand for global state management
+- **UI Components**: Custom shadcn/ui-inspired components with Tailwind CSS
+- **Data Fetching**: TanStack Query (React Query) for server state management
+- **Forms**: React Hook Form with Zod validation
+
+### Key Features Implemented
+1. **Multi-Role Authentication**
+   - Student, Faculty, and College Admin roles
+   - Role-based access control and permissions
+   - Secure JWT token-based authentication
+
+2. **Project Management**
+   - Create, read, update, delete projects
+   - Project visibility settings (private, institution, public)
+   - Project status tracking (draft, submitted, under review, approved)
+   - Tag and tech stack management
+
+3. **Collaboration Features**
+   - Project contributors system
+   - Star/unstar projects
+   - Comment system for discussions
+   - Issue tracking
+
+4. **Faculty Review System**
+   - Assignment of projects to faculty for review
+   - Grade assignment and feedback
+   - Review status tracking
+   - Faculty dashboard for managing assignments
+
+5. **Discovery and Search**
+   - Project search with filters
+   - Browse projects by visibility, status, department
+   - Dashboard with project statistics
+
+## File Structure
+
+```
+├── server/
+│   ├── index.ts          # Express server setup
+│   ├── routes.ts         # API routes and handlers
+│   └── storage.ts        # In-memory storage implementation
+├── client/
+│   ├── src/
+│   │   ├── components/   # Reusable UI components
+│   │   ├── pages/        # Application pages
+│   │   ├── lib/          # Utilities and configurations
+│   │   └── hooks/        # Custom React hooks
+│   └── index.html        # Entry HTML file
+├── shared/
+│   └── schema.ts         # Shared TypeScript types and validation schemas
+└── uploads/              # File upload directory
+```
+
+## User Roles and Permissions
+
+### Student
+- Create and manage own projects
+- Invite contributors to projects
+- Assign projects to faculty for review
+- Comment on projects and issues
+- Star projects for bookmarking
+
+### Faculty
+- Review assigned student projects
+- Provide grades and feedback
+- Comment on projects
+- View projects within their institution
+
+### College Admin
+- Manage users within their institution
+- Override visibility settings for institutional projects
+- View all projects within their college
+
+## API Endpoints
+
+### Authentication
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `GET /api/auth/me` - Get current user profile
+
+### Projects
+- `POST /api/projects` - Create new project
+- `GET /api/projects` - List projects with filters
+- `GET /api/projects/:id` - Get specific project
+- `PATCH /api/projects/:id` - Update project
+- `DELETE /api/projects/:id` - Delete project
+
+### Faculty Review System
+- `POST /api/projects/:id/assign` - Assign project to faculty
+- `GET /api/faculty/assignments` - Get faculty assignments
+- `POST /api/assignments/:id/review` - Submit project review
+
+### Collaboration
+- `POST /api/projects/:id/star` - Star project
+- `DELETE /api/projects/:id/star` - Unstar project
+- `POST /api/comments` - Add comment
+- `GET /api/comments` - Get comments
+
+## Recent Changes
+
+### December 2024 - Initial Implementation
+- Complete project setup with TypeScript, React, and Express
+- Implemented all core authentication and project management features
+- Created professional, modern UI with Tailwind CSS
+- Established comprehensive role-based access control system
+- Built faculty review workflow with grading system
+- Implemented project collaboration features (stars, comments, contributors)
+- Created responsive dashboard interfaces for all user roles
+
+## User Preferences
+
+No specific user preferences recorded yet.
+
+## Tech Stack
+
+### Backend
+- Node.js
+- Express.js
+- TypeScript
+- JWT (jsonwebtoken)
+- bcryptjs
+- Multer
+- Zod (validation)
+
+### Frontend
+- React 18
+- TypeScript
+- Vite
+- Tailwind CSS
+- Wouter (routing)
+- TanStack Query
+- Zustand
+- React Hook Form
+- Lucide React (icons)
+
+### Development Tools
+- Nodemon
+- Concurrently
+- ESLint
+- PostCSS
+- Autoprefixer
+
+## Development Workflow
+
+The project uses a development setup that runs both frontend and backend concurrently:
+- Backend server runs on port 5000
+- Frontend development server runs on port 3000
+- Vite proxy configuration handles API requests
+
+## Security Features
+
+- JWT-based authentication with secure token handling
+- Password hashing with bcryptjs
+- Role-based access control for all endpoints
+- Input validation using Zod schemas
+- CORS configuration for cross-origin requests
+
+## Future Enhancements
+
+Potential features for future development:
+- Database integration (PostgreSQL/SQLite)
+- File upload to cloud storage (AWS S3, etc.)
+- Real-time notifications
+- Advanced project analytics
+- Integration with external version control systems
+- Mobile application development
+- Advanced search with elasticsearch
+- Export functionality for project reports
