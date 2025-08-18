@@ -103,11 +103,14 @@ export default function Login() {
         <div className="hidden lg:flex lg:flex-1 lg:flex-col lg:justify-center lg:px-12 xl:px-16">
           <div className="max-w-md mx-auto">
             {/* Logo */}
-            <div className="flex items-center gap-3 mb-16">
-              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl flex items-center justify-center">
-                <GraduationCap className="w-6 h-6 text-slate-700 dark:text-slate-300" />
+            <div className="flex items-center gap-4 mb-16">
+              <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 backdrop-blur-sm border border-white/20 rounded-2xl flex items-center justify-center shadow-lg">
+                <GraduationCap className="w-7 h-7 text-white" />
               </div>
-              <h1 className="text-2xl font-bold text-slate-800 dark:text-white">ShareX</h1>
+              <div className="space-y-1">
+                <h1 className="text-3xl font-bold tracking-tight text-slate-800 dark:text-white">ShareXConnect</h1>
+                <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Academic Excellence Platform</p>
+              </div>
             </div>
 
             {/* Features */}
@@ -150,23 +153,23 @@ export default function Login() {
           <div className="mx-auto w-full max-w-md">
             {/* Mobile Logo */}
             <div className="flex lg:hidden items-center justify-center gap-3 mb-8">
-              <div className="w-10 h-10 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl flex items-center justify-center">
-                <GraduationCap className="w-5 h-5 text-slate-700 dark:text-slate-300" />
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 backdrop-blur-sm border border-white/20 rounded-xl flex items-center justify-center shadow-lg">
+                <GraduationCap className="w-6 h-6 text-white" />
               </div>
-              <h1 className="text-2xl font-bold text-slate-800 dark:text-white">ShareX</h1>
+              <h1 className="text-2xl font-bold tracking-tight text-slate-800 dark:text-white">ShareXConnect</h1>
             </div>
 
             {/* Main Auth Card */}
             <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-2xl border border-white/30 dark:border-slate-700/30 rounded-3xl p-10 shadow-2xl ring-1 ring-black/5 dark:ring-white/5">
-              <div className="text-center mb-10">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl mb-4 shadow-lg">
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl mb-6 shadow-lg">
                   <GraduationCap className="w-8 h-8 text-white" />
                 </div>
-                <h2 className="text-3xl font-bold text-slate-800 dark:text-white mb-3">Welcome to ShareX</h2>
-                <p className="text-slate-600 dark:text-slate-400 text-lg">Your Academic Excellence Platform</p>
+                <h2 className="text-3xl font-bold tracking-tight text-slate-800 dark:text-white mb-2">Welcome to ShareXConnect</h2>
+                <p className="text-slate-600 dark:text-slate-400 text-base font-medium leading-relaxed">Your Academic Excellence Platform</p>
               </div>
               
-              <div className="flex bg-slate-100/60 dark:bg-slate-700/40 backdrop-blur-sm rounded-xl p-1.5 mb-10 border border-slate-200/40 dark:border-slate-600/40">
+              <div className="flex bg-slate-100/60 dark:bg-slate-700/40 backdrop-blur-sm rounded-xl p-1.5 mb-8 border border-slate-200/40 dark:border-slate-600/40">
                 <button
                   type="button"
                   onClick={() => setActiveTab("login")}
@@ -214,20 +217,20 @@ export default function Login() {
                         name="email"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2">
-                              <AtSign className="w-4 h-4 text-blue-600" />
+                            <FormLabel className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2.5">
+                              <Mail className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                               Email Address
                             </FormLabel>
                             <FormControl>
                               <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                                  <Mail className="h-5 w-5 text-slate-400 dark:text-slate-500" />
+                                  <Mail className="h-4.5 w-4.5 text-slate-400 dark:text-slate-500" />
                                 </div>
                                 <Input
                                   {...field}
                                   type="email"
                                   placeholder="student@university.edu"
-                                  className="pl-12 pr-4 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl h-14 text-base font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
+                                  className="pl-12 pr-4 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl h-12 text-base font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
                                   disabled={loginMutation.isPending}
                                 />
                               </div>
@@ -242,20 +245,20 @@ export default function Login() {
                         name="password"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2">
-                              <KeyRound className="w-4 h-4 text-blue-600" />
+                            <FormLabel className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2.5">
+                              <Lock className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                               Password
                             </FormLabel>
                             <FormControl>
                               <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                                  <Lock className="h-5 w-5 text-slate-400 dark:text-slate-500" />
+                                  <Lock className="h-4.5 w-4.5 text-slate-400 dark:text-slate-500" />
                                 </div>
                                 <Input
                                   {...field}
                                   type={showPassword ? "text" : "password"}
                                   placeholder="Enter your secure password"
-                                  className="pl-12 pr-12 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl h-14 text-base font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
+                                  className="pl-12 pr-12 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl h-12 text-base font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
                                   disabled={loginMutation.isPending}
                                 />
                                 <button
@@ -264,9 +267,9 @@ export default function Login() {
                                   onClick={() => setShowPassword(!showPassword)}
                                 >
                                   {showPassword ? (
-                                    <EyeOff className="h-5 w-5 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300" />
+                                    <EyeOff className="h-4.5 w-4.5 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300" />
                                   ) : (
-                                    <Eye className="h-5 w-5 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300" />
+                                    <Eye className="h-4.5 w-4.5 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300" />
                                   )}
                                 </button>
                               </div>
@@ -319,7 +322,7 @@ export default function Login() {
                       ) : (
                         <div className="flex items-center justify-center gap-2">
                           <UserCheck className="w-5 h-5" />
-                          Sign In to ShareX
+                          Sign In to ShareXConnect
                         </div>
                       )}
                     </Button>
@@ -330,7 +333,7 @@ export default function Login() {
                       </div>
                       <div className="relative flex justify-center text-sm">
                         <span className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm px-4 py-1 text-slate-600 dark:text-slate-400 rounded-full border border-slate-200/50 dark:border-slate-600/50">
-                          New to ShareX?
+                          New to ShareXConnect?
                         </span>
                       </div>
                     </div>
@@ -366,17 +369,22 @@ export default function Login() {
                         name="firstName"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2">
-                              <User className="w-4 h-4 text-blue-600" />
+                            <FormLabel className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2.5">
+                              <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                               First Name
                             </FormLabel>
                             <FormControl>
-                              <Input
-                                {...field}
-                                placeholder="John"
-                                className="bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl h-12 text-base font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
-                                disabled={registerMutation.isPending}
-                              />
+                              <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                                  <User className="h-4 w-4 text-slate-400 dark:text-slate-500" />
+                                </div>
+                                <Input
+                                  {...field}
+                                  placeholder="John"
+                                  className="pl-11 pr-4 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl h-12 text-base font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
+                                  disabled={registerMutation.isPending}
+                                />
+                              </div>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -388,17 +396,22 @@ export default function Login() {
                         name="lastName"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2">
-                              <User className="w-4 h-4 text-blue-600" />
+                            <FormLabel className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2.5">
+                              <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                               Last Name
                             </FormLabel>
                             <FormControl>
-                              <Input
-                                {...field}
-                                placeholder="Smith"
-                                className="bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl h-12 text-base font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
-                                disabled={registerMutation.isPending}
-                              />
+                              <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                                  <User className="h-4 w-4 text-slate-400 dark:text-slate-500" />
+                                </div>
+                                <Input
+                                  {...field}
+                                  placeholder="Smith"
+                                  className="pl-11 pr-4 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl h-12 text-base font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
+                                  disabled={registerMutation.isPending}
+                                />
+                              </div>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -411,17 +424,22 @@ export default function Login() {
                       name="username"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2">
-                            <AtSign className="w-4 h-4 text-blue-600" />
+                          <FormLabel className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2.5">
+                            <AtSign className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                             Username
                           </FormLabel>
                           <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="johnsmith"
-                              className="bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl h-12 text-base font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
-                              disabled={registerMutation.isPending}
-                            />
+                            <div className="relative">
+                              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                                <AtSign className="h-4 w-4 text-slate-400 dark:text-slate-500" />
+                              </div>
+                              <Input
+                                {...field}
+                                placeholder="johnsmith"
+                                className="pl-11 pr-4 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl h-12 text-base font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
+                                disabled={registerMutation.isPending}
+                              />
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -433,20 +451,20 @@ export default function Login() {
                       name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2">
-                            <Mail className="w-4 h-4 text-blue-600" />
+                          <FormLabel className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2.5">
+                            <Mail className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                             Email Address
                           </FormLabel>
                           <FormControl>
                             <div className="relative">
                               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                                <Mail className="h-5 w-5 text-slate-400 dark:text-slate-500" />
+                                <Mail className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                               </div>
                               <Input
                                 {...field}
                                 type="email"
                                 placeholder="john.smith@university.edu"
-                                className="pl-12 pr-4 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl h-12 text-base font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
+                                className="pl-11 pr-4 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl h-12 text-base font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
                                 disabled={registerMutation.isPending}
                               />
                             </div>
@@ -461,17 +479,22 @@ export default function Login() {
                       name="institution"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2">
-                            <Building2 className="w-4 h-4 text-blue-600" />
+                          <FormLabel className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2.5">
+                            <Building2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                             Institution
                           </FormLabel>
                           <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="University of Excellence"
-                              className="bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl h-12 text-base font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
-                              disabled={registerMutation.isPending}
-                            />
+                            <div className="relative">
+                              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                                <Building2 className="h-4 w-4 text-slate-400 dark:text-slate-500" />
+                              </div>
+                              <Input
+                                {...field}
+                                placeholder="University of Excellence"
+                                className="pl-11 pr-4 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl h-12 text-base font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
+                                disabled={registerMutation.isPending}
+                              />
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -483,9 +506,9 @@ export default function Login() {
                       name="role"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2">
-                            <Shield className="w-4 h-4 text-blue-600" />
-                            Role
+                          <FormLabel className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2.5">
+                            <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                            Academic Role
                           </FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value} disabled={registerMutation.isPending}>
                             <FormControl>
@@ -524,20 +547,20 @@ export default function Login() {
                       name="password"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2">
-                            <KeyRound className="w-4 h-4 text-blue-600" />
+                          <FormLabel className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2.5">
+                            <Lock className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                             Password
                           </FormLabel>
                           <FormControl>
                             <div className="relative">
                               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                                <Lock className="h-5 w-5 text-slate-400 dark:text-slate-500" />
+                                <Lock className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                               </div>
                               <Input
                                 {...field}
                                 type={showPassword ? "text" : "password"}
                                 placeholder="Create a secure password"
-                                className="pl-12 pr-12 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl h-12 text-base font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
+                                className="pl-11 pr-12 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl h-12 text-base font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
                                 disabled={registerMutation.isPending}
                               />
                               <button
@@ -546,9 +569,9 @@ export default function Login() {
                                 onClick={() => setShowPassword(!showPassword)}
                               >
                                 {showPassword ? (
-                                  <EyeOff className="h-5 w-5 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300" />
+                                  <EyeOff className="h-4.5 w-4.5 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300" />
                                 ) : (
-                                  <Eye className="h-5 w-5 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300" />
+                                  <Eye className="h-4.5 w-4.5 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300" />
                                 )}
                               </button>
                             </div>
@@ -572,7 +595,7 @@ export default function Login() {
                       ) : (
                         <div className="flex items-center justify-center gap-2">
                           <User className="w-5 h-5" />
-                          Create ShareX Account
+                          Create ShareXConnect Account
                         </div>
                       )}
                     </Button>
