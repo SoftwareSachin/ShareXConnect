@@ -50,7 +50,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
   app.post("/api/auth/register", async (req, res) => {
     try {
-      const userData = registerSchema.parse(req.body);
+      const { captchaVerified, confirmPassword, ...userData } = registerSchema.parse(req.body);
       
       // Check if email already exists
       const existingUser = await storage.getUserByEmail(userData.email);
@@ -79,7 +79,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/auth/login", async (req, res) => {
     try {
-      const { email, password } = loginSchema.parse(req.body);
+      const { email, password, captchaVerified } = loginSchema.parse(req.body);
       
       const user = await storage.getUserByEmail(email);
       if (!user) {

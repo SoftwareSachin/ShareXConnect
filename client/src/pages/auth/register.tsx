@@ -9,7 +9,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Eye, EyeOff, User, Mail, Lock, Building2, UserCheck } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Eye, EyeOff, User, Mail, Lock, Building2, UserCheck, Shield } from "lucide-react";
 import { registerSchema } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
@@ -33,12 +34,13 @@ export default function Register() {
       lastName: "",
       role: "STUDENT" as const,
       institution: "",
+      captchaVerified: false,
     },
   });
 
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterFormData) => {
-      const { confirmPassword, ...registerData } = data;
+      const { confirmPassword, captchaVerified, ...registerData } = data;
       const response = await apiRequest("POST", "/api/auth/register", registerData);
       return await response.json();
     },
@@ -278,6 +280,31 @@ export default function Register() {
                           </button>
                         </div>
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Captcha Verification */}
+                <FormField
+                  control={form.control}
+                  name="captchaVerified"
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="flex items-center space-x-3">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            className="data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
+                            data-testid="checkbox-captcha-register-page"
+                          />
+                        </FormControl>
+                        <FormLabel className="text-sm font-medium text-slate-700 cursor-pointer select-none flex items-center gap-2">
+                          <Shield className="w-4 h-4 text-green-600" />
+                          I am not a robot
+                        </FormLabel>
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}

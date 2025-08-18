@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Checkbox } from "@/components/ui/checkbox";
 import { GraduationCap, BookOpen, Users, Shield, Mail, Lock, Eye, EyeOff, User, Building2, UserCheck, AtSign, KeyRound } from "lucide-react";
 import { loginSchema, registerSchema } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
@@ -30,6 +31,7 @@ export default function Login() {
     defaultValues: {
       email: "",
       password: "",
+      captchaVerified: false,
     },
   });
 
@@ -44,6 +46,7 @@ export default function Login() {
       lastName: "",
       role: "STUDENT",
       institution: "",
+      captchaVerified: false,
     },
   });
 
@@ -306,6 +309,31 @@ export default function Login() {
                           </button>
                         </div>
                       </div>
+
+                      {/* Captcha Verification */}
+                      <FormField
+                        control={loginForm.control}
+                        name="captchaVerified"
+                        render={({ field }) => (
+                          <FormItem>
+                            <div className="flex items-center space-x-3 pt-4">
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                  className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                                  data-testid="checkbox-captcha-login"
+                                />
+                              </FormControl>
+                              <FormLabel className="text-sm font-medium text-slate-700 dark:text-slate-300 cursor-pointer select-none flex items-center gap-2">
+                                <Shield className="w-4 h-4 text-green-600 dark:text-green-400" />
+                                I am not a robot
+                              </FormLabel>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
 
                     <Button
@@ -576,6 +604,70 @@ export default function Login() {
                               </button>
                             </div>
                           </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={registerForm.control}
+                      name="confirmPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2.5">
+                            <KeyRound className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                            Confirm Password
+                          </FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                                <KeyRound className="h-4 w-4 text-slate-400 dark:text-slate-500" />
+                              </div>
+                              <Input
+                                {...field}
+                                type={showConfirmPassword ? "text" : "password"}
+                                placeholder="Confirm your password"
+                                className="pl-11 pr-12 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl h-12 text-base font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
+                                disabled={registerMutation.isPending}
+                              />
+                              <button
+                                type="button"
+                                className="absolute inset-y-0 right-0 pr-4 flex items-center z-10 hover:bg-slate-100/50 dark:hover:bg-slate-600/50 rounded-r-xl transition-colors duration-200"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                              >
+                                {showConfirmPassword ? (
+                                  <EyeOff className="h-4.5 w-4.5 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300" />
+                                ) : (
+                                  <Eye className="h-4.5 w-4.5 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300" />
+                                )}
+                              </button>
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Captcha Verification */}
+                    <FormField
+                      control={registerForm.control}
+                      name="captchaVerified"
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className="flex items-center space-x-3 pt-4">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                                className="data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
+                                data-testid="checkbox-captcha-register"
+                              />
+                            </FormControl>
+                            <FormLabel className="text-sm font-medium text-slate-700 dark:text-slate-300 cursor-pointer select-none flex items-center gap-2">
+                              <Shield className="w-4 h-4 text-green-600 dark:text-green-400" />
+                              I am not a robot
+                            </FormLabel>
+                          </div>
                           <FormMessage />
                         </FormItem>
                       )}
