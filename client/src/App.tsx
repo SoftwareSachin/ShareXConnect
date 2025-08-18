@@ -7,7 +7,8 @@ import { useAuthStore } from "@/store/auth-store";
 import ProtectedRoute from "@/components/auth/protected-route";
 
 // Pages
-import Login from "@/pages/login";
+import Login from "@/pages/auth/login";
+import Register from "@/pages/auth/register";
 import Dashboard from "@/pages/dashboard";
 import Projects from "@/pages/projects";
 import Discover from "@/pages/discover";
@@ -20,12 +21,16 @@ function Router() {
 
   return (
     <Switch>
-      <Route path="/login">
+      <Route path="/auth/login">
         {isAuthenticated ? <Redirect to="/dashboard" /> : <Login />}
       </Route>
       
+      <Route path="/auth/register">
+        {isAuthenticated ? <Redirect to="/dashboard" /> : <Register />}
+      </Route>
+      
       <Route path="/">
-        {isAuthenticated ? <Redirect to="/dashboard" /> : <Redirect to="/login" />}
+        {isAuthenticated ? <Redirect to="/dashboard" /> : <Redirect to="/auth/login" />}
       </Route>
 
       <ProtectedRoute path="/dashboard" component={Dashboard} />

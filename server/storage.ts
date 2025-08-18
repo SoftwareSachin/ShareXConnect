@@ -1,9 +1,7 @@
-import { type User, type InsertUser, type Project, type InsertProject, type Comment, type InsertComment, type FacultyAssignment, type InsertFacultyAssignment, type ProjectWithDetails, type DashboardStats, type ProjectCollaborator, type ProjectStar, type ProjectFile, users, projects, comments, facultyAssignments, projectCollaborators, projectStars, projectFiles } from "@shared/schema";
-import { randomUUID } from "crypto";
+import { type User, type InsertUser, type Project, type InsertProject, type Comment, type InsertComment, type FacultyAssignment, type ProjectWithDetails, type DashboardStats, type ProjectCollaborator, type ProjectStar, type ProjectFile } from "@shared/schema";
 import bcrypt from "bcryptjs";
 import { db } from "./db";
-import { eq, and, like, or, desc, count } from "drizzle-orm";
-import { alias } from "drizzle-orm/pg-core";
+import type { Role, Visibility, ProjectStatus, ReviewStatus } from "@prisma/client";
 
 export interface IStorage {
   // User operations
@@ -56,33 +54,64 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  // User operations
+  // User operations with Prisma
   async getUser(id: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user;
+    try {
+      return await db.user.findUnique({
+        where: { id }
+      }) || undefined;
+    } catch (error) {
+      console.error('Error getting user:', error);
+      return undefined;
+    }
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.email, email));
-    return user;
+    try {
+      return await db.user.findUnique({
+        where: { email }
+      }) || undefined;
+    } catch (error) {
+      console.error('Error getting user by email:', error);
+      return undefined;
+    }
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user;
+    try {
+      return await db.user.findUnique({
+        where: { username }
+      }) || undefined;
+    } catch (error) {
+      console.error('Error getting user by username:', error);
+      return undefined;
+    }
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const hashedPassword = await this.hashPassword(insertUser.password);
-    const [user] = await db.insert(users).values({
-      ...insertUser,
-      password: hashedPassword
-    }).returning();
-    return user;
+    try {
+      const hashedPassword = await this.hashPassword(insertUser.password);
+      return await db.user.create({
+        data: {
+          ...insertUser,
+          password: hashedPassword
+        }
+      });
+    } catch (error) {
+      console.error('Error creating user:', error);
+      throw error;
+    }
   }
 
   async getUsersByInstitution(institution: string): Promise<User[]> {
-    return await db.select().from(users).where(eq(users.institution, institution));
+    try {
+      return await db.user.findMany({
+        where: { institution }
+      });
+    } catch (error) {
+      console.error('Error getting users by institution:', error);
+      return [];
+    }
   }
 
   async hashPassword(password: string): Promise<string> {
@@ -94,50 +123,53 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getProject(id: string): Promise<Project | undefined> {
-    const [project] = await db.select().from(projects).where(eq(projects.id, id));
-    return project;
+    try {
+      return await db.project.findUnique({
+        where: { id }
+      }) || undefined;
+    } catch (error) {
+      console.error('Error getting project:', error);
+      return undefined;
+    }
   }
 
   async getProjectWithDetails(id: string, userId?: string): Promise<ProjectWithDetails | undefined> {
-    const project = await this.getProject(id);
-    if (!project) return undefined;
+    try {
+      const project = await db.project.findUnique({
+        where: { id },
+        include: {
+          owner: true,
+          collaborators: {
+            include: {
+              user: true
+            }
+          },
+          stars: true,
+          comments: true,
+          facultyAssignments: true
+        }
+      });
 
-    const owner = await this.getUser(project.ownerId);
-    if (!owner) return undefined;
+      if (!project) return undefined;
 
-    const collaborators = await this.getProjectCollaborators(id);
-    
-    const [starCountResult] = await db.select({ count: count() })
-      .from(projectStars)
-      .where(eq(projectStars.projectId, id));
-    const starCount = starCountResult?.count || 0;
+      const collaborators = project.collaborators.map(c => c.user);
+      const starCount = project.stars.length;
+      const commentCount = project.comments.length;
+      const isStarred = userId ? project.stars.some(star => star.userId === userId) : false;
+      const assignment = project.facultyAssignments[0];
 
-    const [commentCountResult] = await db.select({ count: count() })
-      .from(comments)
-      .where(eq(comments.projectId, id));
-    const commentCount = commentCountResult?.count || 0;
-    
-    let isStarred = false;
-    if (userId) {
-      const [star] = await db.select()
-        .from(projectStars)
-        .where(and(eq(projectStars.projectId, id), eq(projectStars.userId, userId)));
-      isStarred = !!star;
+      return {
+        ...project,
+        collaborators,
+        starCount,
+        commentCount,
+        isStarred,
+        assignment
+      };
+    } catch (error) {
+      console.error('Error getting project with details:', error);
+      return undefined;
     }
-
-    const [assignment] = await db.select()
-      .from(facultyAssignments)
-      .where(eq(facultyAssignments.projectId, id));
-
-    return {
-      ...project,
-      owner,
-      collaborators,
-      starCount,
-      commentCount,
-      isStarred,
-      assignment
-    };
   }
 
   async getProjects(filters?: { 
@@ -148,236 +180,410 @@ export class DatabaseStorage implements IStorage {
     search?: string;
     institution?: string;
   }): Promise<ProjectWithDetails[]> {
-    let query = db.select().from(projects).$dynamic();
+    try {
+      const where: any = {};
 
-    if (filters) {
-      if (filters.ownerId) {
-        query = query.where(eq(projects.ownerId, filters.ownerId));
+      if (filters) {
+        if (filters.ownerId) {
+          where.ownerId = filters.ownerId;
+        }
+        if (filters.visibility) {
+          where.visibility = filters.visibility as Visibility;
+        }
+        if (filters.status) {
+          where.status = filters.status as ProjectStatus;
+        }
+        if (filters.category) {
+          where.category = filters.category;
+        }
+        if (filters.search) {
+          where.OR = [
+            { title: { contains: filters.search, mode: 'insensitive' } },
+            { description: { contains: filters.search, mode: 'insensitive' } }
+          ];
+        }
+        if (filters.institution) {
+          where.owner = {
+            institution: filters.institution
+          };
+        }
       }
-      if (filters.visibility) {
-        query = query.where(eq(projects.visibility, filters.visibility));
-      }
-      if (filters.status) {
-        query = query.where(eq(projects.status, filters.status));
-      }
-      if (filters.category) {
-        query = query.where(eq(projects.category, filters.category));
-      }
-      if (filters.search) {
-        const search = `%${filters.search.toLowerCase()}%`;
-        query = query.where(
-          or(
-            like(projects.title, search),
-            like(projects.description, search)
-          )
-        );
-      }
+
+      const projects = await db.project.findMany({
+        where,
+        include: {
+          owner: true,
+          collaborators: {
+            include: {
+              user: true
+            }
+          },
+          stars: true,
+          comments: true,
+          facultyAssignments: true
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      });
+
+      return projects.map(project => ({
+        ...project,
+        collaborators: project.collaborators.map(c => c.user),
+        starCount: project.stars.length,
+        commentCount: project.comments.length,
+        isStarred: false, // This will be set based on current user context
+        assignment: project.facultyAssignments[0]
+      }));
+    } catch (error) {
+      console.error('Error getting projects:', error);
+      return [];
     }
-
-    const projectsList = await query.orderBy(desc(projects.createdAt));
-
-    const projectDetails = await Promise.all(
-      projectsList.map(p => this.getProjectWithDetails(p.id))
-    );
-
-    return projectDetails.filter(p => p !== undefined) as ProjectWithDetails[];
   }
 
   async createProject(project: InsertProject): Promise<Project> {
-    const [newProject] = await db.insert(projects).values(project).returning();
-    return newProject;
+    try {
+      return await db.project.create({
+        data: {
+          ...project,
+          visibility: project.visibility as Visibility,
+          status: project.status as ProjectStatus,
+        }
+      });
+    } catch (error) {
+      console.error('Error creating project:', error);
+      throw error;
+    }
   }
 
   async updateProject(id: string, updates: Partial<InsertProject>): Promise<Project | undefined> {
-    const [updatedProject] = await db.update(projects)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(projects.id, id))
-      .returning();
-    return updatedProject;
+    try {
+      const updateData: any = { ...updates };
+      if (updates.visibility) {
+        updateData.visibility = updates.visibility as Visibility;
+      }
+      if (updates.status) {
+        updateData.status = updates.status as ProjectStatus;
+      }
+      
+      return await db.project.update({
+        where: { id },
+        data: updateData
+      });
+    } catch (error) {
+      console.error('Error updating project:', error);
+      return undefined;
+    }
   }
 
   async deleteProject(id: string): Promise<boolean> {
-    const result = await db.delete(projects).where(eq(projects.id, id));
-    return result.rowCount > 0;
+    try {
+      await db.project.delete({
+        where: { id }
+      });
+      return true;
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      return false;
+    }
   }
 
   async addCollaborator(projectId: string, userId: string): Promise<void> {
-    await db.insert(projectCollaborators).values({
-      projectId,
-      userId
-    });
+    try {
+      await db.projectCollaborator.create({
+        data: {
+          projectId,
+          userId
+        }
+      });
+    } catch (error) {
+      console.error('Error adding collaborator:', error);
+      throw error;
+    }
   }
 
   async removeCollaborator(projectId: string, userId: string): Promise<void> {
-    await db.delete(projectCollaborators)
-      .where(and(
-        eq(projectCollaborators.projectId, projectId),
-        eq(projectCollaborators.userId, userId)
-      ));
+    try {
+      await db.projectCollaborator.deleteMany({
+        where: {
+          projectId,
+          userId
+        }
+      });
+    } catch (error) {
+      console.error('Error removing collaborator:', error);
+      throw error;
+    }
   }
 
   async getProjectCollaborators(projectId: string): Promise<User[]> {
-    const collaborators = await db.select({ user: users })
-      .from(projectCollaborators)
-      .innerJoin(users, eq(projectCollaborators.userId, users.id))
-      .where(eq(projectCollaborators.projectId, projectId));
-    
-    return collaborators.map(c => c.user);
+    try {
+      const collaborators = await db.projectCollaborator.findMany({
+        where: { projectId },
+        include: { user: true }
+      });
+      
+      return collaborators.map(c => c.user);
+    } catch (error) {
+      console.error('Error getting project collaborators:', error);
+      return [];
+    }
   }
 
   async starProject(projectId: string, userId: string): Promise<void> {
-    // Check if already starred
-    const [existing] = await db.select()
-      .from(projectStars)
-      .where(and(
-        eq(projectStars.projectId, projectId),
-        eq(projectStars.userId, userId)
-      ));
-    
-    if (!existing) {
-      await db.insert(projectStars).values({
-        projectId,
-        userId
+    try {
+      // Check if already starred
+      const existing = await db.projectStar.findFirst({
+        where: {
+          projectId,
+          userId
+        }
       });
+      
+      if (!existing) {
+        await db.projectStar.create({
+          data: {
+            projectId,
+            userId
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error starring project:', error);
+      throw error;
     }
   }
 
   async unstarProject(projectId: string, userId: string): Promise<void> {
-    await db.delete(projectStars)
-      .where(and(
-        eq(projectStars.projectId, projectId),
-        eq(projectStars.userId, userId)
-      ));
+    try {
+      await db.projectStar.deleteMany({
+        where: {
+          projectId,
+          userId
+        }
+      });
+    } catch (error) {
+      console.error('Error unstarring project:', error);
+      throw error;
+    }
   }
 
   async getStarredProjects(userId: string): Promise<ProjectWithDetails[]> {
-    const starredProjects = await db.select({ projectId: projectStars.projectId })
-      .from(projectStars)
-      .where(eq(projectStars.userId, userId));
-    
-    const projects = await Promise.all(
-      starredProjects.map(star => this.getProjectWithDetails(star.projectId, userId))
-    );
-    
-    return projects.filter(p => p !== undefined) as ProjectWithDetails[];
+    try {
+      const starredProjects = await db.projectStar.findMany({
+        where: { userId },
+        include: {
+          project: {
+            include: {
+              owner: true,
+              collaborators: {
+                include: {
+                  user: true
+                }
+              },
+              stars: true,
+              comments: true,
+              facultyAssignments: true
+            }
+          }
+        }
+      });
+
+      return starredProjects.map(star => ({
+        ...star.project,
+        collaborators: star.project.collaborators.map(c => c.user),
+        starCount: star.project.stars.length,
+        commentCount: star.project.comments.length,
+        isStarred: true,
+        assignment: star.project.facultyAssignments[0]
+      }));
+    } catch (error) {
+      console.error('Error getting starred projects:', error);
+      return [];
+    }
   }
 
   async getComments(projectId: string): Promise<(Comment & { user: User })[]> {
-    const commentsWithUsers = await db.select({ 
-      comment: comments,
-      user: users 
-    })
-      .from(comments)
-      .innerJoin(users, eq(comments.userId, users.id))
-      .where(eq(comments.projectId, projectId))
-      .orderBy(desc(comments.createdAt));
-    
-    return commentsWithUsers.map(row => ({ ...row.comment, user: row.user }));
+    try {
+      const comments = await db.comment.findMany({
+        where: { projectId },
+        include: { user: true },
+        orderBy: { createdAt: 'desc' }
+      });
+      
+      return comments as (Comment & { user: User })[];
+    } catch (error) {
+      console.error('Error getting comments:', error);
+      return [];
+    }
   }
 
   async createComment(comment: InsertComment): Promise<Comment> {
-    const [newComment] = await db.insert(comments).values(comment).returning();
-    return newComment;
+    try {
+      return await db.comment.create({
+        data: comment
+      });
+    } catch (error) {
+      console.error('Error creating comment:', error);
+      throw error;
+    }
   }
 
   async assignProjectToFaculty(projectId: string, facultyId: string): Promise<FacultyAssignment> {
-    const [assignment] = await db.insert(facultyAssignments).values({
-      projectId,
-      facultyId,
-      reviewStatus: "pending"
-    }).returning();
-    return assignment;
+    try {
+      return await db.facultyAssignment.create({
+        data: {
+          projectId,
+          facultyId,
+          reviewStatus: "PENDING"
+        }
+      });
+    } catch (error) {
+      console.error('Error assigning project to faculty:', error);
+      throw error;
+    }
   }
 
   async getFacultyAssignments(facultyId: string): Promise<(FacultyAssignment & { project: ProjectWithDetails })[]> {
-    const assignments = await db.select()
-      .from(facultyAssignments)
-      .where(eq(facultyAssignments.facultyId, facultyId));
-    
-    const assignmentsWithProjects = await Promise.all(
-      assignments.map(async assignment => {
-        const project = await this.getProjectWithDetails(assignment.projectId);
-        return project ? { ...assignment, project } : null;
-      })
-    );
-    
-    return assignmentsWithProjects.filter(a => a !== null) as (FacultyAssignment & { project: ProjectWithDetails })[];
+    try {
+      const assignments = await db.facultyAssignment.findMany({
+        where: { facultyId },
+        include: {
+          project: {
+            include: {
+              owner: true,
+              collaborators: {
+                include: {
+                  user: true
+                }
+              },
+              stars: true,
+              comments: true,
+              facultyAssignments: true
+            }
+          }
+        }
+      });
+      
+      return assignments.map(assignment => ({
+        ...assignment,
+        project: {
+          ...assignment.project,
+          collaborators: assignment.project.collaborators.map(c => c.user),
+          starCount: assignment.project.stars.length,
+          commentCount: assignment.project.comments.length,
+          isStarred: false,
+          assignment: assignment.project.facultyAssignments[0]
+        }
+      }));
+    } catch (error) {
+      console.error('Error getting faculty assignments:', error);
+      return [];
+    }
   }
 
   async submitReview(assignmentId: string, grade: string, feedback: string): Promise<FacultyAssignment | undefined> {
-    const [updatedAssignment] = await db.update(facultyAssignments)
-      .set({
-        grade,
-        feedback,
-        reviewStatus: "completed",
-        reviewedAt: new Date()
-      })
-      .where(eq(facultyAssignments.id, assignmentId))
-      .returning();
-    
-    return updatedAssignment;
+    try {
+      return await db.facultyAssignment.update({
+        where: { id: assignmentId },
+        data: {
+          grade,
+          feedback,
+          reviewStatus: "COMPLETED",
+          reviewedAt: new Date()
+        }
+      });
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      return undefined;
+    }
   }
 
   async getDashboardStats(userId: string, role: string): Promise<DashboardStats> {
-    if (role === "student") {
-      const [totalCount] = await db.select({ count: count() })
-        .from(projects)
-        .where(eq(projects.ownerId, userId));
-      
-      const [inReviewCount] = await db.select({ count: count() })
-        .from(projects)
-        .where(and(eq(projects.ownerId, userId), eq(projects.status, "under_review")));
-      
-      const [approvedCount] = await db.select({ count: count() })
-        .from(projects)
-        .where(and(eq(projects.ownerId, userId), eq(projects.status, "approved")));
-      
-      const [collaboratorsCount] = await db.select({ count: count() })
-        .from(projectCollaborators)
-        .innerJoin(projects, eq(projectCollaborators.projectId, projects.id))
-        .where(eq(projects.ownerId, userId));
-      
+    try {
+      if (role === "STUDENT") {
+        const totalCount = await db.project.count({
+          where: { ownerId: userId }
+        });
+        
+        const inReviewCount = await db.project.count({
+          where: { 
+            ownerId: userId, 
+            status: "UNDER_REVIEW" 
+          }
+        });
+        
+        const approvedCount = await db.project.count({
+          where: { 
+            ownerId: userId, 
+            status: "APPROVED" 
+          }
+        });
+        
+        const collaboratorsCount = await db.projectCollaborator.count({
+          where: {
+            project: {
+              ownerId: userId
+            }
+          }
+        });
+        
+        return {
+          totalProjects: totalCount,
+          inReview: inReviewCount,
+          approved: approvedCount,
+          collaborators: collaboratorsCount
+        };
+      } else if (role === "FACULTY") {
+        const totalCount = await db.facultyAssignment.count({
+          where: { facultyId: userId }
+        });
+        
+        const inReviewCount = await db.facultyAssignment.count({
+          where: { 
+            facultyId: userId, 
+            reviewStatus: "PENDING" 
+          }
+        });
+        
+        const approvedCount = await db.facultyAssignment.count({
+          where: { 
+            facultyId: userId, 
+            reviewStatus: "COMPLETED" 
+          }
+        });
+        
+        return {
+          totalProjects: totalCount,
+          inReview: inReviewCount,
+          approved: approvedCount,
+          collaborators: 0
+        };
+      } else {
+        // Admin stats - institution wide
+        const totalCount = await db.project.count();
+        const inReviewCount = await db.project.count({
+          where: { status: "UNDER_REVIEW" }
+        });
+        const approvedCount = await db.project.count({
+          where: { status: "APPROVED" }
+        });
+        const usersCount = await db.user.count();
+        
+        return {
+          totalProjects: totalCount,
+          inReview: inReviewCount,
+          approved: approvedCount,
+          collaborators: usersCount
+        };
+      }
+    } catch (error) {
+      console.error('Error getting dashboard stats:', error);
       return {
-        totalProjects: totalCount?.count || 0,
-        inReview: inReviewCount?.count || 0,
-        approved: approvedCount?.count || 0,
-        collaborators: collaboratorsCount?.count || 0
-      };
-    } else if (role === "faculty") {
-      const [totalCount] = await db.select({ count: count() })
-        .from(facultyAssignments)
-        .where(eq(facultyAssignments.facultyId, userId));
-      
-      const [inReviewCount] = await db.select({ count: count() })
-        .from(facultyAssignments)
-        .where(and(eq(facultyAssignments.facultyId, userId), eq(facultyAssignments.reviewStatus, "pending")));
-      
-      const [approvedCount] = await db.select({ count: count() })
-        .from(facultyAssignments)
-        .where(and(eq(facultyAssignments.facultyId, userId), eq(facultyAssignments.reviewStatus, "completed")));
-      
-      return {
-        totalProjects: totalCount?.count || 0,
-        inReview: inReviewCount?.count || 0,
-        approved: approvedCount?.count || 0,
+        totalProjects: 0,
+        inReview: 0,
+        approved: 0,
         collaborators: 0
-      };
-    } else {
-      // Admin stats - institution wide
-      const [totalCount] = await db.select({ count: count() }).from(projects);
-      const [inReviewCount] = await db.select({ count: count() })
-        .from(projects)
-        .where(eq(projects.status, "under_review"));
-      const [approvedCount] = await db.select({ count: count() })
-        .from(projects)
-        .where(eq(projects.status, "approved"));
-      const [usersCount] = await db.select({ count: count() }).from(users);
-      
-      return {
-        totalProjects: totalCount?.count || 0,
-        inReview: inReviewCount?.count || 0,
-        approved: approvedCount?.count || 0,
-        collaborators: usersCount?.count || 0
       };
     }
   }
