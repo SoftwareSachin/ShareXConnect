@@ -5,14 +5,39 @@ import { ProjectCard } from "@/components/project-card";
 import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
 import { CreateProjectModal } from "@/components/modals/create-project-modal";
+import { RoleProtectedComponent, usePermissions } from "@/components/RoleProtectedComponent";
 import { apiGet } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Plus, Shield } from "lucide-react";
 import type { ProjectWithDetails } from "@shared/schema";
 
 export default function Projects() {
+  const { canAccess, isStudent } = usePermissions();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
+
+  // Check if user can create projects
+  if (!canAccess('canCreateProject')) {
+    return (
+      <div className="flex h-screen">
+        <Sidebar />
+        <div className="flex-1 flex flex-col">
+          <Header />
+          <main className="flex-1 p-6">
+            <div className="text-center py-12">
+              <Shield className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <h2 className="text-2xl font-semibold mb-2">Access Restricted</h2>
+              <p className="text-muted-foreground">
+                Only students can create and manage projects.
+              </p>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   const { data: projects, isLoading } = useQuery<ProjectWithDetails[]>({
     queryKey: ["/api/projects", { my: "true", status: statusFilter !== "all" ? statusFilter : undefined, search: searchQuery || undefined }],
@@ -34,7 +59,7 @@ export default function Projects() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header
           title="My Projects"
-          description="Manage and track your academic projects"
+          description="Create, manage and collaborate on your academic projects"
           onCreateProject={() => setShowCreateModal(true)}
           onSearch={handleSearch}
         />
@@ -42,12 +67,19 @@ export default function Projects() {
         <main className="flex-1 overflow-y-auto p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-xl font-semibold text-gray-900">Projects</h3>
+              <h3 className="text-xl font-semibold text-gray-900">Your Projects</h3>
               <p className="text-muted-foreground">
-                {projects?.length || 0} project{projects?.length !== 1 ? 's' : ''}
+                {projects?.length || 0} project{projects?.length !== 1 ? 's' : ''} • Full project management access
               </p>
             </div>
             <div className="flex items-center space-x-3">
+              <RoleProtectedComponent permissions={['canCreateProject']}>
+                <Button onClick={() => setShowCreateModal(true)} className="flex items-center space-x-2">
+                  <Plus className="w-4 h-4" />
+                  <span>New Project</span>
+                </Button>
+              </RoleProtectedComponent>
+              
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-48" data-testid="select-status-filter">
                   <SelectValue placeholder="Filter by status" />

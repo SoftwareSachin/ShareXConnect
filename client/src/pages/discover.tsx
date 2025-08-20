@@ -7,15 +7,31 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ProjectCard } from "@/components/project-card";
 import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
+import { RoleProtectedComponent, usePermissions } from "@/components/RoleProtectedComponent";
 import { apiGet } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Shield, Filter, Eye } from "lucide-react";
 import type { ProjectWithDetails } from "@shared/schema";
 
 export default function Discover() {
+  const { canAccess, isGuest, isStudent, isFaculty, isAdmin } = usePermissions();
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [visibilityFilter, setVisibilityFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedTechFilters, setSelectedTechFilters] = useState<string[]>([]);
+
+  // Determine available visibility options based on role
+  const getVisibilityOptions = () => {
+    if (isGuest) {
+      return [{ value: "PUBLIC", label: "Public Projects" }];
+    }
+    return [
+      { value: "all", label: "All Visible Projects" },
+      { value: "PUBLIC", label: "Public Projects" },
+      { value: "INSTITUTION", label: "Institution Projects" },
+      { value: "PRIVATE", label: "Private Projects" }
+    ];
+  };
 
   const { data: projects, isLoading } = useQuery<ProjectWithDetails[]>({
     queryKey: ["/api/projects", { 
@@ -67,7 +83,11 @@ export default function Discover() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header
           title="Discover Projects"
-          description="Explore projects from your institution and beyond"
+          description={
+            isGuest 
+              ? "Browse public academic projects" 
+              : `Explore projects • ${canAccess('canViewAllProjects') ? 'Full Access' : 'Limited Access'}`
+          }
           onSearch={handleSearch}
           showCreateButton={false}
         />

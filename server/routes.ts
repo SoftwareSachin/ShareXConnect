@@ -558,6 +558,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin routes for college management
+  app.get("/api/admin/faculty", authenticateToken, async (req, res) => {
+    try {
+      const user = req.user as any;
+      
+      // Only college admins can access this
+      if (user.role !== 'ADMIN') {
+        return res.status(403).json({ message: "Access denied. Admin role required." });
+      }
+      
+      // Get faculty members from the same institution
+      const faculty = await storage.getUsersByInstitution(user.institution);
+      const facultyMembers = faculty.filter(u => u.role === 'FACULTY');
+      
+      res.json(facultyMembers);
+    } catch (error: any) {
+      console.error('Error fetching faculty:', error);
+      res.status(500).json({ message: "Failed to fetch faculty members" });
+    }
+  });
+
+  app.get("/api/admin/students", authenticateToken, async (req, res) => {
+    try {
+      const user = req.user as any;
+      
+      // Only college admins can access this
+      if (user.role !== 'ADMIN') {
+        return res.status(403).json({ message: "Access denied. Admin role required." });
+      }
+      
+      // Get students from the same institution
+      const students = await storage.getUsersByInstitution(user.institution);
+      const studentMembers = students.filter(u => u.role === 'STUDENT');
+      
+      res.json(studentMembers);
+    } catch (error: any) {
+      console.error('Error fetching students:', error);
+      res.status(500).json({ message: "Failed to fetch students" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

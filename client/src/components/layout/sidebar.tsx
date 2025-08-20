@@ -1,5 +1,7 @@
 import { Link, useLocation } from "wouter";
-import { useAuthStore } from "@/store/auth-store";
+import { useAuthStore } from "@/lib/auth";
+import { RoleBasedMenuItem, usePermissions } from "@/components/RoleProtectedComponent";
+import { getRoleName } from "@shared/permissions";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -17,26 +19,60 @@ import { useState, useEffect } from "react";
 
 export function Sidebar() {
   const { user, logout } = useAuthStore();
+  const { isStudent, isFaculty, isAdmin, isGuest } = usePermissions();
   const [location] = useLocation();
-  const [currentRole, setCurrentRole] = useState(user?.role || "student");
-
-  useEffect(() => {
-    if (user?.role) {
-      setCurrentRole(user.role);
-    }
-  }, [user?.role]);
 
   const navItems = [
-    { path: "/dashboard", label: "Dashboard", icon: Home, roles: ["student", "faculty", "admin"] },
-    { path: "/projects", label: "My Projects", icon: Folder, roles: ["student", "faculty", "admin"] },
-    { path: "/discover", label: "Discover", icon: Search, roles: ["student", "faculty", "admin"] },
-    { path: "/reviews", label: "Reviews", icon: ClipboardCheck, roles: ["faculty"] },
-    { path: "/assignments", label: "Assignments", icon: BookOpen, roles: ["faculty"] },
-    { path: "/users", label: "Manage Users", icon: Users, roles: ["admin"] },
-    { path: "/starred", label: "Starred", icon: Star, roles: ["student", "faculty", "admin"] },
+    { 
+      path: "/dashboard", 
+      label: "Dashboard", 
+      icon: Home, 
+      permissions: ["canViewAllProjects"] as const,
+      showForGuest: true 
+    },
+    { 
+      path: "/projects", 
+      label: "My Projects", 
+      icon: Folder, 
+      permissions: ["canCreateProject"] as const,
+      roles: ["STUDENT"] 
+    },
+    { 
+      path: "/discover", 
+      label: "Discover Projects", 
+      icon: Search, 
+      permissions: ["canViewPublicProjects"] as const,
+      showForGuest: true 
+    },
+    { 
+      path: "/reviews", 
+      label: "Faculty Reviews", 
+      icon: ClipboardCheck, 
+      permissions: ["canReceiveAssignments"] as const,
+      roles: ["FACULTY"] 
+    },
+    { 
+      path: "/assignments", 
+      label: "Assignments", 
+      icon: BookOpen, 
+      permissions: ["canViewAssignedProjects"] as const,
+      roles: ["FACULTY"] 
+    },
+    { 
+      path: "/users", 
+      label: "Manage Users", 
+      icon: Users, 
+      permissions: ["canManageUsers"] as const,
+      roles: ["ADMIN"] 
+    },
+    { 
+      path: "/starred", 
+      label: "Starred Projects", 
+      icon: Star, 
+      permissions: ["canStarProjects"] as const,
+      roles: ["STUDENT", "FACULTY", "ADMIN"] 
+    },
   ];
-
-  const filteredNavItems = navItems.filter(item => item.roles.includes(currentRole));
 
   const getInitials = (firstName: string, lastName: string) => {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
@@ -55,44 +91,58 @@ export function Sidebar() {
         <p className="text-sm text-muted-foreground">Academic Platform</p>
       </div>
       
-      {/* Role Switcher */}
+      {/* Role Display */}
       <div className="p-4 border-b border-gray-200">
-        <label className="block text-sm font-medium text-gray-700 mb-2">Current Role</label>
-        <Select value={currentRole} onValueChange={(value: string) => setCurrentRole(value as "student" | "faculty" | "admin")}>
-          <SelectTrigger className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="student">Student</SelectItem>
-            <SelectItem value="faculty">Faculty</SelectItem>
-            <SelectItem value="admin">College Admin</SelectItem>
-          </SelectContent>
-        </Select>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Your Role</label>
+        <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm">
+          {user ? getRoleName(user.role as any) : 'Guest'}
+        </div>
+        {user && (
+          <p className="text-xs text-muted-foreground mt-1">
+            {user.institution}
+          </p>
+        )}
       </div>
 
       {/* Navigation Menu */}
       <nav className="p-4 flex-1">
         <ul className="space-y-2">
-          {filteredNavItems.map((item) => {
+          {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location === item.path;
             
+            // Check if item should be shown for guests
+            if (isGuest && !item.showForGuest) {
+              return null;
+            }
+            
+            // For non-guests, check role-based permissions
+            if (!isGuest && item.roles && !item.roles.includes(user?.role as any)) {
+              return null;
+            }
+            
             return (
-              <li key={item.path}>
-                <Link href={item.path}>
-                  <Button
-                    variant={isActive ? "secondary" : "ghost"}
-                    className={`w-full justify-start ${
-                      isActive 
-                        ? "bg-blue-50 text-primary border border-blue-200" 
-                        : "text-muted-foreground hover:text-gray-900 hover:bg-gray-50"
-                    }`}
-                  >
-                    <Icon className="w-4 h-4 mr-3" />
-                    {item.label}
-                  </Button>
-                </Link>
-              </li>
+              <RoleBasedMenuItem
+                key={item.path}
+                permissions={item.permissions}
+                role={item.roles}
+              >
+                <li>
+                  <Link href={item.path}>
+                    <Button
+                      variant={isActive ? "secondary" : "ghost"}
+                      className={`w-full justify-start ${
+                        isActive 
+                          ? "bg-blue-50 text-primary border border-blue-200" 
+                          : "text-muted-foreground hover:text-gray-900 hover:bg-gray-50"
+                      }`}
+                    >
+                      <Icon className="w-4 h-4 mr-3" />
+                      {item.label}
+                    </Button>
+                  </Link>
+                </li>
+              </RoleBasedMenuItem>
             );
           })}
         </ul>

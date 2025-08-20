@@ -3,7 +3,7 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useAuthStore } from "@/store/auth-store";
+import { useAuthStore } from "@/lib/auth";
 import ProtectedRoute from "@/components/auth/protected-route";
 
 // Pages
@@ -14,6 +14,7 @@ import Projects from "@/pages/projects";
 import Discover from "@/pages/discover";
 import Reviews from "@/pages/reviews";
 import Starred from "@/pages/starred";
+import Admin from "@/pages/admin";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -38,6 +39,8 @@ function Router() {
       <ProtectedRoute path="/discover" component={Discover} />
       <ProtectedRoute path="/reviews" component={Reviews} />
       <ProtectedRoute path="/starred" component={Starred} />
+      <ProtectedRoute path="/admin" component={Admin} />
+      <ProtectedRoute path="/users" component={Admin} />
 
       {/* Fallback to 404 */}
       <Route component={NotFound} />
