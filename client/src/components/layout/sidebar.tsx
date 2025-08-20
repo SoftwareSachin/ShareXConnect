@@ -44,7 +44,7 @@ export function Sidebar() {
 
   const handleLogout = () => {
     logout();
-    window.location.href = "/login";
+    window.location.href = "/auth/login";
   };
 
   return (

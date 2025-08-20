@@ -11,8 +11,8 @@ export default function ProtectedRoute({ component: Component, ...props }: Prote
   const { isAuthenticated } = useAuthStore();
 
   if (!isAuthenticated) {
-    return <Redirect to="/login" />;
+    return <Redirect to="/auth/login" />;
   }
 
-  return <Component {...props} />;
+  return <Component {...props} params={{}} />;
 }

@@ -1,6 +1,11 @@
 import express, { type Request, Response, NextFunction } from "express";
+import dotenv from "dotenv";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { initializeDatabase, healthCheck } from "./init";
+
+// Load environment variables
+dotenv.config();
 
 const app = express();
 app.use(express.json());
@@ -36,8 +41,19 @@ app.use((req, res, next) => {
   next();
 });
 
+// Health check endpoint
+app.get("/health", async (req, res) => {
+  const health = await healthCheck();
+  const status = health.database === 'healthy' ? 200 : 500;
+  res.status(status).json(health);
+});
+
 (async () => {
-  const server = await registerRoutes(app);
+  try {
+    // Initialize database and create default users
+    await initializeDatabase();
+    
+    const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
@@ -67,5 +83,13 @@ app.use((req, res, next) => {
     reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
+    log(`🌟 ShareXConnect is ready!`);
+    log(`   Local: http://localhost:${port}`);
+    log(`   Health: http://localhost:${port}/health`);
   });
+  
+  } catch (error: any) {
+    console.error('Failed to start server:', error.message);
+    process.exit(1);
+  }
 })();
