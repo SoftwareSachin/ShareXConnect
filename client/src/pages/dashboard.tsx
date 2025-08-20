@@ -369,53 +369,36 @@ export default function Dashboard() {
                   <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Latest platform updates</p>
                 </div>
                 <div className="p-6">
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-3">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-3 flex-shrink-0"></div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-slate-900 dark:text-slate-100">Welcome to ShareXConnect!</p>
-                        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">Start by creating your first project to collaborate with peers and faculty.</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">Just now</p>
+                  {projects?.length === 0 ? (
+                    <div className="text-center py-8">
+                      <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <div className="w-8 h-8 bg-slate-300 dark:bg-slate-600 rounded"></div>
                       </div>
+                      <p className="text-sm font-medium text-slate-900 dark:text-slate-100 mb-2">No activity yet</p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">Create your first project to start seeing activity here</p>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {projects?.slice(0, 3).map((project: any) => (
+                        <div key={project.id} className="flex items-start gap-3">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full mt-3 flex-shrink-0"></div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{project.title}</p>
+                            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{project.description}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                              {new Date(project.createdAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Modern Performance Overview */}
-          <div className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 rounded-2xl overflow-hidden">
-            <div className="p-6 border-b border-slate-200/50 dark:border-slate-700/50">
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Performance Overview</h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Platform engagement metrics</p>
-            </div>
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center p-6 bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200/30 dark:border-slate-700/30 rounded-xl">
-                  <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/50 rounded-xl flex items-center justify-center mx-auto mb-3">
-                    <div className="w-6 h-6 bg-blue-500 rounded"></div>
-                  </div>
-                  <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">30</p>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Days Active</p>
-                </div>
-                <div className="text-center p-6 bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200/30 dark:border-slate-700/30 rounded-xl">
-                  <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl flex items-center justify-center mx-auto mb-3">
-                    <div className="w-6 h-6 bg-emerald-500 rounded"></div>
-                  </div>
-                  <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">85%</p>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Success Rate</p>
-                </div>
-                <div className="text-center p-6 bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200/30 dark:border-slate-700/30 rounded-xl">
-                  <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/50 rounded-xl flex items-center justify-center mx-auto mb-3">
-                    <div className="w-6 h-6 bg-purple-500 rounded"></div>
-                  </div>
-                  <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">+12%</p>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">This Month</p>
-                </div>
-              </div>
-            </div>
-          </div>
+
         </main>
       </div>
 
