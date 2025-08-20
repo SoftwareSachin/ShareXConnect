@@ -19,8 +19,7 @@ import {
   Calendar,
   Target,
   BookOpen,
-  Award,
-  ArrowUpRight
+  Award
 } from "lucide-react";
 import type { DashboardStats, ProjectWithDetails } from "@shared/schema";
 import { useState } from "react";
@@ -48,7 +47,6 @@ export default function Dashboard() {
           title: "Active Projects",
           value: stats?.totalProjects || 0,
           icon: FolderOpen,
-          trend: "+12%",
           description: "Projects in development",
           color: "text-blue-600 dark:text-blue-400",
           bgColor: "bg-blue-50 dark:bg-blue-950/20",
@@ -58,7 +56,6 @@ export default function Dashboard() {
           title: "Under Review",
           value: stats?.inReview || 0,
           icon: Clock,
-          trend: "+3",
           description: "Awaiting faculty feedback",
           color: "text-amber-600 dark:text-amber-400",
           bgColor: "bg-amber-50 dark:bg-amber-950/20",
@@ -68,7 +65,6 @@ export default function Dashboard() {
           title: "Completed",
           value: stats?.approved || 0,
           icon: CheckCircle2,
-          trend: "+5",
           description: "Successfully approved",
           color: "text-emerald-600 dark:text-emerald-400",
           bgColor: "bg-emerald-50 dark:bg-emerald-950/20",
@@ -78,7 +74,6 @@ export default function Dashboard() {
           title: "Collaborations",
           value: stats?.collaborators || 0,
           icon: Users2,
-          trend: "+2",
           description: "Team partnerships",
           color: "text-purple-600 dark:text-purple-400",
           bgColor: "bg-purple-50 dark:bg-purple-950/20",
@@ -91,7 +86,6 @@ export default function Dashboard() {
           title: "Total Reviews",
           value: stats?.totalProjects || 0,
           icon: Activity,
-          trend: "+8%",
           description: "Projects reviewed",
           color: "text-blue-600 dark:text-blue-400",
           bgColor: "bg-blue-50 dark:bg-blue-950/20",
@@ -101,7 +95,6 @@ export default function Dashboard() {
           title: "Pending Reviews",
           value: stats?.inReview || 0,
           icon: Clock,
-          trend: "5 new",
           description: "Awaiting review",
           color: "text-amber-600 dark:text-amber-400",
           bgColor: "bg-amber-50 dark:bg-amber-950/20",
@@ -111,7 +104,6 @@ export default function Dashboard() {
           title: "Approved",
           value: stats?.approved || 0,
           icon: Award,
-          trend: "+12",
           description: "Projects approved",
           color: "text-emerald-600 dark:text-emerald-400",
           bgColor: "bg-emerald-50 dark:bg-emerald-950/20",
@@ -121,7 +113,6 @@ export default function Dashboard() {
           title: "Mentoring",
           value: stats?.collaborators || 0,
           icon: BookOpen,
-          trend: "+3",
           description: "Students guided",
           color: "text-purple-600 dark:text-purple-400",
           bgColor: "bg-purple-50 dark:bg-purple-950/20",
@@ -134,7 +125,6 @@ export default function Dashboard() {
           title: "Total Projects",
           value: stats?.totalProjects || 0,
           icon: FolderOpen,
-          trend: "+15%",
           description: "Platform projects",
           color: "text-blue-600 dark:text-blue-400",
           bgColor: "bg-blue-50 dark:bg-blue-950/20",
@@ -144,7 +134,6 @@ export default function Dashboard() {
           title: "Under Review",
           value: stats?.inReview || 0,
           icon: Clock,
-          trend: "8 new",
           description: "Pending approval",
           color: "text-amber-600 dark:text-amber-400",
           bgColor: "bg-amber-50 dark:bg-amber-950/20",
@@ -154,7 +143,6 @@ export default function Dashboard() {
           title: "Approved",
           value: stats?.approved || 0,
           icon: CheckCircle2,
-          trend: "+20",
           description: "Successful projects",
           color: "text-emerald-600 dark:text-emerald-400",
           bgColor: "bg-emerald-50 dark:bg-emerald-950/20",
@@ -164,7 +152,6 @@ export default function Dashboard() {
           title: "Active Users",
           value: stats?.collaborators || 0,
           icon: Users2,
-          trend: "+7",
           description: "Platform members",
           color: "text-purple-600 dark:text-purple-400",
           bgColor: "bg-purple-50 dark:bg-purple-950/20",
@@ -218,10 +205,6 @@ export default function Dashboard() {
                               card.value
                             )}
                           </p>
-                          <div className="flex items-center gap-1">
-                            <ArrowUpRight className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-                            <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">{card.trend}</span>
-                          </div>
                         </div>
                       </div>
                     </div>
