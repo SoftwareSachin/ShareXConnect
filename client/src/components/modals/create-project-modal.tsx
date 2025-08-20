@@ -114,9 +114,9 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/20 dark:border-slate-700/20 rounded-3xl shadow-2xl p-0 m-4">
+      <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-lg p-0 m-4">
         {/* Material Design 3 Header */}
-        <div className="relative px-8 py-6 border-b border-slate-200/10 dark:border-slate-700/10">
+        <div className="relative px-8 py-6 border-b border-slate-200 dark:border-slate-700">
           <DialogHeader>
             <DialogTitle className="text-2xl font-semibold tracking-normal text-slate-900 dark:text-slate-50">
               Create New Project
@@ -140,7 +140,7 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
                   {...register("title")}
                   placeholder="Enter project title"
                   data-testid="input-title"
-                  className="h-12 bg-white/50 dark:bg-slate-800/50 border border-slate-300/60 dark:border-slate-600/60 rounded-xl backdrop-blur-sm text-base px-4 font-normal text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/60 transition-all duration-200"
+                  className="h-12 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-base px-4 font-normal text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors duration-200"
                 />
                 {errors.title && (
                   <p className="text-xs text-red-600 dark:text-red-400 font-medium">{errors.title.message}</p>
@@ -152,16 +152,20 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
                   Category
                 </Label>
                 <Select onValueChange={(value) => setValue("category", value)} defaultValue="Web Development">
-                  <SelectTrigger data-testid="select-category" className="h-12 bg-white/50 dark:bg-slate-800/50 border border-slate-300/60 dark:border-slate-600/60 rounded-xl backdrop-blur-sm text-base px-4 font-normal text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/60 transition-all duration-200">
+                  <SelectTrigger data-testid="select-category" className="h-12 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-base px-4 font-normal text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors duration-200">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-lg">
-                    <SelectItem value="Web Development" className="text-sm py-2 px-3 rounded-lg">Web Development</SelectItem>
-                    <SelectItem value="Mobile App" className="text-sm py-2 px-3 rounded-lg">Mobile App</SelectItem>
-                    <SelectItem value="Data Science" className="text-sm py-2 px-3 rounded-lg">Data Science</SelectItem>
-                    <SelectItem value="AI/Machine Learning" className="text-sm py-2 px-3 rounded-lg">AI/Machine Learning</SelectItem>
-                    <SelectItem value="Game Development" className="text-sm py-2 px-3 rounded-lg">Game Development</SelectItem>
-                    <SelectItem value="Other" className="text-sm py-2 px-3 rounded-lg">Other</SelectItem>
+                  <SelectContent className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-50">
+                    <SelectItem value="Web Development">Web Development</SelectItem>
+                    <SelectItem value="Mobile App">Mobile App</SelectItem>
+                    <SelectItem value="Data Science">Data Science</SelectItem>
+                    <SelectItem value="AI/Machine Learning">AI/Machine Learning</SelectItem>
+                    <SelectItem value="Game Development">Game Development</SelectItem>
+                    <SelectItem value="IoT/Hardware">IoT/Hardware</SelectItem>
+                    <SelectItem value="Blockchain">Blockchain</SelectItem>
+                    <SelectItem value="DevOps/Cloud">DevOps/Cloud</SelectItem>
+                    <SelectItem value="Research">Research</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -175,30 +179,30 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
               <Textarea
                 id="description"
                 {...register("description")}
-                placeholder="Describe your project"
+                placeholder="Describe your project goals, features, and objectives"
                 rows={4}
                 data-testid="textarea-description"
-                className="bg-white/50 dark:bg-slate-800/50 border border-slate-300/60 dark:border-slate-600/60 rounded-xl backdrop-blur-sm text-base p-4 font-normal text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/60 transition-all duration-200 resize-none"
+                className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-base p-4 font-normal text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors duration-200 resize-none"
               />
               {errors.description && (
                 <p className="text-xs text-red-600 dark:text-red-400 font-medium">{errors.description.message}</p>
               )}
             </div>
 
-            {/* Visibility and Status */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Academic Information */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="visibility" className="text-sm font-medium text-slate-700 dark:text-slate-300">
                   Visibility
                 </Label>
                 <Select onValueChange={(value) => setValue("visibility", value as any)} defaultValue="PRIVATE">
-                  <SelectTrigger data-testid="select-visibility" className="h-12 bg-white/50 dark:bg-slate-800/50 border border-slate-300/60 dark:border-slate-600/60 rounded-xl backdrop-blur-sm text-base px-4 font-normal text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/60 transition-all duration-200">
+                  <SelectTrigger data-testid="select-visibility" className="h-12 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-base px-4 font-normal text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors duration-200">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-lg">
-                    <SelectItem value="PRIVATE" className="text-sm py-2 px-3 rounded-lg">Private</SelectItem>
-                    <SelectItem value="INSTITUTION" className="text-sm py-2 px-3 rounded-lg">Institution</SelectItem>
-                    <SelectItem value="PUBLIC" className="text-sm py-2 px-3 rounded-lg">Public</SelectItem>
+                  <SelectContent className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-50">
+                    <SelectItem value="PRIVATE">Private</SelectItem>
+                    <SelectItem value="INSTITUTION">Institution</SelectItem>
+                    <SelectItem value="PUBLIC">Public</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -208,36 +212,97 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
                   Status
                 </Label>
                 <Select onValueChange={(value) => setValue("status", value as any)} defaultValue="DRAFT">
-                  <SelectTrigger data-testid="select-status" className="h-12 bg-white/50 dark:bg-slate-800/50 border border-slate-300/60 dark:border-slate-600/60 rounded-xl backdrop-blur-sm text-base px-4 font-normal text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/60 transition-all duration-200">
+                  <SelectTrigger data-testid="select-status" className="h-12 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-base px-4 font-normal text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors duration-200">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-lg">
-                    <SelectItem value="DRAFT" className="text-sm py-2 px-3 rounded-lg">Draft</SelectItem>
-                    <SelectItem value="SUBMITTED" className="text-sm py-2 px-3 rounded-lg">Submitted</SelectItem>
+                  <SelectContent className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-50">
+                    <SelectItem value="DRAFT">Draft</SelectItem>
+                    <SelectItem value="SUBMITTED">Submitted</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="academicLevel" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Academic Level
+                </Label>
+                <Select onValueChange={(value) => setValue("licenseType", value)} defaultValue="Undergraduate">
+                  <SelectTrigger data-testid="select-academic-level" className="h-12 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-base px-4 font-normal text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors duration-200">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-50">
+                    <SelectItem value="Undergraduate">Undergraduate</SelectItem>
+                    <SelectItem value="Graduate">Graduate</SelectItem>
+                    <SelectItem value="PhD">PhD</SelectItem>
+                    <SelectItem value="Research">Research</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
-            {/* Technologies */}
-            <div className="space-y-2">
-              <Label htmlFor="techStackInput" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                Technologies
-              </Label>
-              <Input
-                id="techStackInput"
-                {...register("techStackInput")}
-                placeholder="React, TypeScript, Node.js (comma separated)"
-                data-testid="input-techstack"
-                className="h-12 bg-white/50 dark:bg-slate-800/50 border border-slate-300/60 dark:border-slate-600/60 rounded-xl backdrop-blur-sm text-base px-4 font-normal text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/60 transition-all duration-200"
-              />
+            {/* Technologies and Duration */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="techStackInput" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Technologies Used
+                </Label>
+                <Input
+                  id="techStackInput"
+                  {...register("techStackInput")}
+                  placeholder="React, TypeScript, Node.js (comma separated)"
+                  data-testid="input-techstack"
+                  className="h-12 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-base px-4 font-normal text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors duration-200"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="duration" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Project Duration
+                </Label>
+                <Input
+                  id="duration"
+                  {...register("contributingGuidelines")}
+                  placeholder="e.g., 3 months, 1 semester"
+                  data-testid="input-duration"
+                  className="h-12 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-base px-4 font-normal text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors duration-200"
+                />
+              </div>
             </div>
 
-            {/* Repository and Demo URLs */}
+            {/* Academic Context */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="course" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Course/Subject
+                </Label>
+                <Input
+                  id="course"
+                  {...register("readmeContent")}
+                  placeholder="e.g., Computer Science, Software Engineering"
+                  data-testid="input-course"
+                  className="h-12 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-base px-4 font-normal text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors duration-200"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="advisor" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Faculty Advisor (Optional)
+                </Label>
+                <Input
+                  id="advisor"
+                  {...register("installationInstructions")}
+                  placeholder="Prof. Name or Department"
+                  data-testid="input-advisor"
+                  className="h-12 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-base px-4 font-normal text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors duration-200"
+                />
+              </div>
+            </div>
+
+            {/* Project Links */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="githubUrl" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  GitHub Repository (Optional)
+                  Repository URL (Optional)
                 </Label>
                 <Input
                   id="githubUrl"
@@ -245,13 +310,13 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
                   {...register("githubUrl")}
                   placeholder="https://github.com/username/repository"
                   data-testid="input-github"
-                  className="h-12 bg-white/50 dark:bg-slate-800/50 border border-slate-300/60 dark:border-slate-600/60 rounded-xl backdrop-blur-sm text-base px-4 font-normal text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/60 transition-all duration-200"
+                  className="h-12 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-base px-4 font-normal text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors duration-200"
                 />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="demoUrl" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Demo URL (Optional)
+                  Live Demo URL (Optional)
                 </Label>
                 <Input
                   id="demoUrl"
@@ -259,13 +324,13 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
                   {...register("demoUrl")}
                   placeholder="https://your-project.com"
                   data-testid="input-demo"
-                  className="h-12 bg-white/50 dark:bg-slate-800/50 border border-slate-300/60 dark:border-slate-600/60 rounded-xl backdrop-blur-sm text-base px-4 font-normal text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/60 transition-all duration-200"
+                  className="h-12 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-base px-4 font-normal text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors duration-200"
                 />
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-200/20 dark:border-slate-700/20">
+            <div className="flex justify-end gap-3 pt-6 border-t border-slate-200 dark:border-slate-700">
               <Button 
                 type="button" 
                 variant="outline" 
