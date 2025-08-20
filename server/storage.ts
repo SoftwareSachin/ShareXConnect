@@ -13,7 +13,8 @@ import {
   projectCollaborators,
   projectStars,
   comments,
-  facultyAssignments
+  facultyAssignments,
+  collegeDomains
 } from "@shared/schema";
 import bcrypt from "bcryptjs";
 import { db } from "./db";
@@ -84,6 +85,12 @@ export interface IStorage {
 
   // Dashboard statistics
   getDashboardStats(userId: string, role: string): Promise<DashboardStats>;
+
+  // College domain operations
+  getCollegeDomains(): Promise<any[]>;
+  getCollegeDomainByDomain(domain: string): Promise<any | undefined>;
+  createCollegeDomain(data: { collegeName: string; domain: string; adminId: string }): Promise<any>;
+  verifyCollegeDomain(domain: string): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -754,6 +761,66 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error getting dashboard stats:', error);
       return { totalProjects: 0, inReview: 0, approved: 0, collaborators: 0 };
+    }
+  }
+
+  // College domain operations
+  async getCollegeDomains(): Promise<any[]> {
+    try {
+      const result = await db.select().from(collegeDomains);
+      return result;
+    } catch (error) {
+      console.error('Error getting college domains:', error);
+      return [];
+    }
+  }
+
+  async getCollegeDomainByDomain(domain: string): Promise<any | undefined> {
+    try {
+      const result = await db
+        .select()
+        .from(collegeDomains)
+        .where(eq(collegeDomains.domain, domain))
+        .limit(1);
+      return result[0] || undefined;
+    } catch (error) {
+      console.error('Error getting college domain by domain:', error);
+      return undefined;
+    }
+  }
+
+  async createCollegeDomain(data: { collegeName: string; domain: string; adminId: string }): Promise<any> {
+    try {
+      const result = await db
+        .insert(collegeDomains)
+        .values({
+          collegeName: data.collegeName,
+          domain: data.domain,
+          adminId: data.adminId,
+          isVerified: true, // Auto-verify when created by admin
+        })
+        .returning();
+      return result[0];
+    } catch (error) {
+      console.error('Error creating college domain:', error);
+      throw error;
+    }
+  }
+
+  async verifyCollegeDomain(domain: string): Promise<boolean> {
+    try {
+      const result = await db
+        .select()
+        .from(collegeDomains)
+        .where(and(
+          eq(collegeDomains.domain, domain),
+          eq(collegeDomains.isVerified, true)
+        ))
+        .limit(1);
+      return result.length > 0;
+    } catch (error) {
+      console.error('Error verifying college domain:', error);
+      return false;
     }
   }
 }

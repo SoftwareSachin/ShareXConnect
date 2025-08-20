@@ -8,16 +8,27 @@ import {
   pgEnum,
   uuid,
   integer,
+  boolean,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 // Enums
-export const roleEnum = pgEnum("role", ["STUDENT", "FACULTY", "ADMIN"]);
+export const roleEnum = pgEnum("role", ["STUDENT", "FACULTY", "ADMIN", "GUEST"]);
 export const visibilityEnum = pgEnum("visibility", ["PRIVATE", "INSTITUTION", "PUBLIC"]);
 export const projectStatusEnum = pgEnum("project_status", ["DRAFT", "SUBMITTED", "UNDER_REVIEW", "APPROVED"]);
 export const reviewStatusEnum = pgEnum("review_status", ["PENDING", "COMPLETED"]);
 
-// Users table
+// College domains table - for verification
+export const collegeDomains = pgTable("college_domains", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  collegeName: varchar("college_name", { length: 200 }).notNull(),
+  domain: varchar("domain", { length: 100 }).unique().notNull(), // e.g., "@skit.ac.in"
+  adminId: uuid("admin_id"),
+  isVerified: boolean("is_verified").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   username: varchar("username", { length: 30 }).unique().notNull(),
@@ -27,6 +38,8 @@ export const users = pgTable("users", {
   lastName: varchar("last_name", { length: 50 }).notNull(),
   role: roleEnum("role").notNull(),
   institution: varchar("institution", { length: 100 }).notNull(),
+  collegeDomain: varchar("college_domain", { length: 100 }), // for students/faculty verification
+  isVerified: boolean("is_verified").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -194,15 +207,25 @@ export const registerSchema = z.object({
     .min(1, "Last name is required")
     .max(50, "Last name must be less than 50 characters")
     .regex(/^[a-zA-Z\s-']+$/, "Last name can only contain letters, spaces, hyphens, and apostrophes"),
-  role: z.enum(["STUDENT", "FACULTY", "ADMIN"], {
+  role: z.enum(["STUDENT", "FACULTY", "ADMIN", "GUEST"], {
     required_error: "Please select a role",
   }),
   institution: z.string()
     .min(1, "Institution is required")
     .max(100, "Institution name must be less than 100 characters"),
+  collegeDomain: z.string().optional(), // Required for College Admin role
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
+}).refine((data) => {
+  // If role is ADMIN, collegeDomain is required
+  if (data.role === "ADMIN" && !data.collegeDomain) {
+    return false;
+  }
+  return true;
+}, {
+  message: "College domain is required for College Admin role",
+  path: ["collegeDomain"],
 });
 
 // Project schemas

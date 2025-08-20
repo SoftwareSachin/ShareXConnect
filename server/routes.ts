@@ -63,11 +63,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Username already taken" });
       }
 
-      const user = await storage.createUser(userData);
-      const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
+      // College domain verification for different roles
+      if (userData.role === "ADMIN") {
+        // College Admin must provide college domain
+        if (!userData.collegeDomain) {
+          return res.status(400).json({ message: "College domain is required for College Admin role" });
+        }
+
+        // Check if college domain already exists
+        const existingDomain = await storage.getCollegeDomainByDomain(userData.collegeDomain);
+        if (existingDomain) {
+          return res.status(400).json({ message: "College domain already registered by another admin" });
+        }
+
+        // Create user first
+        const user = await storage.createUser({
+          ...userData,
+          isVerified: true // Admin is auto-verified
+        });
+
+        // Create college domain entry
+        await storage.createCollegeDomain({
+          collegeName: userData.institution,
+          domain: userData.collegeDomain,
+          adminId: user.id
+        });
+
+        const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
+        const { password, ...userWithoutPassword } = user;
+        res.json({ user: userWithoutPassword, token });
+        
+      } else if (userData.role === "STUDENT" || userData.role === "FACULTY") {
+        // Students and Faculty need to verify college domain
+        const emailDomain = "@" + userData.email.split("@")[1];
+        const isValidDomain = await storage.verifyCollegeDomain(emailDomain);
+        
+        if (!isValidDomain) {
+          return res.status(400).json({ 
+            message: `Your email domain (${emailDomain}) is not registered. Please contact your college admin to register the domain first, or use a different email address.` 
+          });
+        }
+
+        // Create user with college domain verification
+        const user = await storage.createUser({
+          ...userData,
+          collegeDomain: emailDomain,
+          isVerified: false // Will be verified by admin later
+        });
+
+        const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
+        const { password, ...userWithoutPassword } = user;
+        res.json({ user: userWithoutPassword, token });
+        
+      } else {
+        // Guest users can register without domain verification
+        const user = await storage.createUser({
+          ...userData,
+          isVerified: true // Guest users are auto-verified
+        });
+        
+        const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
+        const { password, ...userWithoutPassword } = user;
+        res.json({ user: userWithoutPassword, token });
+      }
       
-      const { password, ...userWithoutPassword } = user;
-      res.json({ user: userWithoutPassword, token });
     } catch (error) {
       console.error('Registration error:', error);
       if (error instanceof z.ZodError) {

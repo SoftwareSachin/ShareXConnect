@@ -45,6 +45,7 @@ export default function Login() {
       lastName: "",
       role: "STUDENT",
       institution: "",
+      collegeDomain: "",
     },
   });
 
@@ -516,7 +517,13 @@ export default function Login() {
                               <SelectItem value="ADMIN" className="hover:bg-slate-100/70 dark:hover:bg-slate-700/70 rounded-lg cursor-pointer transition-colors duration-200">
                                 <div className="flex items-center gap-2">
                                   <Shield className="w-4 h-4 text-purple-600" />
-                                  Administrator
+                                  College Admin
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="GUEST" className="hover:bg-slate-100/70 dark:hover:bg-slate-700/70 rounded-lg cursor-pointer transition-colors duration-200">
+                                <div className="flex items-center gap-2">
+                                  <Users className="w-4 h-4 text-orange-600" />
+                                  Guest User
                                 </div>
                               </SelectItem>
                             </SelectContent>
@@ -525,6 +532,38 @@ export default function Login() {
                         </FormItem>
                       )}
                     />
+
+                    {registerForm.watch("role") === "ADMIN" && (
+                      <FormField
+                        control={registerForm.control}
+                        name="collegeDomain"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2.5">
+                              <AtSign className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                              College Domain
+                            </FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                                  <AtSign className="h-4 w-4 text-slate-400 dark:text-slate-500" />
+                                </div>
+                                <Input
+                                  {...field}
+                                  placeholder="@skit.ac.in"
+                                  className="pl-11 pr-4 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl h-12 text-base font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
+                                  disabled={registerMutation.isPending}
+                                />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                              Enter your college's email domain (e.g., @university.edu) to allow students and faculty to register
+                            </p>
+                          </FormItem>
+                        )}
+                      />
+                    )}
 
                     <FormField
                       control={registerForm.control}
