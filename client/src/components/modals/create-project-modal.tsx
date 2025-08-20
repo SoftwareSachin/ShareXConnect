@@ -423,8 +423,7 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
                   <div className="relative">
                     <input
                       type="file"
-                      webkitdirectory=""
-                      directory=""
+                      {...({ webkitdirectory: "", directory: "" } as any)}
                       multiple
                       className="hidden"
                       id="sourceFolder"

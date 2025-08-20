@@ -26,7 +26,7 @@ export default function Projects() {
       <div className="flex h-screen">
         <Sidebar />
         <div className="flex-1 flex flex-col">
-          <Header />
+          <Header title="Access Restricted" description="Only students can create and manage projects." />
           <main className="flex-1 p-6">
             <div className="text-center py-12">
               <Shield className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
@@ -162,7 +162,7 @@ export default function Projects() {
 
       <CreateProjectModal 
         open={showCreateModal} 
-        onClose={() => setShowCreateModal(false)} 
+        onOpenChange={setShowCreateModal} 
       />
     </div>
   );
