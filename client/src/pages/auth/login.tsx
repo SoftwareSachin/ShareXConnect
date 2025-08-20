@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -18,6 +18,64 @@ import type { z } from "zod";
 
 type LoginFormData = z.infer<typeof loginSchema>;
 type RegisterFormData = z.infer<typeof registerSchema>;
+
+// College Selector Component
+function CollegeSelector({ value, onValueChange, disabled }: { 
+  value: string | undefined; 
+  onValueChange: (value: string) => void; 
+  disabled?: boolean; 
+}) {
+  const { data: colleges, isLoading } = useQuery({
+    queryKey: ["/api/colleges"],
+    enabled: true,
+  });
+
+  return (
+    <FormField
+      control={null as any}
+      name="selectedCollege"
+      render={() => (
+        <FormItem>
+          <FormLabel className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2.5">
+            <Building2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            Select Your College
+          </FormLabel>
+          <FormControl>
+            <Select value={value} onValueChange={onValueChange} disabled={disabled || isLoading}>
+              <SelectTrigger className="bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white rounded-xl h-12 text-base font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg">
+                <SelectValue placeholder={isLoading ? "Loading colleges..." : "Select your college"} />
+              </SelectTrigger>
+              <SelectContent className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl border-slate-200/60 dark:border-slate-700/60 shadow-2xl rounded-xl max-h-60">
+                {colleges && colleges.length > 0 ? (
+                  colleges.map((college: any) => (
+                    <SelectItem 
+                      key={college.id} 
+                      value={college.id}
+                      className="cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/30 focus:bg-blue-100 dark:focus:bg-blue-900/50 text-slate-800 dark:text-slate-200 font-medium py-3 px-4 rounded-lg mx-1 my-0.5 transition-all duration-200"
+                    >
+                      <div className="flex flex-col">
+                        <span className="font-semibold">{college.collegeName}</span>
+                        <span className="text-xs text-slate-600 dark:text-slate-400">{college.domain}</span>
+                      </div>
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="no-colleges" disabled className="text-slate-500 dark:text-slate-400 italic">
+                    {isLoading ? "Loading..." : "No colleges registered yet"}
+                  </SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+          </FormControl>
+          <FormMessage />
+          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+            Your college must be registered by a College Admin before you can sign up
+          </p>
+        </FormItem>
+      )}
+    />
+  );
+}
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -46,6 +104,7 @@ export default function Login() {
       role: "STUDENT",
       institution: "",
       collegeDomain: "",
+      selectedCollege: "",
     },
   });
 
@@ -562,6 +621,14 @@ export default function Login() {
                             </p>
                           </FormItem>
                         )}
+                      />
+                    )}
+
+                    {(registerForm.watch("role") === "STUDENT" || registerForm.watch("role") === "FACULTY") && (
+                      <CollegeSelector 
+                        value={registerForm.watch("selectedCollege")} 
+                        onValueChange={(value) => registerForm.setValue("selectedCollege", value)}
+                        disabled={registerMutation.isPending}
                       />
                     )}
 

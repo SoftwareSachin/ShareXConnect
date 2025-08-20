@@ -214,9 +214,21 @@ export const registerSchema = z.object({
     .min(1, "Institution is required")
     .max(100, "Institution name must be less than 100 characters"),
   collegeDomain: z.string().optional(), // Required for College Admin role
+  selectedCollege: z.string().optional(), // Required for Student/Faculty roles
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
+}).refine((data) => {
+  if (data.role === "ADMIN" && !data.collegeDomain) {
+    return false;
+  }
+  if ((data.role === "STUDENT" || data.role === "FACULTY") && !data.selectedCollege) {
+    return false;
+  }
+  return true;
+}, {
+  message: "College selection is required for students and faculty",
+  path: ["selectedCollege"],
 }).refine((data) => {
   // If role is ADMIN, collegeDomain is required
   if (data.role === "ADMIN" && !data.collegeDomain) {

@@ -89,6 +89,7 @@ export interface IStorage {
   // College domain operations
   getCollegeDomains(): Promise<any[]>;
   getCollegeDomainByDomain(domain: string): Promise<any | undefined>;
+  getCollegeDomainById(id: string): Promise<any | undefined>;
   createCollegeDomain(data: { collegeName: string; domain: string; adminId: string }): Promise<any>;
   verifyCollegeDomain(domain: string): Promise<boolean>;
 }
@@ -785,6 +786,20 @@ export class DatabaseStorage implements IStorage {
       return result[0] || undefined;
     } catch (error) {
       console.error('Error getting college domain by domain:', error);
+      return undefined;
+    }
+  }
+
+  async getCollegeDomainById(id: string): Promise<any | undefined> {
+    try {
+      const result = await db
+        .select()
+        .from(collegeDomains)
+        .where(eq(collegeDomains.id, id))
+        .limit(1);
+      return result[0] || undefined;
+    } catch (error) {
+      console.error('Error getting college domain by ID:', error);
       return undefined;
     }
   }

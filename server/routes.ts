@@ -46,6 +46,17 @@ const authenticateToken = async (req: Request, res: Response, next: any) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // College API endpoints
+  app.get("/api/colleges", async (req, res) => {
+    try {
+      const colleges = await storage.getCollegeDomains();
+      res.json(colleges);
+    } catch (error) {
+      console.error('Error fetching colleges:', error);
+      res.status(500).json({ message: "Failed to fetch colleges" });
+    }
+  });
+
   // Authentication routes
   app.post("/api/auth/register", async (req, res) => {
     try {
@@ -94,20 +105,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json({ user: userWithoutPassword, token });
         
       } else if (userData.role === "STUDENT" || userData.role === "FACULTY") {
-        // Students and Faculty need to verify college domain
+        // Students and Faculty must select from registered colleges
+        if (!userData.selectedCollege) {
+          return res.status(400).json({ message: "Please select your college from the list" });
+        }
+
+        // Get the college details by ID
+        const college = await storage.getCollegeDomainById(userData.selectedCollege);
+        if (!college) {
+          return res.status(400).json({ message: "Selected college not found or not verified" });
+        }
+
+        // Verify email domain matches the selected college
         const emailDomain = "@" + userData.email.split("@")[1];
-        const isValidDomain = await storage.verifyCollegeDomain(emailDomain);
-        
-        if (!isValidDomain) {
+        if (emailDomain !== college.domain) {
           return res.status(400).json({ 
-            message: `Your email domain (${emailDomain}) is not registered. Please contact your college admin to register the domain first, or use a different email address.` 
+            message: `Your email domain (${emailDomain}) doesn't match the selected college domain (${college.domain}). Please use an email from your college domain.` 
           });
         }
 
-        // Create user with college domain verification
+        // Create user with college verification
         const user = await storage.createUser({
           ...userData,
-          collegeDomain: emailDomain,
+          collegeDomain: college.domain,
+          institution: college.collegeName,
           isVerified: false // Will be verified by admin later
         });
 
