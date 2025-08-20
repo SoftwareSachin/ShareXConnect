@@ -45,6 +45,16 @@ const authenticateToken = async (req: Request, res: Response, next: any) => {
   }
 };
 
+// Type-safe authentication middleware wrapper
+const withAuth = (handler: (req: AuthRequest, res: Response) => Promise<any>) => {
+  return async (req: Request, res: Response) => {
+    if (!req.user) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    return handler(req as AuthRequest, res);
+  };
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // College API endpoints
   app.get("/api/colleges", async (req, res) => {
@@ -184,20 +194,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/auth/me", authenticateToken, async (req: AuthRequest, res) => {
-    const { password, ...userWithoutPassword } = req.user!;
+  app.get("/api/auth/me", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    const { password, ...userWithoutPassword } = req.user;
     res.json(userWithoutPassword);
-  });
+  }));
 
   // Dashboard stats
-  app.get("/api/dashboard/stats", authenticateToken, async (req: AuthRequest, res) => {
+  app.get("/api/dashboard/stats", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
-      const stats = await storage.getDashboardStats(req.user!.id, req.user!.role);
+      const stats = await storage.getDashboardStats(req.user.id, req.user.role);
       res.json(stats);
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
     }
-  });
+  }));
 
   // Project routes
   app.get("/api/projects", authenticateToken, async (req: AuthRequest, res) => {

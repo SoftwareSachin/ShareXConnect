@@ -1,12 +1,9 @@
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import { drizzle as drizzleNode } from 'drizzle-orm/node-postgres';
-import { Pool as NodePool } from 'pg';
-import ws from "ws";
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { Pool } from 'pg';
 import * as schema from "@shared/schema";
 
-// Configure for both Neon (cloud) and local PostgreSQL
-let db: ReturnType<typeof drizzle> | ReturnType<typeof drizzleNode>;
+// Database connection for PostgreSQL
+let db: ReturnType<typeof drizzle>;
 
 if (!process.env.DATABASE_URL) {
   throw new Error(
@@ -16,32 +13,26 @@ if (!process.env.DATABASE_URL) {
 
 const databaseUrl = process.env.DATABASE_URL;
 
-// Detect if using Neon database (cloud) or local PostgreSQL
-if (databaseUrl.includes('neon.tech') || databaseUrl.includes('neon.database')) {
-  // Neon (serverless) setup
-  console.log('🌐 Using Neon serverless database connection');
-  neonConfig.webSocketConstructor = ws;
-  const pool = new Pool({ connectionString: databaseUrl });
-  db = drizzle({ client: pool, schema });
-} else {
-  // Local PostgreSQL setup
-  console.log('🐘 Using local PostgreSQL database connection');
-  const pool = new NodePool({ 
-    connectionString: databaseUrl,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-  });
-  
-  // Test connection
-  pool.on('connect', () => {
-    console.log('✅ Connected to PostgreSQL database');
-  });
-  
-  pool.on('error', (err) => {
-    console.error('❌ PostgreSQL connection error:', err.message);
-  });
-  
-  db = drizzleNode(pool, { schema });
-}
+// PostgreSQL connection for Replit environment
+console.log('🐘 Using PostgreSQL database connection');
+const pool = new Pool({ 
+  connectionString: databaseUrl,
+  ssl: false, // Disable SSL for local Replit PostgreSQL
+  max: 10,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 5000,
+});
+
+// Test connection
+pool.on('connect', () => {
+  console.log('✅ Connected to PostgreSQL database');
+});
+
+pool.on('error', (err) => {
+  console.error('❌ PostgreSQL connection error:', err.message);
+});
+
+db = drizzle(pool, { schema });
 
 export { db };
 
