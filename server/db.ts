@@ -13,31 +13,90 @@ if (!process.env.DATABASE_URL) {
 
 const databaseUrl = process.env.DATABASE_URL;
 
-// PostgreSQL connection for Replit environment
+// Robust PostgreSQL connection for both local and production environments
 console.log('🐘 Using PostgreSQL database connection');
+
+// Enhanced connection configuration for reliability and performance
 const pool = new Pool({ 
   connectionString: databaseUrl,
-  ssl: false, // Disable SSL for local Replit PostgreSQL
-  max: 10,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000,
+  ssl: process.env.NODE_ENV === 'production' && !databaseUrl.includes('localhost') 
+    ? { rejectUnauthorized: false } 
+    : false,
+  // Connection pool settings for high concurrency
+  max: 20, // Maximum pool size for handling multiple concurrent users
+  min: 2,  // Minimum pool size to maintain active connections
+  idleTimeoutMillis: 30000, // 30 seconds idle timeout
+  connectionTimeoutMillis: 10000, // 10 seconds connection timeout
+  acquireTimeoutMillis: 60000, // 60 seconds to acquire connection from pool
+  createTimeoutMillis: 30000, // 30 seconds to create new connection
+  destroyTimeoutMillis: 5000, // 5 seconds to destroy connection
+  reapIntervalMillis: 1000, // Check for idle connections every second
+  createRetryIntervalMillis: 200, // Retry connection creation every 200ms
+  propagateCreateError: false, // Don't crash on connection creation errors
 });
 
-// Test connection
-pool.on('connect', () => {
-  console.log('✅ Connected to PostgreSQL database');
+// Enhanced connection event handlers for monitoring
+pool.on('connect', (client) => {
+  console.log('✅ New PostgreSQL client connected');
 });
 
-pool.on('error', (err) => {
-  console.error('❌ PostgreSQL connection error:', err.message);
+pool.on('acquire', () => {
+  console.log('🔄 Database connection acquired from pool');
 });
+
+pool.on('error', (err, client) => {
+  console.error('❌ PostgreSQL pool error:', err.message);
+  console.error('Error details:', err);
+});
+
+pool.on('remove', () => {
+  console.log('🗑️ Database connection removed from pool');
+});
+
+// Test initial connection and create database connection
+const testConnection = async () => {
+  try {
+    const client = await pool.connect();
+    console.log('🎯 Database connection test successful');
+    client.release();
+  } catch (err) {
+    console.error('💥 Database connection test failed:', err);
+    throw err;
+  }
+};
+
+// Initialize database connection
+testConnection();
 
 db = drizzle(pool, { schema });
 
 export { db };
 
-// Graceful shutdown
-process.on('SIGINT', async () => {
-  console.log('🔄 Shutting down database connection...');
-  process.exit(0);
+// Enhanced graceful shutdown for database connections
+const gracefulShutdown = async () => {
+  console.log('🔄 Shutting down database connections...');
+  try {
+    await pool.end();
+    console.log('✅ Database pool closed successfully');
+  } catch (err) {
+    console.error('❌ Error closing database pool:', err);
+  } finally {
+    process.exit(0);
+  }
+};
+
+// Handle multiple shutdown signals
+process.on('SIGINT', gracefulShutdown);
+process.on('SIGTERM', gracefulShutdown);
+process.on('beforeExit', gracefulShutdown);
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('💥 Uncaught Exception:', err);
+  gracefulShutdown();
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('💥 Unhandled Rejection at:', promise, 'reason:', reason);
+  gracefulShutdown();
 });

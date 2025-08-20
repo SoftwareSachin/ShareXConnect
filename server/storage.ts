@@ -128,15 +128,41 @@ export class DatabaseStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     try {
+      // Enhanced user creation with better error handling and validation
       const hashedPassword = await this.hashPassword(insertUser.password);
-      const result = await db.insert(users).values({
-        ...insertUser,
-        password: hashedPassword
-      }).returning();
+      
+      // Use transaction for atomicity to prevent partial user creation
+      const result = await db.transaction(async (tx) => {
+        return await tx.insert(users).values({
+          ...insertUser,
+          password: hashedPassword,
+          isVerified: insertUser.role === 'ADMIN' ? true : false, // Auto-verify admin users
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }).returning();
+      });
+      
+      console.log(`✅ User created successfully: ${result[0].email} (${result[0].role})`);
       return result[0];
-    } catch (error) {
-      console.error('Error creating user:', error);
-      throw error;
+    } catch (error: any) {
+      console.error('❌ Error creating user:', error);
+      
+      // Enhanced error messages for common issues
+      if (error.code === '23505') { // PostgreSQL unique constraint violation
+        if (error.detail?.includes('email')) {
+          throw new Error('Email address is already registered');
+        }
+        if (error.detail?.includes('username')) {
+          throw new Error('Username is already taken');
+        }
+        throw new Error('User with this information already exists');
+      }
+      
+      if (error.code === '23502') { // NOT NULL constraint violation
+        throw new Error('Required user information is missing');
+      }
+      
+      throw new Error(`Failed to create user: ${error.message}`);
     }
   }
 
@@ -150,11 +176,27 @@ export class DatabaseStorage implements IStorage {
   }
 
   async hashPassword(password: string): Promise<string> {
-    return bcrypt.hash(password, 10);
+    try {
+      // Use salt rounds of 12 for strong security (recommended for production)
+      const salt = await bcrypt.genSalt(12);
+      const hashedPassword = await bcrypt.hash(password, salt);
+      console.log('🔒 Password hashed successfully with salt rounds: 12');
+      return hashedPassword;
+    } catch (error) {
+      console.error('❌ Password hashing error:', error);
+      throw new Error('Failed to secure password');
+    }
   }
 
   async verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
-    return bcrypt.compare(password, hashedPassword);
+    try {
+      const isValid = await bcrypt.compare(password, hashedPassword);
+      console.log(`🔐 Password verification: ${isValid ? 'SUCCESS' : 'FAILED'}`);
+      return isValid;
+    } catch (error) {
+      console.error('❌ Password verification error:', error);
+      return false;
+    }
   }
 
   // Project operations

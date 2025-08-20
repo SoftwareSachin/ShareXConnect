@@ -70,17 +70,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
   app.post("/api/auth/register", async (req, res) => {
     try {
+      console.log('🔄 Registration attempt:', req.body.email);
       const { confirmPassword, ...userData } = registerSchema.parse(req.body);
       
-      // Check if email already exists
-      const existingUser = await storage.getUserByEmail(userData.email);
+      // Enhanced duplicate checking with better error messages
+      const [existingUser, existingUsername] = await Promise.all([
+        storage.getUserByEmail(userData.email),
+        storage.getUserByUsername(userData.username)
+      ]);
+      
       if (existingUser) {
+        console.log('❌ Registration failed: Email already exists -', userData.email);
         return res.status(400).json({ message: "Email already registered" });
       }
 
-      // Check if username already exists
-      const existingUsername = await storage.getUserByUsername(userData.username);
       if (existingUsername) {
+        console.log('❌ Registration failed: Username taken -', userData.username);
         return res.status(400).json({ message: "Username already taken" });
       }
 
