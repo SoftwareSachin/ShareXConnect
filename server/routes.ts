@@ -300,17 +300,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/projects", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
+      console.log(`🚀 Creating project for user: ${req.user!.id} (${req.user!.username})`);
+      console.log(`📝 Project data:`, req.body);
+      
       const projectData = insertProjectSchema.parse({
         ...req.body,
         ownerId: req.user!.id,
         techStack: req.body.techStack || []
       });
       
+      console.log(`✅ Validated project data:`, projectData);
+      
       const project = await storage.createProject(projectData);
+      console.log(`💾 Project created in database:`, project);
+      
       const projectWithDetails = await storage.getProjectWithDetails(project.id, req.user!.id);
       
       res.status(201).json(projectWithDetails);
     } catch (error) {
+      console.error('❌ Project creation error:', error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid input", errors: error.errors });
       }

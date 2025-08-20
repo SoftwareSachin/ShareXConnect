@@ -549,10 +549,12 @@ export class DatabaseStorage implements IStorage {
 
   async createProject(project: InsertProject): Promise<Project> {
     try {
+      console.log(`💾 Inserting project into database:`, project);
       const result = await db.insert(projects).values(project).returning();
+      console.log(`✅ Project successfully saved to database:`, result[0]);
       return result[0];
     } catch (error) {
-      console.error('Error creating project:', error);
+      console.error('❌ Error creating project in database:', error);
       throw error;
     }
   }
