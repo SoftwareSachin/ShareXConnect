@@ -117,7 +117,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       <Sidebar />
-      <div className="lg:pl-72">
+      <div className="pl-80">
         <Header
           title="Dashboard"
           description="Welcome back! Here's your project overview."

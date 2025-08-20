@@ -1,77 +1,21 @@
 import { Link, useLocation } from "wouter";
 import { useAuthStore } from "@/store/auth-store";
-import { RoleBasedMenuItem, usePermissions } from "@/components/RoleProtectedComponent";
 import { getRoleName } from "@shared/permissions";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { 
-  Home, 
-  Folder, 
-  Search, 
-  ClipboardCheck, 
-  BookOpen, 
-  Users, 
-  Star, 
-  LogOut 
-} from "lucide-react";
-import { useState, useEffect } from "react";
 
 export function Sidebar() {
   const { user, logout } = useAuthStore();
-  const { isStudent, isFaculty, isAdmin, isGuest } = usePermissions();
   const [location] = useLocation();
 
   const navItems = [
-    { 
-      path: "/dashboard", 
-      label: "Dashboard", 
-      icon: Home, 
-      permissions: ["canViewAllProjects"] as const,
-      showForGuest: true 
-    },
-    { 
-      path: "/projects", 
-      label: "My Projects", 
-      icon: Folder, 
-      permissions: ["canCreateProject"] as const,
-      roles: ["STUDENT"] 
-    },
-    { 
-      path: "/discover", 
-      label: "Discover Projects", 
-      icon: Search, 
-      permissions: ["canViewPublicProjects"] as const,
-      showForGuest: true 
-    },
-    { 
-      path: "/reviews", 
-      label: "Faculty Reviews", 
-      icon: ClipboardCheck, 
-      permissions: ["canReceiveAssignments"] as const,
-      roles: ["FACULTY"] 
-    },
-    { 
-      path: "/assignments", 
-      label: "Assignments", 
-      icon: BookOpen, 
-      permissions: ["canViewAssignedProjects"] as const,
-      roles: ["FACULTY"] 
-    },
-    { 
-      path: "/users", 
-      label: "Manage Users", 
-      icon: Users, 
-      permissions: ["canManageUsers"] as const,
-      roles: ["ADMIN"] 
-    },
-    { 
-      path: "/starred", 
-      label: "Starred Projects", 
-      icon: Star, 
-      permissions: ["canStarProjects"] as const,
-      roles: ["STUDENT", "FACULTY", "ADMIN"] 
-    },
+    { path: "/dashboard", label: "Dashboard", showForGuest: true },
+    { path: "/projects", label: "My Projects", roles: ["STUDENT"] },
+    { path: "/discover", label: "Discover Projects", showForGuest: true },
+    { path: "/reviews", label: "Faculty Reviews", roles: ["FACULTY"] },
+    { path: "/assignments", label: "Assignments", roles: ["FACULTY"] },
+    { path: "/users", label: "Manage Users", roles: ["ADMIN"] },
+    { path: "/starred", label: "Starred Projects", roles: ["STUDENT", "FACULTY", "ADMIN"] },
   ];
 
   const getInitials = (firstName: string, lastName: string) => {
@@ -83,32 +27,42 @@ export function Sidebar() {
     window.location.href = "/auth/login";
   };
 
+  const isGuest = !user;
+
   return (
-    <div className="w-64 bg-white shadow-sm border-r border-gray-200 flex flex-col h-full">
-      {/* Header */}
-      <div className="p-6 border-b border-gray-200">
-        <h1 className="text-xl font-bold text-gray-900">ShareX</h1>
-        <p className="text-sm text-muted-foreground">Academic Platform</p>
+    <div className="fixed inset-y-0 left-0 w-80 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border-r border-slate-200/50 dark:border-slate-700/50 flex flex-col z-40">
+      {/* Modern Header */}
+      <div className="p-8 border-b border-slate-200/50 dark:border-slate-700/50">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-slate-900 dark:bg-slate-100 rounded-xl flex items-center justify-center">
+            <div className="w-6 h-6 bg-white dark:bg-slate-900 rounded"></div>
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">ShareX</h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Academic Platform</p>
+          </div>
+        </div>
       </div>
       
-      {/* Role Display */}
-      <div className="p-4 border-b border-gray-200">
-        <label className="block text-sm font-medium text-gray-700 mb-2">Your Role</label>
-        <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm">
-          {user ? getRoleName(user.role as any) : 'Guest'}
+      {/* Modern Role Display */}
+      <div className="p-6 border-b border-slate-200/50 dark:border-slate-700/50">
+        <div className="space-y-3">
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Your Role</label>
+          <div className="w-full px-4 py-3 bg-slate-50/70 dark:bg-slate-800/70 border border-slate-200/50 dark:border-slate-700/50 rounded-xl text-sm font-medium text-slate-900 dark:text-slate-100">
+            {user ? getRoleName(user.role as any) : 'Guest'}
+          </div>
+          {user && (
+            <p className="text-xs text-slate-500 dark:text-slate-400 px-1">
+              {user.institution}
+            </p>
+          )}
         </div>
-        {user && (
-          <p className="text-xs text-muted-foreground mt-1">
-            {user.institution}
-          </p>
-        )}
       </div>
 
-      {/* Navigation Menu */}
-      <nav className="p-4 flex-1">
-        <ul className="space-y-2">
+      {/* Modern Navigation Menu */}
+      <nav className="flex-1 p-6">
+        <div className="space-y-2">
           {navItems.map((item) => {
-            const Icon = item.icon;
             const isActive = location === item.path;
             
             // Check if item should be shown for guests
@@ -122,46 +76,49 @@ export function Sidebar() {
             }
             
             return (
-              <RoleBasedMenuItem
+              <Link
                 key={item.path}
-                permissions={item.permissions}
-                role={item.roles}
+                href={item.path}
+                className={`
+                  block w-full px-4 py-3 rounded-xl text-left transition-all duration-200
+                  ${isActive 
+                    ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-sm' 
+                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/70 dark:hover:bg-slate-800/70'
+                  }
+                `}
               >
-                <li>
-                  <Link href={item.path}>
-                    <Button
-                      variant={isActive ? "secondary" : "ghost"}
-                      className={`w-full justify-start ${
-                        isActive 
-                          ? "bg-blue-50 text-primary border border-blue-200" 
-                          : "text-muted-foreground hover:text-gray-900 hover:bg-gray-50"
-                      }`}
-                    >
-                      <Icon className="w-4 h-4 mr-3" />
-                      {item.label}
-                    </Button>
-                  </Link>
-                </li>
-              </RoleBasedMenuItem>
+                <div className="flex items-center gap-3">
+                  <div className={`
+                    w-8 h-8 rounded-lg flex items-center justify-center
+                    ${isActive 
+                      ? 'bg-white/20 dark:bg-slate-900/20' 
+                      : 'bg-slate-200/50 dark:bg-slate-700/50'
+                    }
+                  `}>
+                    <div className={`w-4 h-4 rounded ${isActive ? 'bg-white dark:bg-slate-900' : 'bg-slate-500'}`}></div>
+                  </div>
+                  <span className="font-medium text-sm">{item.label}</span>
+                </div>
+              </Link>
             );
           })}
-        </ul>
+        </div>
       </nav>
 
-      {/* User Profile Section */}
+      {/* Modern User Profile Section */}
       {user && (
-        <div className="p-4 border-t border-gray-200 bg-white">
-          <div className="flex items-center space-x-3">
-            <Avatar>
-              <AvatarFallback className="bg-primary text-white">
+        <div className="p-6 border-t border-slate-200/50 dark:border-slate-700/50">
+          <div className="flex items-center gap-3 p-4 bg-slate-50/70 dark:bg-slate-800/70 rounded-xl border border-slate-200/50 dark:border-slate-700/50">
+            <Avatar className="w-10 h-10">
+              <AvatarFallback className="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-sm font-semibold">
                 {getInitials(user.firstName, user.lastName)}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
+              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
                 {user.firstName} {user.lastName}
               </p>
-              <p className="text-xs text-muted-foreground truncate">
+              <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
                 {user.email}
               </p>
             </div>
@@ -169,9 +126,9 @@ export function Sidebar() {
               variant="ghost"
               size="sm"
               onClick={handleLogout}
-              className="text-muted-foreground hover:text-gray-700"
+              className="w-8 h-8 p-0 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded-lg"
             >
-              <LogOut className="w-4 h-4" />
+              <div className="w-4 h-4 bg-slate-400 rounded"></div>
             </Button>
           </div>
         </div>
