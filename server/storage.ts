@@ -37,6 +37,16 @@ export type DashboardStats = {
   collaborators: number;
 };
 
+export type ActivityItem = {
+  id: string;
+  type: 'project_created' | 'project_updated' | 'comment_added' | 'collaboration_started' | 'review_completed';
+  title: string;
+  description: string;
+  timestamp: Date;
+  projectId?: string;
+  userId: string;
+};
+
 export interface IStorage {
   // User operations
   getUser(id: string): Promise<User | undefined>;
@@ -85,6 +95,7 @@ export interface IStorage {
 
   // Dashboard statistics
   getDashboardStats(userId: string, role: string): Promise<DashboardStats>;
+  getRecentActivity(userId: string, role: string, limit: number): Promise<ActivityItem[]>;
 
   // College domain operations
   getCollegeDomains(): Promise<any[]>;
@@ -951,6 +962,126 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error getting dashboard stats:', error);
       return { totalProjects: 0, inReview: 0, approved: 0, collaborators: 0 };
+    }
+  }
+
+  async getRecentActivity(userId: string, role: string, limit: number): Promise<ActivityItem[]> {
+    try {
+      const activities: ActivityItem[] = [];
+      
+      if (role === "STUDENT") {
+        // Get recent project activities for student
+        const recentProjects = await db
+          .select()
+          .from(projects)
+          .where(eq(projects.ownerId, userId))
+          .orderBy(desc(projects.updatedAt))
+          .limit(limit);
+
+        for (const project of recentProjects) {
+          activities.push({
+            id: project.id,
+            type: 'project_updated',
+            title: `Updated "${project.title}"`,
+            description: `Made changes to ${project.category} project`,
+            timestamp: project.updatedAt || project.createdAt,
+            projectId: project.id,
+            userId: project.ownerId
+          });
+        }
+
+        // Get recent comments on user's projects
+        const recentComments = await db
+          .select()
+          .from(comments)
+          .innerJoin(projects, eq(comments.projectId, projects.id))
+          .innerJoin(users, eq(comments.userId, users.id))
+          .where(eq(projects.ownerId, userId))
+          .orderBy(desc(comments.createdAt))
+          .limit(Math.floor(limit / 2));
+
+        for (const result of recentComments) {
+          const comment = result.comments;
+          const project = result.projects;
+          const user = result.users;
+          
+          activities.push({
+            id: comment.id,
+            type: 'comment_added',
+            title: `${user.firstName} commented on "${project.title}"`,
+            description: comment.content.slice(0, 100) + (comment.content.length > 100 ? '...' : ''),
+            timestamp: comment.createdAt,
+            projectId: project.id,
+            userId: comment.userId
+          });
+        }
+        
+      } else if (role === "FACULTY") {
+        // Get recent faculty assignments
+        const recentAssignments = await db
+          .select()
+          .from(facultyAssignments)
+          .innerJoin(projects, eq(facultyAssignments.projectId, projects.id))
+          .innerJoin(users, eq(projects.ownerId, users.id))
+          .where(eq(facultyAssignments.facultyId, userId))
+          .orderBy(desc(facultyAssignments.createdAt))
+          .limit(limit);
+
+        for (const result of recentAssignments) {
+          const assignment = result.faculty_assignments;
+          const project = result.projects;
+          const student = result.users;
+          
+          activities.push({
+            id: assignment.id,
+            type: assignment.reviewStatus === 'COMPLETED' ? 'review_completed' : 'project_updated',
+            title: assignment.reviewStatus === 'COMPLETED' 
+              ? `Completed review for "${project.title}"`
+              : `New assignment: "${project.title}"`,
+            description: `Project by ${student.firstName} ${student.lastName}`,
+            timestamp: assignment.reviewedAt || assignment.createdAt,
+            projectId: project.id,
+            userId: assignment.facultyId
+          });
+        }
+        
+      } else {
+        // Admin role - get institution-wide activities
+        const user = await this.getUser(userId);
+        if (user) {
+          const recentProjects = await db
+            .select()
+            .from(projects)
+            .innerJoin(users, eq(projects.ownerId, users.id))
+            .where(eq(users.institution, user.institution))
+            .orderBy(desc(projects.createdAt))
+            .limit(limit);
+
+          for (const result of recentProjects) {
+            const project = result.projects;
+            const owner = result.users;
+            
+            activities.push({
+              id: project.id,
+              type: 'project_created',
+              title: `"${project.title}" created`,
+              description: `New ${project.category} project by ${owner.firstName} ${owner.lastName}`,
+              timestamp: project.createdAt,
+              projectId: project.id,
+              userId: project.ownerId
+            });
+          }
+        }
+      }
+
+      // Sort all activities by timestamp and return the most recent
+      return activities
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .slice(0, limit);
+        
+    } catch (error) {
+      console.error('Error getting recent activity:', error);
+      return [];
     }
   }
 

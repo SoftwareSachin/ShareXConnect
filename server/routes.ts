@@ -222,6 +222,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const stats = await storage.getDashboardStats(req.user.id, req.user.role);
       res.json(stats);
     } catch (error) {
+      console.error('Dashboard stats error:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }));
+
+  // Recent activity endpoint for dashboard
+  app.get("/api/dashboard/activity", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const activities = await storage.getRecentActivity(req.user.id, req.user.role, limit);
+      res.json(activities);
+    } catch (error) {
+      console.error('Recent activity error:', error);
       res.status(500).json({ message: "Internal server error" });
     }
   }));
