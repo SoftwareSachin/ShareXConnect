@@ -114,397 +114,175 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-5xl max-h-[98vh] overflow-y-auto bg-white/90 dark:bg-slate-950/90 backdrop-blur-3xl border-0 rounded-[2rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.25)] dark:shadow-[0_32px_64px_-12px_rgba(0,0,0,0.4)] p-0">
-        {/* Modern Header with Gradient Border */}
-        <div className="relative p-10 pb-8 border-b border-slate-200/20 dark:border-slate-700/20">
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 opacity-60"></div>
-          <DialogHeader className="relative z-10">
-            <DialogTitle className="text-4xl font-black tracking-tight text-slate-900 dark:text-slate-50 text-center leading-tight">
+      <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/20 dark:border-slate-700/20 rounded-3xl shadow-2xl p-0 m-4">
+        {/* Material Design 3 Header */}
+        <div className="relative px-8 py-6 border-b border-slate-200/10 dark:border-slate-700/10">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-semibold tracking-normal text-slate-900 dark:text-slate-50">
               Create New Project
             </DialogTitle>
-            <p className="text-xl text-slate-600 dark:text-slate-300 text-center mt-3 font-medium">
-              Build something extraordinary together
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 font-normal">
+              Create and share your academic project
             </p>
           </DialogHeader>
         </div>
 
-        <div className="p-10">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
-            {/* Enhanced Title and Category Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-              <div className="space-y-4">
-                <Label htmlFor="title" className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+        <div className="px-8 py-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {/* Basic Information Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="title" className="text-sm font-medium text-slate-700 dark:text-slate-300">
                   Project Title
                 </Label>
-                <div className="relative group">
-                  <Input
-                    id="title"
-                    {...register("title")}
-                    placeholder="Enter your project name"
-                    data-testid="input-title"
-                    className="h-16 bg-white/60 dark:bg-slate-800/60 border-2 border-slate-200/40 dark:border-slate-700/40 rounded-3xl backdrop-blur-xl text-xl px-6 font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-4 focus:ring-slate-500/10 focus:border-slate-500/60 transition-all duration-500 group-hover:border-slate-300/60 dark:group-hover:border-slate-600/60"
-                  />
-                  <div className="absolute inset-0 rounded-3xl bg-slate-100/20 dark:bg-slate-700/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                </div>
+                <Input
+                  id="title"
+                  {...register("title")}
+                  placeholder="Enter project title"
+                  data-testid="input-title"
+                  className="h-12 bg-white/50 dark:bg-slate-800/50 border border-slate-300/60 dark:border-slate-600/60 rounded-xl backdrop-blur-sm text-base px-4 font-normal text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/60 transition-all duration-200"
+                />
                 {errors.title && (
-                  <p className="text-sm text-red-500 mt-3 font-medium">{errors.title.message}</p>
+                  <p className="text-xs text-red-600 dark:text-red-400 font-medium">{errors.title.message}</p>
                 )}
               </div>
               
-              <div className="space-y-4">
-                <Label htmlFor="category" className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+              <div className="space-y-2">
+                <Label htmlFor="category" className="text-sm font-medium text-slate-700 dark:text-slate-300">
                   Category
                 </Label>
                 <Select onValueChange={(value) => setValue("category", value)} defaultValue="Web Development">
-                  <SelectTrigger data-testid="select-category" className="h-16 bg-white/60 dark:bg-slate-800/60 border-2 border-slate-200/40 dark:border-slate-700/40 rounded-3xl backdrop-blur-xl text-xl px-6 font-medium text-slate-900 dark:text-slate-100 focus:ring-4 focus:ring-slate-500/10 focus:border-slate-500/60 transition-all duration-500 hover:border-slate-300/60 dark:hover:border-slate-600/60">
+                  <SelectTrigger data-testid="select-category" className="h-12 bg-white/50 dark:bg-slate-800/50 border border-slate-300/60 dark:border-slate-600/60 rounded-xl backdrop-blur-sm text-base px-4 font-normal text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/60 transition-all duration-200">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-3xl border-2 border-slate-200/30 dark:border-slate-700/30 rounded-3xl shadow-2xl">
-                    <SelectItem value="Web Development" className="text-lg py-4 px-6 rounded-2xl">Web Development</SelectItem>
-                    <SelectItem value="Mobile App" className="text-lg py-4 px-6 rounded-2xl">Mobile App</SelectItem>
-                    <SelectItem value="Data Science" className="text-lg py-4 px-6 rounded-2xl">Data Science</SelectItem>
-                    <SelectItem value="AI/Machine Learning" className="text-lg py-4 px-6 rounded-2xl">AI/Machine Learning</SelectItem>
-                    <SelectItem value="Game Development" className="text-lg py-4 px-6 rounded-2xl">Game Development</SelectItem>
-                    <SelectItem value="Other" className="text-lg py-4 px-6 rounded-2xl">Other</SelectItem>
+                  <SelectContent className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-lg">
+                    <SelectItem value="Web Development" className="text-sm py-2 px-3 rounded-lg">Web Development</SelectItem>
+                    <SelectItem value="Mobile App" className="text-sm py-2 px-3 rounded-lg">Mobile App</SelectItem>
+                    <SelectItem value="Data Science" className="text-sm py-2 px-3 rounded-lg">Data Science</SelectItem>
+                    <SelectItem value="AI/Machine Learning" className="text-sm py-2 px-3 rounded-lg">AI/Machine Learning</SelectItem>
+                    <SelectItem value="Game Development" className="text-sm py-2 px-3 rounded-lg">Game Development</SelectItem>
+                    <SelectItem value="Other" className="text-sm py-2 px-3 rounded-lg">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
-            {/* Enhanced Description Section */}
-            <div className="space-y-4">
-              <Label htmlFor="description" className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+            {/* Project Description */}
+            <div className="space-y-2">
+              <Label htmlFor="description" className="text-sm font-medium text-slate-700 dark:text-slate-300">
                 Project Description
               </Label>
-              <div className="relative group">
-                <Textarea
-                  id="description"
-                  {...register("description")}
-                  placeholder="Describe your project vision, goals, key features, and expected impact on the academic community..."
-                  rows={6}
-                  data-testid="textarea-description"
-                  className="bg-white/60 dark:bg-slate-800/60 border-2 border-slate-200/40 dark:border-slate-700/40 rounded-3xl backdrop-blur-xl text-lg p-6 font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-4 focus:ring-slate-500/10 focus:border-slate-500/60 transition-all duration-500 resize-none leading-relaxed group-hover:border-slate-300/60 dark:group-hover:border-slate-600/60"
-                />
-                <div className="absolute inset-0 rounded-3xl bg-slate-100/20 dark:bg-slate-700/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-              </div>
+              <Textarea
+                id="description"
+                {...register("description")}
+                placeholder="Describe your project"
+                rows={4}
+                data-testid="textarea-description"
+                className="bg-white/50 dark:bg-slate-800/50 border border-slate-300/60 dark:border-slate-600/60 rounded-xl backdrop-blur-sm text-base p-4 font-normal text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/60 transition-all duration-200 resize-none"
+              />
               {errors.description && (
-                <p className="text-sm text-red-500 mt-3 font-medium">{errors.description.message}</p>
+                <p className="text-xs text-red-600 dark:text-red-400 font-medium">{errors.description.message}</p>
               )}
             </div>
 
-            {/* Enhanced Visibility and Status Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-              <div className="space-y-4">
-                <Label htmlFor="visibility" className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                  Project Visibility
+            {/* Visibility and Status */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="visibility" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Visibility
                 </Label>
                 <Select onValueChange={(value) => setValue("visibility", value as any)} defaultValue="PRIVATE">
-                  <SelectTrigger data-testid="select-visibility" className="h-16 bg-white/60 dark:bg-slate-800/60 border-2 border-slate-200/40 dark:border-slate-700/40 rounded-3xl backdrop-blur-xl text-xl px-6 font-medium text-slate-900 dark:text-slate-100 focus:ring-4 focus:ring-slate-500/10 focus:border-slate-500/60 transition-all duration-500 hover:border-slate-300/60 dark:hover:border-slate-600/60">
+                  <SelectTrigger data-testid="select-visibility" className="h-12 bg-white/50 dark:bg-slate-800/50 border border-slate-300/60 dark:border-slate-600/60 rounded-xl backdrop-blur-sm text-base px-4 font-normal text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/60 transition-all duration-200">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-3xl border-2 border-slate-200/30 dark:border-slate-700/30 rounded-3xl shadow-2xl">
-                    <SelectItem value="PRIVATE" className="text-lg py-4 px-6 rounded-2xl">Private</SelectItem>
-                    <SelectItem value="INSTITUTION" className="text-lg py-4 px-6 rounded-2xl">Institution</SelectItem>
-                    <SelectItem value="PUBLIC" className="text-lg py-4 px-6 rounded-2xl">Public</SelectItem>
+                  <SelectContent className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-lg">
+                    <SelectItem value="PRIVATE" className="text-sm py-2 px-3 rounded-lg">Private</SelectItem>
+                    <SelectItem value="INSTITUTION" className="text-sm py-2 px-3 rounded-lg">Institution</SelectItem>
+                    <SelectItem value="PUBLIC" className="text-sm py-2 px-3 rounded-lg">Public</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               
-              <div className="space-y-4">
-                <Label htmlFor="status" className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                  Project Status
+              <div className="space-y-2">
+                <Label htmlFor="status" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Status
                 </Label>
                 <Select onValueChange={(value) => setValue("status", value as any)} defaultValue="DRAFT">
-                  <SelectTrigger data-testid="select-status" className="h-16 bg-white/60 dark:bg-slate-800/60 border-2 border-slate-200/40 dark:border-slate-700/40 rounded-3xl backdrop-blur-xl text-xl px-6 font-medium text-slate-900 dark:text-slate-100 focus:ring-4 focus:ring-slate-500/10 focus:border-slate-500/60 transition-all duration-500 hover:border-slate-300/60 dark:hover:border-slate-600/60">
+                  <SelectTrigger data-testid="select-status" className="h-12 bg-white/50 dark:bg-slate-800/50 border border-slate-300/60 dark:border-slate-600/60 rounded-xl backdrop-blur-sm text-base px-4 font-normal text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/60 transition-all duration-200">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-3xl border-2 border-slate-200/30 dark:border-slate-700/30 rounded-3xl shadow-2xl">
-                    <SelectItem value="DRAFT" className="text-lg py-4 px-6 rounded-2xl">Draft</SelectItem>
-                    <SelectItem value="SUBMITTED" className="text-lg py-4 px-6 rounded-2xl">Submitted</SelectItem>
+                  <SelectContent className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-lg">
+                    <SelectItem value="DRAFT" className="text-sm py-2 px-3 rounded-lg">Draft</SelectItem>
+                    <SelectItem value="SUBMITTED" className="text-sm py-2 px-3 rounded-lg">Submitted</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
-            {/* Enhanced Technologies Section */}
-            <div className="space-y-4">
-              <Label htmlFor="techStackInput" className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                Technologies & Stack
+            {/* Technologies */}
+            <div className="space-y-2">
+              <Label htmlFor="techStackInput" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                Technologies
               </Label>
-              <div className="relative group">
+              <Input
+                id="techStackInput"
+                {...register("techStackInput")}
+                placeholder="React, TypeScript, Node.js (comma separated)"
+                data-testid="input-techstack"
+                className="h-12 bg-white/50 dark:bg-slate-800/50 border border-slate-300/60 dark:border-slate-600/60 rounded-xl backdrop-blur-sm text-base px-4 font-normal text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/60 transition-all duration-200"
+              />
+            </div>
+
+            {/* Repository and Demo URLs */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="githubUrl" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  GitHub Repository (Optional)
+                </Label>
                 <Input
-                  id="techStackInput"
-                  {...register("techStackInput")}
-                  placeholder="React, TypeScript, Node.js, PostgreSQL, Docker (comma separated)"
-                  data-testid="input-techstack"
-                  className="h-16 bg-white/60 dark:bg-slate-800/60 border-2 border-slate-200/40 dark:border-slate-700/40 rounded-3xl backdrop-blur-xl text-xl px-6 font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-4 focus:ring-slate-500/10 focus:border-slate-500/60 transition-all duration-500 group-hover:border-slate-300/60 dark:group-hover:border-slate-600/60"
+                  id="githubUrl"
+                  type="url"
+                  {...register("githubUrl")}
+                  placeholder="https://github.com/username/repository"
+                  data-testid="input-github"
+                  className="h-12 bg-white/50 dark:bg-slate-800/50 border border-slate-300/60 dark:border-slate-600/60 rounded-xl backdrop-blur-sm text-base px-4 font-normal text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/60 transition-all duration-200"
                 />
-                <div className="absolute inset-0 rounded-3xl bg-slate-100/20 dark:bg-slate-700/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-              </div>
-            </div>
-
-            {/* Enhanced Repository and Demo Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-              <div className="space-y-4">
-                <Label htmlFor="githubUrl" className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                  GitHub Repository
-                </Label>
-                <div className="relative group">
-                  <Input
-                    id="githubUrl"
-                    type="url"
-                    {...register("githubUrl")}
-                    placeholder="https://github.com/username/repository"
-                    data-testid="input-github"
-                    className="h-16 bg-white/60 dark:bg-slate-800/60 border-2 border-slate-200/40 dark:border-slate-700/40 rounded-3xl backdrop-blur-xl text-xl px-6 font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-4 focus:ring-slate-500/10 focus:border-slate-500/60 transition-all duration-500 group-hover:border-slate-300/60 dark:group-hover:border-slate-600/60"
-                  />
-                  <div className="absolute inset-0 rounded-3xl bg-slate-100/20 dark:bg-slate-700/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                </div>
               </div>
               
-              <div className="space-y-4">
-                <Label htmlFor="demoUrl" className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                  Live Demo URL
+              <div className="space-y-2">
+                <Label htmlFor="demoUrl" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Demo URL (Optional)
                 </Label>
-                <div className="relative group">
-                  <Input
-                    id="demoUrl"
-                    type="url"
-                    {...register("demoUrl")}
-                    placeholder="https://your-amazing-project.com"
-                    data-testid="input-demo"
-                    className="h-16 bg-white/60 dark:bg-slate-800/60 border-2 border-slate-200/40 dark:border-slate-700/40 rounded-3xl backdrop-blur-xl text-xl px-6 font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-4 focus:ring-slate-500/10 focus:border-slate-500/60 transition-all duration-500 group-hover:border-slate-300/60 dark:group-hover:border-slate-600/60"
-                  />
-                  <div className="absolute inset-0 rounded-3xl bg-slate-100/20 dark:bg-slate-700/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                </div>
-              </div>
-            </div>
-
-            {/* Enhanced Repository Structure Section */}
-            <div className="space-y-4">
-              <Label htmlFor="repositoryStructure" className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                Repository Structure
-              </Label>
-              <div className="relative group">
-                <Textarea
-                  id="repositoryStructure"
-                  {...register("repositoryStructure")}
-                  placeholder={`├── src/
-│   ├── components/
-│   ├── pages/
-│   ├── hooks/
-│   └── utils/
-├── public/
-├── docs/
-├── tests/
-├── package.json
-├── README.md
-└── .gitignore`}
-                  rows={8}
-                  data-testid="textarea-repository-structure"
-                  className="bg-slate-950/60 dark:bg-slate-900/60 border-2 border-slate-200/40 dark:border-slate-700/40 rounded-3xl backdrop-blur-xl text-lg p-6 font-mono text-slate-100 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-4 focus:ring-slate-500/10 focus:border-slate-500/60 transition-all duration-500 resize-none leading-relaxed group-hover:border-slate-300/60 dark:group-hover:border-slate-600/60"
+                <Input
+                  id="demoUrl"
+                  type="url"
+                  {...register("demoUrl")}
+                  placeholder="https://your-project.com"
+                  data-testid="input-demo"
+                  className="h-12 bg-white/50 dark:bg-slate-800/50 border border-slate-300/60 dark:border-slate-600/60 rounded-xl backdrop-blur-sm text-base px-4 font-normal text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/60 transition-all duration-200"
                 />
-                <div className="absolute inset-0 rounded-3xl bg-slate-100/20 dark:bg-slate-700/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
               </div>
             </div>
 
-            {/* Enhanced README Content Section */}
-            <div className="space-y-4">
-              <Label htmlFor="readmeContent" className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                README.md Content
-              </Label>
-              <div className="relative group">
-                <Textarea
-                  id="readmeContent"
-                  {...register("readmeContent")}
-                  placeholder={`# Project Title
-
-## Description
-Brief description of your project and what it does.
-
-## Features
-- Feature 1
-- Feature 2
-- Feature 3
-
-## Installation
-\`\`\`bash
-npm install
-npm start
-\`\`\`
-
-## Usage
-Explain how to use your project.
-
-## Contributing
-Guidelines for contributing to this project.
-
-## License
-This project is licensed under the MIT License.`}
-                  rows={12}
-                  data-testid="textarea-readme-content"
-                  className="bg-white/60 dark:bg-slate-800/60 border-2 border-slate-200/40 dark:border-slate-700/40 rounded-3xl backdrop-blur-xl text-lg p-6 font-mono text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-4 focus:ring-slate-500/10 focus:border-slate-500/60 transition-all duration-500 resize-none leading-relaxed group-hover:border-slate-300/60 dark:group-hover:border-slate-600/60"
-                />
-                <div className="absolute inset-0 rounded-3xl bg-slate-100/20 dark:bg-slate-700/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-              </div>
-            </div>
-
-            {/* Enhanced License and Contributing Guidelines */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-              <div className="space-y-4">
-                <Label htmlFor="licenseType" className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                  License Type
-                </Label>
-                <Select onValueChange={(value) => setValue("licenseType", value)} defaultValue="MIT">
-                  <SelectTrigger data-testid="select-license" className="h-16 bg-white/60 dark:bg-slate-800/60 border-2 border-slate-200/40 dark:border-slate-700/40 rounded-3xl backdrop-blur-xl text-xl px-6 font-medium text-slate-900 dark:text-slate-100 focus:ring-4 focus:ring-slate-500/10 focus:border-slate-500/60 transition-all duration-500 hover:border-slate-300/60 dark:hover:border-slate-600/60">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-3xl border-2 border-slate-200/30 dark:border-slate-700/30 rounded-3xl shadow-2xl">
-                    <SelectItem value="MIT" className="text-lg py-4 px-6 rounded-2xl">MIT License</SelectItem>
-                    <SelectItem value="Apache-2.0" className="text-lg py-4 px-6 rounded-2xl">Apache 2.0</SelectItem>
-                    <SelectItem value="GPL-3.0" className="text-lg py-4 px-6 rounded-2xl">GPL 3.0</SelectItem>
-                    <SelectItem value="BSD-3-Clause" className="text-lg py-4 px-6 rounded-2xl">BSD 3-Clause</SelectItem>
-                    <SelectItem value="ISC" className="text-lg py-4 px-6 rounded-2xl">ISC License</SelectItem>
-                    <SelectItem value="Unlicense" className="text-lg py-4 px-6 rounded-2xl">Unlicense</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-4">
-                <Label htmlFor="contributingGuidelines" className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                  Contributing Guidelines
-                </Label>
-                <div className="relative group">
-                  <Textarea
-                    id="contributingGuidelines"
-                    {...register("contributingGuidelines")}
-                    placeholder="Please read CONTRIBUTING.md for guidelines on contributing to this project..."
-                    rows={4}
-                    data-testid="textarea-contributing"
-                    className="bg-white/60 dark:bg-slate-800/60 border-2 border-slate-200/40 dark:border-slate-700/40 rounded-3xl backdrop-blur-xl text-lg p-6 font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-4 focus:ring-slate-500/10 focus:border-slate-500/60 transition-all duration-500 resize-none leading-relaxed group-hover:border-slate-300/60 dark:group-hover:border-slate-600/60"
-                  />
-                  <div className="absolute inset-0 rounded-3xl bg-slate-100/20 dark:bg-slate-700/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                </div>
-              </div>
-            </div>
-
-            {/* Enhanced Installation and API Documentation */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-              <div className="space-y-4">
-                <Label htmlFor="installationInstructions" className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                  Installation Instructions
-                </Label>
-                <div className="relative group">
-                  <Textarea
-                    id="installationInstructions"
-                    {...register("installationInstructions")}
-                    placeholder={`npm install
-npm run build
-npm start
-
-or with yarn:
-yarn install
-yarn build
-yarn start`}
-                    rows={6}
-                    data-testid="textarea-installation"
-                    className="bg-slate-950/60 dark:bg-slate-900/60 border-2 border-slate-200/40 dark:border-slate-700/40 rounded-3xl backdrop-blur-xl text-lg p-6 font-mono text-slate-100 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-4 focus:ring-slate-500/10 focus:border-slate-500/60 transition-all duration-500 resize-none leading-relaxed group-hover:border-slate-300/60 dark:group-hover:border-slate-600/60"
-                  />
-                  <div className="absolute inset-0 rounded-3xl bg-slate-100/20 dark:bg-slate-700/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                <Label htmlFor="apiDocumentation" className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                  API Documentation
-                </Label>
-                <div className="relative group">
-                  <Textarea
-                    id="apiDocumentation"
-                    {...register("apiDocumentation")}
-                    placeholder={`## API Endpoints
-
-GET /api/users
-POST /api/users
-PUT /api/users/:id
-DELETE /api/users/:id
-
-Authentication: Bearer token required`}
-                    rows={6}
-                    data-testid="textarea-api-docs"
-                    className="bg-white/60 dark:bg-slate-800/60 border-2 border-slate-200/40 dark:border-slate-700/40 rounded-3xl backdrop-blur-xl text-lg p-6 font-mono text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-4 focus:ring-slate-500/10 focus:border-slate-500/60 transition-all duration-500 resize-none leading-relaxed group-hover:border-slate-300/60 dark:group-hover:border-slate-600/60"
-                  />
-                  <div className="absolute inset-0 rounded-3xl bg-slate-100/20 dark:bg-slate-700/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                </div>
-              </div>
-            </div>
-
-            {/* Enhanced Source Code Upload Section */}
-            <div className="space-y-4">
-              <Label className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                Source Code & Assets Upload
-              </Label>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="relative group">
-                  <div className="border-3 border-dashed border-slate-200/50 dark:border-slate-700/50 rounded-3xl p-8 text-center bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl hover:bg-white/60 dark:hover:bg-slate-800/60 hover:border-slate-300/60 dark:hover:border-slate-600/60 transition-all duration-500 cursor-pointer">
-                    <div className="w-16 h-16 bg-slate-100/90 dark:bg-slate-800/90 rounded-3xl flex items-center justify-center mx-auto mb-4 backdrop-blur-sm group-hover:scale-110 transition-transform duration-300">
-                      <div className="w-8 h-8 bg-slate-400 dark:bg-slate-500 rounded-2xl"></div>
-                    </div>
-                    <p className="text-xl text-slate-700 dark:text-slate-200 mb-2 font-bold">
-                      Source Code (ZIP)
-                    </p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
-                      Upload your complete project as ZIP
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="relative group">
-                  <div className="border-3 border-dashed border-slate-200/50 dark:border-slate-700/50 rounded-3xl p-8 text-center bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl hover:bg-white/60 dark:hover:bg-slate-800/60 hover:border-slate-300/60 dark:hover:border-slate-600/60 transition-all duration-500 cursor-pointer">
-                    <div className="w-16 h-16 bg-slate-100/90 dark:bg-slate-800/90 rounded-3xl flex items-center justify-center mx-auto mb-4 backdrop-blur-sm group-hover:scale-110 transition-transform duration-300">
-                      <div className="w-8 h-8 bg-slate-400 dark:bg-slate-500 rounded-2xl"></div>
-                    </div>
-                    <p className="text-xl text-slate-700 dark:text-slate-200 mb-2 font-bold">
-                      Documentation & Assets
-                    </p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
-                      PDF, Images, Documentation files
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Enhanced Action Buttons with GitHub-style */}
-            <div className="flex items-center justify-between pt-10 border-t border-slate-200/30 dark:border-slate-700/30">
-              <div className="flex items-center space-x-4">
-                <div className="text-sm text-slate-500 dark:text-slate-400 font-medium">
-                  Repository will be created with modern structure
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <span className="text-sm text-slate-600 dark:text-slate-300 font-medium">Ready to deploy</span>
-                </div>
-              </div>
-              <div className="flex items-center space-x-6">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={handleClose}
-                  data-testid="button-cancel"
-                  className="h-16 px-10 bg-white/60 dark:bg-slate-800/60 border-2 border-slate-200/50 dark:border-slate-700/50 rounded-3xl backdrop-blur-xl text-xl font-bold text-slate-700 dark:text-slate-200 hover:bg-white/80 dark:hover:bg-slate-800/80 hover:border-slate-300/70 dark:hover:border-slate-600/70 transition-all duration-500 hover:scale-105"
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  type="submit" 
-                  disabled={createProjectMutation.isPending}
-                  data-testid="button-create"
-                  className="h-16 px-12 bg-green-600 hover:bg-green-700 text-white rounded-3xl text-xl font-black tracking-tight transition-all duration-500 hover:scale-110 hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                >
-                  {createProjectMutation.isPending ? "Creating Repository..." : "Create Repository"}
-                </Button>
-              </div>
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3 pt-4 border-t border-slate-200/20 dark:border-slate-700/20">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={handleClose}
+                data-testid="button-cancel"
+                className="h-10 px-6 bg-transparent border border-slate-300 dark:border-slate-600 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200"
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={createProjectMutation.isPending}
+                data-testid="button-create"
+                className="h-10 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {createProjectMutation.isPending ? "Creating..." : "Create Project"}
+              </Button>
             </div>
           </form>
         </div>
