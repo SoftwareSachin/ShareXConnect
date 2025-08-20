@@ -1,8 +1,164 @@
 import { z } from "zod";
-import type { User, Project, Comment, FacultyAssignment, ProjectCollaborator, ProjectStar, ProjectFile } from "@prisma/client";
+import { sql } from 'drizzle-orm';
+import {
+  pgTable,
+  varchar,
+  text,
+  timestamp,
+  pgEnum,
+  uuid,
+  integer,
+} from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 
-// Re-export Prisma types for consistency
-export type { User, Project, Comment, FacultyAssignment, ProjectCollaborator, ProjectStar, ProjectFile };
+// Enums
+export const roleEnum = pgEnum("role", ["STUDENT", "FACULTY", "ADMIN"]);
+export const visibilityEnum = pgEnum("visibility", ["PRIVATE", "INSTITUTION", "PUBLIC"]);
+export const projectStatusEnum = pgEnum("project_status", ["DRAFT", "SUBMITTED", "UNDER_REVIEW", "APPROVED"]);
+export const reviewStatusEnum = pgEnum("review_status", ["PENDING", "COMPLETED"]);
+
+// Users table
+export const users = pgTable("users", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  username: varchar("username", { length: 30 }).unique().notNull(),
+  email: varchar("email", { length: 320 }).unique().notNull(),
+  password: varchar("password", { length: 255 }).notNull(),
+  firstName: varchar("first_name", { length: 50 }).notNull(),
+  lastName: varchar("last_name", { length: 50 }).notNull(),
+  role: roleEnum("role").notNull(),
+  institution: varchar("institution", { length: 100 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Projects table
+export const projects = pgTable("projects", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: varchar("title", { length: 200 }).notNull(),
+  description: text("description").notNull(),
+  category: varchar("category", { length: 100 }).notNull(),
+  visibility: visibilityEnum("visibility").notNull(),
+  status: projectStatusEnum("status").notNull(),
+  techStack: text("tech_stack").array().default([]),
+  githubUrl: varchar("github_url", { length: 500 }),
+  demoUrl: varchar("demo_url", { length: 500 }),
+  ownerId: uuid("owner_id").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Project collaborators table
+export const projectCollaborators = pgTable("project_collaborators", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: uuid("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
+  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Project stars table
+export const projectStars = pgTable("project_stars", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: uuid("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
+  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Comments table
+export const comments = pgTable("comments", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: uuid("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
+  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Faculty assignments table
+export const facultyAssignments = pgTable("faculty_assignments", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: uuid("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
+  facultyId: uuid("faculty_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  reviewStatus: reviewStatusEnum("review_status").notNull(),
+  grade: varchar("grade", { length: 10 }),
+  feedback: text("feedback"),
+  assignedAt: timestamp("assigned_at").defaultNow().notNull(),
+  reviewedAt: timestamp("reviewed_at"),
+});
+
+// Relations
+export const usersRelations = relations(users, ({ many }) => ({
+  projects: many(projects),
+  collaborations: many(projectCollaborators),
+  stars: many(projectStars),
+  comments: many(comments),
+  facultyAssignments: many(facultyAssignments),
+}));
+
+export const projectsRelations = relations(projects, ({ one, many }) => ({
+  owner: one(users, {
+    fields: [projects.ownerId],
+    references: [users.id],
+  }),
+  collaborators: many(projectCollaborators),
+  stars: many(projectStars),
+  comments: many(comments),
+  facultyAssignments: many(facultyAssignments),
+}));
+
+export const projectCollaboratorsRelations = relations(projectCollaborators, ({ one }) => ({
+  project: one(projects, {
+    fields: [projectCollaborators.projectId],
+    references: [projects.id],
+  }),
+  user: one(users, {
+    fields: [projectCollaborators.userId],
+    references: [users.id],
+  }),
+}));
+
+export const projectStarsRelations = relations(projectStars, ({ one }) => ({
+  project: one(projects, {
+    fields: [projectStars.projectId],
+    references: [projects.id],
+  }),
+  user: one(users, {
+    fields: [projectStars.userId],
+    references: [users.id],
+  }),
+}));
+
+export const commentsRelations = relations(comments, ({ one }) => ({
+  project: one(projects, {
+    fields: [comments.projectId],
+    references: [projects.id],
+  }),
+  user: one(users, {
+    fields: [comments.userId],
+    references: [users.id],
+  }),
+}));
+
+export const facultyAssignmentsRelations = relations(facultyAssignments, ({ one }) => ({
+  project: one(projects, {
+    fields: [facultyAssignments.projectId],
+    references: [projects.id],
+  }),
+  faculty: one(users, {
+    fields: [facultyAssignments.facultyId],
+    references: [users.id],
+  }),
+}));
+
+// Types
+export type User = typeof users.$inferSelect;
+export type InsertUser = typeof users.$inferInsert;
+export type Project = typeof projects.$inferSelect;
+export type InsertProject = typeof projects.$inferInsert;
+export type Comment = typeof comments.$inferSelect;
+export type InsertComment = typeof comments.$inferInsert;
+export type ProjectCollaborator = typeof projectCollaborators.$inferSelect;
+export type ProjectStar = typeof projectStars.$inferSelect;
+export type FacultyAssignment = typeof facultyAssignments.$inferSelect;
 
 // Authentication schemas with robust validation for production use
 export const loginSchema = z.object({
@@ -86,8 +242,5 @@ export type DashboardStats = {
 };
 
 // Type definitions
-export type InsertUser = Omit<User, 'id' | 'createdAt' | 'updatedAt'>;
-export type InsertProject = z.infer<typeof insertProjectSchema>;
-export type InsertComment = z.infer<typeof insertCommentSchema>;
 export type LoginData = z.infer<typeof loginSchema>;
 export type RegisterData = z.infer<typeof registerSchema>;

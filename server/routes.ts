@@ -1,8 +1,7 @@
-import type { Express, Request } from "express";
+import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import jwt from "jsonwebtoken";
 import multer from "multer";
-import path from "path";
 import { z } from "zod";
 import { storage } from "./storage";
 import { loginSchema, registerSchema, insertProjectSchema, insertCommentSchema, type User } from "@shared/schema";
@@ -25,7 +24,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "your-super-secure-jwt-secret-key-c
 const upload = multer({ dest: "uploads/" });
 
 // Middleware for JWT authentication
-const authenticateToken = async (req: Request, res: any, next: any) => {
+const authenticateToken = async (req: Request, res: Response, next: any) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
@@ -106,14 +105,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/auth/me", authenticateToken, async (req: AuthRequest, res) => {
-    const { password, ...userWithoutPassword } = req.user;
+    const { password, ...userWithoutPassword } = req.user!;
     res.json(userWithoutPassword);
   });
 
   // Dashboard stats
   app.get("/api/dashboard/stats", authenticateToken, async (req: AuthRequest, res) => {
     try {
-      const stats = await storage.getDashboardStats(req.user.id, req.user.role);
+      const stats = await storage.getDashboardStats(req.user!.id, req.user!.role);
       res.json(stats);
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
@@ -128,11 +127,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let filters: any = {};
       
       if (my === "true") {
-        filters.ownerId = req.user.id;
+        filters.ownerId = req.user!.id;
       } else {
         // Apply visibility rules based on user role and institution
-        if (req.user.role === "ADMIN") {
-          filters.institution = req.user.institution;
+        if (req.user!.role === "ADMIN") {
+          filters.institution = req.user!.institution;
         } else if (visibility) {
           filters.visibility = visibility;
         } else {
@@ -140,8 +139,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const projects = await storage.getProjects();
           const filteredProjects = projects.filter(p => 
             p.visibility === "PUBLIC" || 
-            (p.visibility === "INSTITUTION" && p.owner.institution === req.user.institution) ||
-            p.ownerId === req.user.id
+            (p.visibility === "INSTITUTION" && p.owner.institution === req.user!.institution) ||
+            p.ownerId === req.user!.id
           );
           return res.json(filteredProjects);
         }
@@ -160,16 +159,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/projects/:id", authenticateToken, async (req: AuthRequest, res) => {
     try {
-      const project = await storage.getProjectWithDetails(req.params.id, req.user.id);
+      const project = await storage.getProjectWithDetails(req.params.id, req.user!.id);
       if (!project) {
         return res.status(404).json({ message: "Project not found" });
       }
 
       // Check permissions
-      if (project.visibility === "PRIVATE" && project.ownerId !== req.user.id) {
+      if (project.visibility === "PRIVATE" && project.ownerId !== req.user!.id) {
         return res.status(403).json({ message: "Access denied" });
       }
-      if (project.visibility === "INSTITUTION" && project.owner.institution !== req.user.institution && project.ownerId !== req.user.id) {
+      if (project.visibility === "INSTITUTION" && project.owner.institution !== req.user!.institution && project.ownerId !== req.user!.id) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -183,12 +182,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const projectData = insertProjectSchema.parse({
         ...req.body,
-        ownerId: req.user.id,
+        ownerId: req.user!.id,
         techStack: req.body.techStack || []
       });
       
       const project = await storage.createProject(projectData);
-      const projectWithDetails = await storage.getProjectWithDetails(project.id, req.user.id);
+      const projectWithDetails = await storage.getProjectWithDetails(project.id, req.user!.id);
       
       res.status(201).json(projectWithDetails);
     } catch (error) {
@@ -207,7 +206,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check ownership
-      if (project.ownerId !== req.user.id) {
+      if (project.ownerId !== req.user!.id) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -218,7 +217,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Project not found" });
       }
 
-      const projectWithDetails = await storage.getProjectWithDetails(updatedProject.id, req.user.id);
+      const projectWithDetails = await storage.getProjectWithDetails(updatedProject.id, req.user!.id);
       res.json(projectWithDetails);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -236,7 +235,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check ownership
-      if (project.ownerId !== req.user.id) {
+      if (project.ownerId !== req.user!.id) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -250,7 +249,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Star/unstar projects
   app.post("/api/projects/:id/star", authenticateToken, async (req: AuthRequest, res) => {
     try {
-      await storage.starProject(req.params.id, req.user.id);
+      await storage.starProject(req.params.id, req.user!.id);
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
@@ -259,7 +258,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/projects/:id/star", authenticateToken, async (req: AuthRequest, res) => {
     try {
-      await storage.unstarProject(req.params.id, req.user.id);
+      await storage.unstarProject(req.params.id, req.user!.id);
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
@@ -269,7 +268,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get starred projects
   app.get("/api/projects/starred/all", authenticateToken, async (req: AuthRequest, res) => {
     try {
-      const starredProjects = await storage.getStarredProjects(req.user.id);
+      const starredProjects = await storage.getStarredProjects(req.user!.id);
       res.json(starredProjects);
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
@@ -291,7 +290,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const commentData = insertCommentSchema.parse({
         ...req.body,
         projectId: req.params.id,
-        userId: req.user.id
+        userId: req.user!.id
       });
       
       const comment = await storage.createComment(commentData);
@@ -324,11 +323,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/faculty/assignments", authenticateToken, async (req: AuthRequest, res) => {
     try {
-      if (req.user.role !== "FACULTY") {
+      if (req.user!.role !== "FACULTY") {
         return res.status(403).json({ message: "Access denied" });
       }
 
-      const assignments = await storage.getFacultyAssignments(req.user.id);
+      const assignments = await storage.getFacultyAssignments(req.user!.id);
       res.json(assignments);
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
@@ -337,7 +336,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/assignments/:id/review", authenticateToken, async (req: AuthRequest, res) => {
     try {
-      if (req.user.role !== "FACULTY") {
+      if (req.user!.role !== "FACULTY") {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -368,7 +367,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check ownership
-      if (project.ownerId !== req.user.id) {
+      if (project.ownerId !== req.user!.id) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -387,7 +386,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check ownership
-      if (project.ownerId !== req.user.id) {
+      if (project.ownerId !== req.user!.id) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -411,9 +410,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check ownership or collaboration
-      if (project.ownerId !== req.user.id) {
+      if (project.ownerId !== req.user!.id) {
         const collaborators = await storage.getProjectCollaborators(req.params.id);
-        const isCollaborator = collaborators.some(c => c.id === req.user.id);
+        const isCollaborator = collaborators.some(c => c.id === req.user!.id);
         if (!isCollaborator) {
           return res.status(403).json({ message: "Access denied" });
         }
@@ -433,17 +432,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get users (for collaboration invites)
-  app.get("/api/users/search", authenticateToken, async (req, res) => {
+  app.get("/api/users/search", authenticateToken, async (req: AuthRequest, res) => {
     try {
       const { q } = req.query;
       if (!q || typeof q !== "string" || q.length < 2) {
         return res.json([]);
       }
 
-      const users = await storage.getUsersByInstitution(req.user.institution);
+      const users = await storage.getUsersByInstitution(req.user!.institution);
       const filteredUsers = users
         .filter(user => 
-          user.id !== req.user.id &&
+          user.id !== req.user!.id &&
           (user.username.toLowerCase().includes(q.toLowerCase()) ||
            user.email.toLowerCase().includes(q.toLowerCase()) ||
            `${user.firstName} ${user.lastName}`.toLowerCase().includes(q.toLowerCase()))
