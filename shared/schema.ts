@@ -227,17 +227,8 @@ export const registerSchema = z.object({
   }
   return true;
 }, {
-  message: "College selection is required for students and faculty",
-  path: ["selectedCollege"],
-}).refine((data) => {
-  // If role is ADMIN, collegeDomain is required
-  if (data.role === "ADMIN" && !data.collegeDomain) {
-    return false;
-  }
-  return true;
-}, {
-  message: "College domain is required for College Admin role",
-  path: ["collegeDomain"],
+  message: "Please complete all required fields for your selected role",
+  path: ["root"],
 });
 
 // Project schemas

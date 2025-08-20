@@ -20,33 +20,45 @@ type LoginFormData = z.infer<typeof loginSchema>;
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 // College Selector Component
-function CollegeSelector({ value, onValueChange, disabled }: { 
+function CollegeSelector({ value, onValueChange, disabled, control }: { 
   value: string | undefined; 
   onValueChange: (value: string) => void; 
-  disabled?: boolean; 
+  disabled?: boolean;
+  control: any;
 }) {
-  const { data: colleges, isLoading } = useQuery({
+  const { data: colleges, isLoading, error } = useQuery({
     queryKey: ["/api/colleges"],
     enabled: true,
   });
 
   return (
     <FormField
-      control={null as any}
+      control={control}
       name="selectedCollege"
-      render={() => (
+      render={({ field }) => (
         <FormItem>
           <FormLabel className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2.5">
             <Building2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             Select Your College
           </FormLabel>
           <FormControl>
-            <Select value={value} onValueChange={onValueChange} disabled={disabled || isLoading}>
+            <Select 
+              value={field.value || value} 
+              onValueChange={(newValue) => {
+                field.onChange(newValue);
+                onValueChange(newValue);
+              }} 
+              disabled={disabled || isLoading}
+            >
               <SelectTrigger className="bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white rounded-xl h-12 text-base font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg">
                 <SelectValue placeholder={isLoading ? "Loading colleges..." : "Select your college"} />
               </SelectTrigger>
               <SelectContent className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl border-slate-200/60 dark:border-slate-700/60 shadow-2xl rounded-xl max-h-60">
-                {colleges && colleges.length > 0 ? (
+                {error ? (
+                  <SelectItem value="error" disabled className="text-red-500 dark:text-red-400 italic">
+                    Error loading colleges
+                  </SelectItem>
+                ) : colleges && colleges.length > 0 ? (
                   colleges.map((college: any) => (
                     <SelectItem 
                       key={college.id} 
@@ -54,14 +66,14 @@ function CollegeSelector({ value, onValueChange, disabled }: {
                       className="cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/30 focus:bg-blue-100 dark:focus:bg-blue-900/50 text-slate-800 dark:text-slate-200 font-medium py-3 px-4 rounded-lg mx-1 my-0.5 transition-all duration-200"
                     >
                       <div className="flex flex-col">
-                        <span className="font-semibold">{college.collegeName}</span>
-                        <span className="text-xs text-slate-600 dark:text-slate-400">{college.domain}</span>
+                        <span className="font-semibold">{college.collegeName || 'Unnamed College'}</span>
+                        <span className="text-xs text-slate-600 dark:text-slate-400">{college.domain || ''}</span>
                       </div>
                     </SelectItem>
                   ))
                 ) : (
                   <SelectItem value="no-colleges" disabled className="text-slate-500 dark:text-slate-400 italic">
-                    {isLoading ? "Loading..." : "No colleges registered yet"}
+                    {isLoading ? "Loading..." : "No colleges registered yet. Contact admin to register your college domain."}
                   </SelectItem>
                 )}
               </SelectContent>
@@ -629,6 +641,7 @@ export default function Login() {
                         value={registerForm.watch("selectedCollege")} 
                         onValueChange={(value) => registerForm.setValue("selectedCollege", value)}
                         disabled={registerMutation.isPending}
+                        control={registerForm.control}
                       />
                     )}
 
