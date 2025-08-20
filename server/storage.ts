@@ -550,8 +550,19 @@ export class DatabaseStorage implements IStorage {
   async createProject(project: InsertProject): Promise<Project> {
     try {
       console.log(`💾 Inserting project into database:`, project);
+      
+      // Check before count
+      const beforeCount = await db.select({ count: count() }).from(projects).where(eq(projects.ownerId, project.ownerId));
+      console.log(`📊 BEFORE: User ${project.ownerId} had ${beforeCount[0]?.count || 0} projects`);
+      
       const result = await db.insert(projects).values(project).returning();
       console.log(`✅ Project successfully saved to database:`, result[0]);
+      
+      // Check after count
+      const afterCount = await db.select({ count: count() }).from(projects).where(eq(projects.ownerId, project.ownerId));
+      console.log(`📊 AFTER: User ${project.ownerId} now has ${afterCount[0]?.count || 0} projects`);
+      console.log(`🎯 DASHBOARD SHOULD UPDATE FROM ${beforeCount[0]?.count || 0} TO ${afterCount[0]?.count || 0}`);
+      
       return result[0];
     } catch (error) {
       console.error('❌ Error creating project in database:', error);

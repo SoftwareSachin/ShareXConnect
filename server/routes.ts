@@ -316,6 +316,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const projectWithDetails = await storage.getProjectWithDetails(project.id, req.user!.id);
       
+      console.log(`🔄 PROJECT CREATED SUCCESSFULLY - Dashboard should now show updated stats`);
+      console.log(`🎯 Next dashboard request should show increased project count for user ${req.user!.id}`);
+      
       res.status(201).json(projectWithDetails);
     } catch (error) {
       console.error('❌ Project creation error:', error);
