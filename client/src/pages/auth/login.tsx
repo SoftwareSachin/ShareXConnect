@@ -13,7 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { GraduationCap, BookOpen, Users, Shield, Mail, Lock, Eye, EyeOff, User, Building2, UserCheck, AtSign, KeyRound } from "lucide-react";
 import { loginSchema, registerSchema } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuthStore } from "@/store/auth-store";
 import type { z } from "zod";
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -24,7 +24,7 @@ export default function Login() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [activeTab, setActiveTab] = useState("login");
   const [, navigate] = useLocation();
-  const { login } = useAuth();
+  const { login } = useAuthStore();
 
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),

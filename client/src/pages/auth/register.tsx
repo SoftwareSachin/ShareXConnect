@@ -13,7 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Eye, EyeOff, User, Mail, Lock, Building2, UserCheck, Shield } from "lucide-react";
 import { registerSchema } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuthStore } from "@/store/auth-store";
 import type { z } from "zod";
 
 type RegisterFormData = z.infer<typeof registerSchema>;
@@ -21,7 +21,7 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { login } = useAuth();
+  const { login } = useAuthStore();
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
