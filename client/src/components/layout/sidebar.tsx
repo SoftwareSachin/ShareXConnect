@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { useAuthStore } from "@/lib/auth";
+import { useAuthStore } from "@/store/auth-store";
 import { RoleBasedMenuItem, usePermissions } from "@/components/RoleProtectedComponent";
 import { getRoleName } from "@shared/permissions";
 import { Button } from "@/components/ui/button";

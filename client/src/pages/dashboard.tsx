@@ -37,7 +37,7 @@ export default function Dashboard() {
   });
 
   const getStatCards = () => {
-    if (user?.role === "student") {
+    if (user?.role === "STUDENT") {
       return [
         {
           title: "Total Projects",
@@ -68,7 +68,7 @@ export default function Dashboard() {
           bgColor: "bg-purple-100",
         },
       ];
-    } else if (user?.role === "faculty") {
+    } else if (user?.role === "FACULTY") {
       return [
         {
           title: "Total Reviews",

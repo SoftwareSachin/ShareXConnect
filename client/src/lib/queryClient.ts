@@ -12,9 +12,30 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
+  const headers: Record<string, string> = {};
+  
+  if (data) {
+    headers["Content-Type"] = "application/json";
+  }
+  
+  // Add authorization header if we have a token (unless it's a registration/login request)
+  if (typeof window !== 'undefined' && !url.includes('/auth/register') && !url.includes('/auth/login')) {
+    const authData = localStorage.getItem('auth-storage');
+    if (authData) {
+      try {
+        const { state } = JSON.parse(authData);
+        if (state?.token) {
+          headers["Authorization"] = `Bearer ${state.token}`;
+        }
+      } catch (e) {
+        // Ignore parsing errors
+      }
+    }
+  }
+
   const res = await fetch(url, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers,
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
@@ -29,7 +50,25 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
+    const headers: Record<string, string> = {};
+    
+    // Add authorization header if we have a token
+    if (typeof window !== 'undefined') {
+      const authData = localStorage.getItem('auth-storage');
+      if (authData) {
+        try {
+          const { state } = JSON.parse(authData);
+          if (state?.token) {
+            headers["Authorization"] = `Bearer ${state.token}`;
+          }
+        } catch (e) {
+          // Ignore parsing errors
+        }
+      }
+    }
+
     const res = await fetch(queryKey.join("/") as string, {
+      headers,
       credentials: "include",
     });
 
