@@ -879,6 +879,13 @@ export class DatabaseStorage implements IStorage {
 
         console.log(`📊 Student ${userId} stats: {totalProjects: ${totalProjects}, inReview: ${inReview}, approved: ${approved}, collaborators: ${collaborators}}`);
         
+        // Real-time verification of stats calculation
+        console.log(`🔍 Real-time verification for user ${userId}:`);
+        console.log(`   - Total projects query result: ${totalProjects}`);
+        console.log(`   - In review projects: ${inReview}`);
+        console.log(`   - Approved projects: ${approved}`);
+        console.log(`   - Collaborators: ${collaborators}`);
+        
         return {
           totalProjects,
           inReview,
