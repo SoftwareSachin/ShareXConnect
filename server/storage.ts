@@ -133,10 +133,16 @@ export class DatabaseStorage implements IStorage {
       
       // Use transaction for atomicity to prevent partial user creation
       const result = await db.transaction(async (tx) => {
+        // Ensure role is properly set - default to GUEST if not provided
+        const userRole = insertUser.role || 'GUEST';
+        
+        console.log(`🔄 Creating user with role: ${userRole}`);
+        
         return await tx.insert(users).values({
           ...insertUser,
+          role: userRole,
           password: hashedPassword,
-          isVerified: insertUser.role === 'ADMIN' ? true : false, // Auto-verify admin users
+          isVerified: userRole === 'ADMIN' ? true : false, // Auto-verify admin users
           createdAt: new Date(),
           updatedAt: new Date()
         }).returning();

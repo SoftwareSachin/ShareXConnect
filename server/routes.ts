@@ -54,9 +54,7 @@ const authenticateToken = async (req: Request, res: Response, next: any) => {
 // Type-safe authentication middleware wrapper
 const withAuth = (handler: (req: AuthRequest, res: Response) => Promise<any>) => {
   return async (req: Request, res: Response) => {
-    if (!req.user) {
-      return res.status(401).json({ message: "Authentication required" });
-    }
+    // The authenticateToken middleware should have already set req.user
     return handler(req as AuthRequest, res);
   };
 };
@@ -76,8 +74,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
   app.post("/api/auth/register", async (req, res) => {
     try {
-      console.log('🔄 Registration attempt:', req.body.email);
+      console.log('🔄 Registration attempt:', req.body.email, 'Role:', req.body.role);
       const { confirmPassword, ...userData } = registerSchema.parse(req.body);
+      
+      // Debug: Log the parsed user data
+      console.log('📋 Parsed user data:', {
+        email: userData.email,
+        role: userData.role,
+        firstName: userData.firstName,
+        lastName: userData.lastName
+      });
       
       // Enhanced duplicate checking with better error messages
       const [existingUser, existingUsername] = await Promise.all([
@@ -221,7 +227,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   // Project routes
-  app.get("/api/projects", authenticateToken, async (req: AuthRequest, res) => {
+  app.get("/api/projects", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
       const { visibility, status, category, search, my } = req.query;
       
@@ -256,9 +262,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
     }
-  });
+  }));
 
-  app.get("/api/projects/:id", authenticateToken, async (req: AuthRequest, res) => {
+  app.get("/api/projects/:id", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
       const project = await storage.getProjectWithDetails(req.params.id, req.user!.id);
       if (!project) {
@@ -277,9 +283,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
     }
-  });
+  }));
 
-  app.post("/api/projects", authenticateToken, async (req: AuthRequest, res) => {
+  app.post("/api/projects", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
       const projectData = insertProjectSchema.parse({
         ...req.body,
@@ -297,9 +303,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.status(500).json({ message: "Internal server error" });
     }
-  });
+  }));
 
-  app.patch("/api/projects/:id", authenticateToken, async (req: AuthRequest, res) => {
+  app.patch("/api/projects/:id", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
       const project = await storage.getProject(req.params.id);
       if (!project) {
@@ -326,9 +332,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.status(500).json({ message: "Internal server error" });
     }
-  });
+  }));
 
-  app.delete("/api/projects/:id", authenticateToken, async (req: AuthRequest, res) => {
+  app.delete("/api/projects/:id", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
       const project = await storage.getProject(req.params.id);
       if (!project) {
@@ -345,48 +351,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
     }
-  });
+  }));
 
   // Star/unstar projects
-  app.post("/api/projects/:id/star", authenticateToken, async (req: AuthRequest, res) => {
+  app.post("/api/projects/:id/star", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
       await storage.starProject(req.params.id, req.user!.id);
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
     }
-  });
+  }));
 
-  app.delete("/api/projects/:id/star", authenticateToken, async (req: AuthRequest, res) => {
+  app.delete("/api/projects/:id/star", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
       await storage.unstarProject(req.params.id, req.user!.id);
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
     }
-  });
+  }));
 
   // Get starred projects
-  app.get("/api/projects/starred/all", authenticateToken, async (req: AuthRequest, res) => {
+  app.get("/api/projects/starred/all", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
       const starredProjects = await storage.getStarredProjects(req.user!.id);
       res.json(starredProjects);
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
     }
-  });
+  }));
 
   // Comments
-  app.get("/api/projects/:id/comments", authenticateToken, async (req: AuthRequest, res) => {
+  app.get("/api/projects/:id/comments", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
       const comments = await storage.getComments(req.params.id);
       res.json(comments);
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
     }
-  });
+  }));
 
-  app.post("/api/projects/:id/comments", authenticateToken, async (req: AuthRequest, res) => {
+  app.post("/api/projects/:id/comments", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
       const commentData = insertCommentSchema.parse({
         ...req.body,
@@ -402,7 +408,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.status(500).json({ message: "Internal server error" });
     }
-  });
+  }));
 
   // Faculty assignment routes
   app.post("/api/projects/:id/assign", authenticateToken, async (req: AuthRequest, res) => {
