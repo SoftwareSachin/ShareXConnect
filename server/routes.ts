@@ -127,7 +127,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           adminId: user.id
         });
 
-        const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
+        const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '30d' });
         const { password, ...userWithoutPassword } = user;
         res.json({ user: userWithoutPassword, token });
         
@@ -159,7 +159,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           isVerified: false // Will be verified by admin later
         });
 
-        const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
+        const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '30d' });
         const { password, ...userWithoutPassword } = user;
         res.json({ user: userWithoutPassword, token });
         
@@ -170,7 +170,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           isVerified: true // Guest users are auto-verified
         });
         
-        const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
+        const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '30d' });
         const { password, ...userWithoutPassword } = user;
         res.json({ user: userWithoutPassword, token });
       }
@@ -277,26 +277,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
-  app.get("/api/projects/:id", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+  // Modified to allow viewing public projects without authentication
+  app.get("/api/projects/:id", async (req, res) => {
     try {
-      const project = await storage.getProjectWithDetails(req.params.id, req.user!.id);
+      // Try to get authenticated user, but don't require it
+      let userId = null;
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        try {
+          const token = authHeader.substring(7);
+          const decoded = jwt.verify(token, JWT_SECRET) as any;
+          const user = await storage.getUserById(decoded.userId);
+          if (user) userId = user.id;
+        } catch (error) {
+          // Token invalid/expired - continue without authentication for public projects
+          console.log('🔓 Invalid/expired token, trying public access');
+        }
+      }
+
+      const project = await storage.getProjectWithDetails(req.params.id, userId);
       if (!project) {
         return res.status(404).json({ message: "Project not found" });
       }
 
-      // Check permissions
-      if (project.visibility === "PRIVATE" && project.ownerId !== req.user!.id) {
-        return res.status(403).json({ message: "Access denied" });
+      // Check permissions based on project visibility
+      if (project.visibility === "PRIVATE") {
+        if (!userId || project.ownerId !== userId) {
+          return res.status(403).json({ message: "Access denied - Private project" });
+        }
+      } else if (project.visibility === "INSTITUTION") {
+        if (!userId) {
+          return res.status(403).json({ message: "Access denied - Institution project requires login" });
+        }
+        const user = await storage.getUserById(userId);
+        if (!user || (project.owner.institution !== user.institution && project.ownerId !== userId)) {
+          return res.status(403).json({ message: "Access denied - Institution project" });
+        }
       }
-      if (project.visibility === "INSTITUTION" && project.owner.institution !== req.user!.institution && project.ownerId !== req.user!.id) {
-        return res.status(403).json({ message: "Access denied" });
-      }
+      // PUBLIC projects can be viewed by anyone
 
+      console.log(`✅ Project ${project.id} (${project.visibility}) accessed by user: ${userId || 'anonymous'}`);
       res.json(project);
     } catch (error) {
+      console.error('❌ Error in project detail endpoint:', error);
       res.status(500).json({ message: "Internal server error" });
     }
-  }));
+  });
 
   app.post("/api/projects", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
