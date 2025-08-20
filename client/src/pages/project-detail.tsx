@@ -20,7 +20,18 @@ export default function ProjectDetail() {
   
   const { data: project, isLoading, error } = useQuery<ProjectWithDetails>({
     queryKey: [`/api/projects/${params.id}`],
-    queryFn: () => apiGet(`/api/projects/${params.id}`),
+    queryFn: async () => {
+      console.log('🔍 Fetching project with ID:', params.id);
+      console.log('🔗 API URL:', `/api/projects/${params.id}`);
+      try {
+        const result = await apiGet(`/api/projects/${params.id}`);
+        console.log('✅ Project data received:', result);
+        return result;
+      } catch (err) {
+        console.error('❌ Error fetching project:', err);
+        throw err;
+      }
+    },
     enabled: !!params.id,
   });
 
@@ -37,11 +48,19 @@ export default function ProjectDetail() {
   }
 
   if (error || !project) {
+    console.log('❌ Project detail error:', error);
+    console.log('📊 Project data:', project);
+    console.log('🆔 Project ID from params:', params.id);
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-4">Project Not Found</h1>
           <p className="text-slate-600 dark:text-slate-400 mb-6">The project you're looking for doesn't exist or has been removed.</p>
+          {error && (
+            <p className="text-red-600 dark:text-red-400 mb-4 text-sm">
+              Error: {error instanceof Error ? error.message : 'Unknown error'}
+            </p>
+          )}
           <Link href="/projects">
             <Button>Back to Projects</Button>
           </Link>
