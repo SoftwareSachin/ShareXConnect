@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Star, MessageCircle, ExternalLink, Github, Users } from "lucide-react";
+import { ArrowLeft, Star, MessageCircle, ExternalLink, Github, Users, Folder, File, FileText, FileCode, Image, Archive } from "lucide-react";
 import { Link } from "wouter";
 import { apiGet } from "@/lib/api";
 import type { ProjectWithDetails } from "@shared/schema";
@@ -350,6 +350,253 @@ export default function ProjectDetail() {
                 </CardContent>
               </Card>
             )}
+
+            {/* File Explorer - GitHub-like file browser */}
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+                  <span className="text-slate-600">📁</span>
+                  Project Files
+                </h3>
+                
+                {/* File Tree Structure */}
+                <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+                  {/* File Tree Header */}
+                  <div className="bg-slate-50 dark:bg-slate-800 px-4 py-2 border-b border-slate-200 dark:border-slate-700">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Repository Structure</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-slate-500 dark:text-slate-400">📄 15 files</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">📁 8 folders</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* File Browser */}
+                  <div className="bg-white dark:bg-slate-900">
+                    {/* Root Directory */}
+                    <div className="hover:bg-slate-50 dark:hover:bg-slate-800 border-b border-slate-100 dark:border-slate-800">
+                      <div className="flex items-center gap-2 px-4 py-2">
+                        <Folder className="w-4 h-4 text-blue-600" />
+                        <span className="font-mono text-sm text-slate-900 dark:text-slate-100">src/</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400 ml-auto">Main source code</span>
+                      </div>
+                    </div>
+
+                    {/* Files in src/ */}
+                    <div className="ml-6">
+                      <div className="flex items-center gap-2 px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 border-b border-slate-100 dark:border-slate-800">
+                        <FileCode className="w-4 h-4 text-green-600" />
+                        <span className="font-mono text-sm text-slate-900 dark:text-slate-100">App.js</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400 ml-auto">2.5 KB • React Component</span>
+                      </div>
+                      <div className="flex items-center gap-2 px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 border-b border-slate-100 dark:border-slate-800">
+                        <FileCode className="w-4 h-4 text-blue-600" />
+                        <span className="font-mono text-sm text-slate-900 dark:text-slate-100">index.js</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400 ml-auto">1.2 KB • Entry point</span>
+                      </div>
+                      <div className="flex items-center gap-2 px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 border-b border-slate-100 dark:border-slate-800">
+                        <FileCode className="w-4 h-4 text-purple-600" />
+                        <span className="font-mono text-sm text-slate-900 dark:text-slate-100">styles.css</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400 ml-auto">4.1 KB • Stylesheets</span>
+                      </div>
+                    </div>
+
+                    {/* Components Directory */}
+                    <div className="hover:bg-slate-50 dark:hover:bg-slate-800 border-b border-slate-100 dark:border-slate-800">
+                      <div className="flex items-center gap-2 px-4 py-2">
+                        <Folder className="w-4 h-4 text-blue-600" />
+                        <span className="font-mono text-sm text-slate-900 dark:text-slate-100">components/</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400 ml-auto">React components</span>
+                      </div>
+                    </div>
+
+                    {/* Assets Directory */}
+                    <div className="hover:bg-slate-50 dark:hover:bg-slate-800 border-b border-slate-100 dark:border-slate-800">
+                      <div className="flex items-center gap-2 px-4 py-2">
+                        <Folder className="w-4 h-4 text-blue-600" />
+                        <span className="font-mono text-sm text-slate-900 dark:text-slate-100">assets/</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400 ml-auto">Images & media</span>
+                      </div>
+                    </div>
+
+                    {/* Images in assets/ */}
+                    <div className="ml-6">
+                      <div className="flex items-center gap-2 px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 border-b border-slate-100 dark:border-slate-800">
+                        <Image className="w-4 h-4 text-green-600" />
+                        <span className="font-mono text-sm text-slate-900 dark:text-slate-100">logo.png</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400 ml-auto">150 KB • App logo</span>
+                      </div>
+                      <div className="flex items-center gap-2 px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 border-b border-slate-100 dark:border-slate-800">
+                        <Image className="w-4 h-4 text-green-600" />
+                        <span className="font-mono text-sm text-slate-900 dark:text-slate-100">hero-image.jpg</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400 ml-auto">2.1 MB • Hero banner</span>
+                      </div>
+                    </div>
+
+                    {/* Documentation Files */}
+                    <div className="flex items-center gap-2 px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 border-b border-slate-100 dark:border-slate-800">
+                      <FileText className="w-4 h-4 text-blue-600" />
+                      <span className="font-mono text-sm text-slate-900 dark:text-slate-100">package.json</span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400 ml-auto">1.8 KB • Dependencies</span>
+                    </div>
+
+                    <div className="flex items-center gap-2 px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 border-b border-slate-100 dark:border-slate-800">
+                      <FileText className="w-4 h-4 text-orange-600" />
+                      <span className="font-mono text-sm text-slate-900 dark:text-slate-100">README.md</span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400 ml-auto">3.2 KB • Project docs</span>
+                    </div>
+
+                    {/* Archive Files */}
+                    <div className="flex items-center gap-2 px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800">
+                      <Archive className="w-4 h-4 text-purple-600" />
+                      <span className="font-mono text-sm text-slate-900 dark:text-slate-100">project-source.zip</span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400 ml-auto">12.5 MB • Complete source</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* File Type Filters */}
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Badge variant="secondary" className="text-xs">
+                    <FileCode className="w-3 h-3 mr-1" />
+                    Code (8)
+                  </Badge>
+                  <Badge variant="secondary" className="text-xs">
+                    <Image className="w-3 h-3 mr-1" />
+                    Images (4)
+                  </Badge>
+                  <Badge variant="secondary" className="text-xs">
+                    <FileText className="w-3 h-3 mr-1" />
+                    Docs (3)
+                  </Badge>
+                  <Badge variant="secondary" className="text-xs">
+                    <Archive className="w-3 h-3 mr-1" />
+                    Archives (1)
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Code Preview Section */}
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+                  <span className="text-green-600">💻</span>
+                  Code Preview
+                </h3>
+                
+                {/* File Tabs */}
+                <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+                  <div className="bg-slate-50 dark:bg-slate-800 px-4 py-2 border-b border-slate-200 dark:border-slate-700">
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2 px-3 py-1 bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-600">
+                        <FileCode className="w-3 h-3 text-green-600" />
+                        <span className="text-sm font-mono">App.js</span>
+                      </div>
+                      <div className="flex items-center gap-2 px-3 py-1 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded cursor-pointer">
+                        <FileCode className="w-3 h-3" />
+                        <span className="text-sm font-mono">index.js</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Code Content */}
+                  <div className="bg-slate-900 dark:bg-slate-950 p-4 overflow-x-auto">
+                    <pre className="text-sm text-slate-300">
+                      <code>{`import React from 'react';
+import './App.css';
+
+function App() {
+  return (
+    <div className="App">
+      <header className="App-header">
+        <h1>Welcome to My Project</h1>
+        <p>
+          This is a comprehensive academic project
+          showcasing modern web development.
+        </p>
+      </header>
+    </div>
+  );
+}
+
+export default App;`}</code>
+                    </pre>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Documentation Gallery */}
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+                  <span className="text-blue-600">📚</span>
+                  Documentation & Media
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Image Preview */}
+                  <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+                    <div className="bg-slate-50 dark:bg-slate-800 px-3 py-2 border-b">
+                      <div className="flex items-center gap-2">
+                        <Image className="w-4 h-4 text-green-600" />
+                        <span className="text-sm font-mono">logo.png</span>
+                      </div>
+                    </div>
+                    <div className="p-4 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-slate-800 dark:to-slate-700 flex items-center justify-center h-32">
+                      <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
+                        LOGO
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Document Preview */}
+                  <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+                    <div className="bg-slate-50 dark:bg-slate-800 px-3 py-2 border-b">
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-orange-600" />
+                        <span className="text-sm font-mono">API-docs.md</span>
+                      </div>
+                    </div>
+                    <div className="p-4 bg-white dark:bg-slate-900 h-32 overflow-y-auto">
+                      <div className="text-xs text-slate-600 dark:text-slate-400 space-y-1">
+                        <div># API Documentation</div>
+                        <div>## Authentication</div>
+                        <div>POST /api/auth/login</div>
+                        <div>## Projects</div>
+                        <div>GET /api/projects</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Archive Explorer */}
+                <div className="mt-4 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+                  <div className="bg-slate-50 dark:bg-slate-800 px-4 py-2 border-b">
+                    <div className="flex items-center gap-2">
+                      <Archive className="w-4 h-4 text-purple-600" />
+                      <span className="text-sm font-mono">project-source.zip</span>
+                      <Badge variant="secondary" className="ml-auto text-xs">12.5 MB</Badge>
+                    </div>
+                  </div>
+                  <div className="p-4 bg-white dark:bg-slate-900">
+                    <div className="text-sm text-slate-600 dark:text-slate-400 space-y-1 font-mono">
+                      <div>📁 src/</div>
+                      <div className="ml-4">📄 App.js (2.5 KB)</div>
+                      <div className="ml-4">📄 index.js (1.2 KB)</div>
+                      <div className="ml-4">📄 styles.css (4.1 KB)</div>
+                      <div>📁 assets/</div>
+                      <div className="ml-4">🖼️ logo.png (150 KB)</div>
+                      <div className="ml-4">🖼️ hero-image.jpg (2.1 MB)</div>
+                      <div>📄 package.json (1.8 KB)</div>
+                      <div>📄 README.md (3.2 KB)</div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Sidebar */}

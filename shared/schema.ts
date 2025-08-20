@@ -123,6 +123,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   stars: many(projectStars),
   comments: many(comments),
   facultyAssignments: many(facultyAssignments),
+  files: many(projectFiles),
 }));
 
 export const projectCollaboratorsRelations = relations(projectCollaborators, ({ one }) => ({
@@ -169,6 +170,27 @@ export const facultyAssignmentsRelations = relations(facultyAssignments, ({ one 
   }),
 }));
 
+// Project files table for uploaded code, documentation, images, etc.
+export const projectFiles = pgTable("project_files", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: uuid("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
+  fileName: varchar("file_name", { length: 255 }).notNull(),
+  filePath: varchar("file_path", { length: 500 }).notNull(),
+  fileType: varchar("file_type", { length: 50 }).notNull(), // code, image, document, archive
+  fileSize: integer("file_size").notNull(),
+  content: text("content"), // for text files that can be displayed
+  isArchive: boolean("is_archive").default(false), // for ZIP files
+  archiveContents: text("archive_contents"), // extracted file structure from ZIP as JSON string
+  uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
+});
+
+export const projectFilesRelations = relations(projectFiles, ({ one }) => ({
+  project: one(projects, {
+    fields: [projectFiles.projectId],
+    references: [projects.id],
+  }),
+}));
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
@@ -179,6 +201,8 @@ export type InsertComment = typeof comments.$inferInsert;
 export type ProjectCollaborator = typeof projectCollaborators.$inferSelect;
 export type ProjectStar = typeof projectStars.$inferSelect;
 export type FacultyAssignment = typeof facultyAssignments.$inferSelect;
+export type ProjectFile = typeof projectFiles.$inferSelect;
+export type InsertProjectFile = typeof projectFiles.$inferInsert;
 
 // Authentication schemas with robust validation for production use
 export const loginSchema = z.object({
