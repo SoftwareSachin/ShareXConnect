@@ -287,7 +287,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           const token = authHeader.substring(7);
           const decoded = jwt.verify(token, JWT_SECRET) as any;
-          const user = await storage.getUserById(decoded.userId);
+          const user = await storage.getUser(decoded.userId);
           if (user) userId = user.id;
         } catch (error) {
           // Token invalid/expired - continue without authentication for public projects
@@ -309,7 +309,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (!userId) {
           return res.status(403).json({ message: "Access denied - Institution project requires login" });
         }
-        const user = await storage.getUserById(userId);
+        const user = await storage.getUser(userId);
         if (!user || (project.owner.institution !== user.institution && project.ownerId !== userId)) {
           return res.status(403).json({ message: "Access denied - Institution project" });
         }

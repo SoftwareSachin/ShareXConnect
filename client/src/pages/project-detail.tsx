@@ -20,11 +20,11 @@ export default function ProjectDetail() {
   
   const { data: project, isLoading, error } = useQuery<ProjectWithDetails>({
     queryKey: [`/api/projects/${params.id}`],
-    queryFn: async () => {
+    queryFn: async (): Promise<ProjectWithDetails> => {
       console.log('🔍 Fetching project with ID:', params.id);
       console.log('🔗 API URL:', `/api/projects/${params.id}`);
       try {
-        const result = await apiGet(`/api/projects/${params.id}`);
+        const result = await apiGet<ProjectWithDetails>(`/api/projects/${params.id}`);
         console.log('✅ Project data received:', result);
         return result;
       } catch (err) {
