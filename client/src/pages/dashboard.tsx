@@ -27,6 +27,13 @@ export default function Dashboard() {
     enabled: !!user,
   });
 
+  // Also fetch all projects for activity feed
+  const { data: projects } = useQuery<ProjectWithDetails[]>({
+    queryKey: ["/api/projects"],
+    queryFn: () => apiGet("/api/projects"),
+    enabled: !!user,
+  });
+
   const getStatCards = () => {
     if (user?.role === "STUDENT") {
       return [
