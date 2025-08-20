@@ -51,19 +51,47 @@ export default function ProjectDetail() {
     console.log('❌ Project detail error:', error);
     console.log('📊 Project data:', project);
     console.log('🆔 Project ID from params:', params.id);
+    
+    // Check if it's an authentication error
+    const isAuthError = error && error.message && (
+      error.message.includes('Invalid or expired token') ||
+      error.message.includes('Request failed') ||
+      error.message.includes('403')
+    );
+    
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-4">Project Not Found</h1>
-          <p className="text-slate-600 dark:text-slate-400 mb-6">The project you're looking for doesn't exist or has been removed.</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-4">
+            {isAuthError ? 'Authentication Required' : 'Project Not Found'}
+          </h1>
+          <p className="text-slate-600 dark:text-slate-400 mb-6">
+            {isAuthError 
+              ? 'Your session has expired. Please log in again to view this project.'
+              : 'The project you\'re looking for doesn\'t exist or has been removed.'
+            }
+          </p>
           {error && (
             <p className="text-red-600 dark:text-red-400 mb-4 text-sm">
               Error: {error instanceof Error ? error.message : 'Unknown error'}
             </p>
           )}
-          <Link href="/projects">
-            <Button>Back to Projects</Button>
-          </Link>
+          <div className="space-x-4">
+            {isAuthError ? (
+              <>
+                <Link href="/login">
+                  <Button>Log In Again</Button>
+                </Link>
+                <Link href="/projects">
+                  <Button variant="outline">Back to Projects</Button>
+                </Link>
+              </>
+            ) : (
+              <Link href="/projects">
+                <Button>Back to Projects</Button>
+              </Link>
+            )}
+          </div>
         </div>
       </div>
     );
