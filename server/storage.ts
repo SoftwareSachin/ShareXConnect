@@ -832,6 +832,8 @@ export class DatabaseStorage implements IStorage {
   // Dashboard statistics
   async getDashboardStats(userId: string, role: string): Promise<DashboardStats> {
     try {
+      console.log(`🔍 Getting dashboard stats for user: ${userId}, role: ${role}`);
+      
       if (role === "STUDENT") {
         // Total projects count
         const totalResults = await db
@@ -840,6 +842,7 @@ export class DatabaseStorage implements IStorage {
           .where(eq(projects.ownerId, userId));
         
         const totalProjects = totalResults[0]?.count || 0;
+        console.log(`📊 Student ${userId} - Total projects: ${totalProjects}`);
 
         // Projects under review
         const inReviewResults = await db
@@ -872,6 +875,8 @@ export class DatabaseStorage implements IStorage {
         
         const collaborators = collaboratorResults[0]?.count || 0;
 
+        console.log(`📊 Student ${userId} stats: {totalProjects: ${totalProjects}, inReview: ${inReview}, approved: ${approved}, collaborators: ${collaborators}}`);
+        
         return {
           totalProjects,
           inReview,
