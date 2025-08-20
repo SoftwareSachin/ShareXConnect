@@ -55,6 +55,13 @@ export const projects = pgTable("projects", {
   techStack: text("tech_stack").array().default([]),
   githubUrl: varchar("github_url", { length: 500 }),
   demoUrl: varchar("demo_url", { length: 500 }),
+  // New GitHub-like repository fields
+  repositoryStructure: text("repository_structure"),
+  readmeContent: text("readme_content"),
+  licenseType: varchar("license_type", { length: 50 }).default("MIT"),
+  contributingGuidelines: text("contributing_guidelines"),
+  installationInstructions: text("installation_instructions"),
+  apiDocumentation: text("api_documentation"),
   ownerId: uuid("owner_id").references(() => users.id).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

@@ -15,6 +15,12 @@ import { z } from "zod";
 
 const createProjectSchema = insertProjectSchema.extend({
   techStackInput: z.string().optional(),
+  repositoryStructure: z.string().optional(),
+  readmeContent: z.string().optional(),
+  licenseType: z.string().optional(),
+  contributingGuidelines: z.string().optional(),
+  installationInstructions: z.string().optional(),
+  apiDocumentation: z.string().optional(),
 }).omit({ ownerId: true });
 
 type CreateProjectFormData = z.infer<typeof createProjectSchema>;
@@ -47,6 +53,12 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
       githubUrl: "",
       demoUrl: "",
       techStackInput: "",
+      repositoryStructure: "",
+      readmeContent: "",
+      licenseType: "MIT",
+      contributingGuidelines: "",
+      installationInstructions: "",
+      apiDocumentation: "",
     },
   });
 
@@ -59,7 +71,19 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
         ? techStackInput.split(",").map(tech => tech.trim()).filter(Boolean)
         : [];
 
-      return apiPost("/api/projects", { ...projectData, techStack });
+      // Prepare enhanced project data with GitHub-like structure
+      const enhancedProjectData = {
+        ...projectData,
+        techStack,
+        repositoryStructure: data.repositoryStructure || "",
+        readmeContent: data.readmeContent || "",
+        licenseType: data.licenseType || "MIT",
+        contributingGuidelines: data.contributingGuidelines || "",
+        installationInstructions: data.installationInstructions || "",
+        apiDocumentation: data.apiDocumentation || "",
+      };
+
+      return apiPost("/api/projects", enhancedProjectData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
@@ -256,34 +280,211 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
               </div>
             </div>
 
-            {/* Enhanced File Upload Section */}
+            {/* Enhanced Repository Structure Section */}
             <div className="space-y-4">
-              <Label className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                Project Assets & Documentation
+              <Label htmlFor="repositoryStructure" className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                Repository Structure
               </Label>
               <div className="relative group">
-                <div className="border-3 border-dashed border-slate-200/50 dark:border-slate-700/50 rounded-3xl p-12 text-center bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl hover:bg-white/60 dark:hover:bg-slate-800/60 hover:border-slate-300/60 dark:hover:border-slate-600/60 transition-all duration-500 cursor-pointer">
-                  <div className="w-20 h-20 bg-slate-100/90 dark:bg-slate-800/90 rounded-3xl flex items-center justify-center mx-auto mb-6 backdrop-blur-sm group-hover:scale-110 transition-transform duration-300">
-                    <div className="w-10 h-10 bg-slate-400 dark:bg-slate-500 rounded-2xl"></div>
-                  </div>
-                  <p className="text-2xl text-slate-700 dark:text-slate-200 mb-4 font-bold">
-                    Drop files here or{" "}
-                    <button type="button" className="text-slate-900 dark:text-slate-100 hover:underline font-black">
-                      browse files
-                    </button>
-                  </p>
-                  <p className="text-lg text-slate-500 dark:text-slate-400 font-medium">
-                    PDF, ZIP, Images, Documentation • Up to 10MB each
-                  </p>
-                </div>
+                <Textarea
+                  id="repositoryStructure"
+                  {...register("repositoryStructure")}
+                  placeholder={`├── src/
+│   ├── components/
+│   ├── pages/
+│   ├── hooks/
+│   └── utils/
+├── public/
+├── docs/
+├── tests/
+├── package.json
+├── README.md
+└── .gitignore`}
+                  rows={8}
+                  data-testid="textarea-repository-structure"
+                  className="bg-slate-950/60 dark:bg-slate-900/60 border-2 border-slate-200/40 dark:border-slate-700/40 rounded-3xl backdrop-blur-xl text-lg p-6 font-mono text-slate-100 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-4 focus:ring-slate-500/10 focus:border-slate-500/60 transition-all duration-500 resize-none leading-relaxed group-hover:border-slate-300/60 dark:group-hover:border-slate-600/60"
+                />
                 <div className="absolute inset-0 rounded-3xl bg-slate-100/20 dark:bg-slate-700/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
               </div>
             </div>
 
-            {/* Enhanced Action Buttons */}
+            {/* Enhanced README Content Section */}
+            <div className="space-y-4">
+              <Label htmlFor="readmeContent" className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                README.md Content
+              </Label>
+              <div className="relative group">
+                <Textarea
+                  id="readmeContent"
+                  {...register("readmeContent")}
+                  placeholder={`# Project Title
+
+## Description
+Brief description of your project and what it does.
+
+## Features
+- Feature 1
+- Feature 2
+- Feature 3
+
+## Installation
+\`\`\`bash
+npm install
+npm start
+\`\`\`
+
+## Usage
+Explain how to use your project.
+
+## Contributing
+Guidelines for contributing to this project.
+
+## License
+This project is licensed under the MIT License.`}
+                  rows={12}
+                  data-testid="textarea-readme-content"
+                  className="bg-white/60 dark:bg-slate-800/60 border-2 border-slate-200/40 dark:border-slate-700/40 rounded-3xl backdrop-blur-xl text-lg p-6 font-mono text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-4 focus:ring-slate-500/10 focus:border-slate-500/60 transition-all duration-500 resize-none leading-relaxed group-hover:border-slate-300/60 dark:group-hover:border-slate-600/60"
+                />
+                <div className="absolute inset-0 rounded-3xl bg-slate-100/20 dark:bg-slate-700/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+              </div>
+            </div>
+
+            {/* Enhanced License and Contributing Guidelines */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+              <div className="space-y-4">
+                <Label htmlFor="licenseType" className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                  License Type
+                </Label>
+                <Select onValueChange={(value) => setValue("licenseType", value)} defaultValue="MIT">
+                  <SelectTrigger data-testid="select-license" className="h-16 bg-white/60 dark:bg-slate-800/60 border-2 border-slate-200/40 dark:border-slate-700/40 rounded-3xl backdrop-blur-xl text-xl px-6 font-medium text-slate-900 dark:text-slate-100 focus:ring-4 focus:ring-slate-500/10 focus:border-slate-500/60 transition-all duration-500 hover:border-slate-300/60 dark:hover:border-slate-600/60">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-3xl border-2 border-slate-200/30 dark:border-slate-700/30 rounded-3xl shadow-2xl">
+                    <SelectItem value="MIT" className="text-lg py-4 px-6 rounded-2xl">MIT License</SelectItem>
+                    <SelectItem value="Apache-2.0" className="text-lg py-4 px-6 rounded-2xl">Apache 2.0</SelectItem>
+                    <SelectItem value="GPL-3.0" className="text-lg py-4 px-6 rounded-2xl">GPL 3.0</SelectItem>
+                    <SelectItem value="BSD-3-Clause" className="text-lg py-4 px-6 rounded-2xl">BSD 3-Clause</SelectItem>
+                    <SelectItem value="ISC" className="text-lg py-4 px-6 rounded-2xl">ISC License</SelectItem>
+                    <SelectItem value="Unlicense" className="text-lg py-4 px-6 rounded-2xl">Unlicense</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-4">
+                <Label htmlFor="contributingGuidelines" className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                  Contributing Guidelines
+                </Label>
+                <div className="relative group">
+                  <Textarea
+                    id="contributingGuidelines"
+                    {...register("contributingGuidelines")}
+                    placeholder="Please read CONTRIBUTING.md for guidelines on contributing to this project..."
+                    rows={4}
+                    data-testid="textarea-contributing"
+                    className="bg-white/60 dark:bg-slate-800/60 border-2 border-slate-200/40 dark:border-slate-700/40 rounded-3xl backdrop-blur-xl text-lg p-6 font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-4 focus:ring-slate-500/10 focus:border-slate-500/60 transition-all duration-500 resize-none leading-relaxed group-hover:border-slate-300/60 dark:group-hover:border-slate-600/60"
+                  />
+                  <div className="absolute inset-0 rounded-3xl bg-slate-100/20 dark:bg-slate-700/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Enhanced Installation and API Documentation */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+              <div className="space-y-4">
+                <Label htmlFor="installationInstructions" className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                  Installation Instructions
+                </Label>
+                <div className="relative group">
+                  <Textarea
+                    id="installationInstructions"
+                    {...register("installationInstructions")}
+                    placeholder={`npm install
+npm run build
+npm start
+
+or with yarn:
+yarn install
+yarn build
+yarn start`}
+                    rows={6}
+                    data-testid="textarea-installation"
+                    className="bg-slate-950/60 dark:bg-slate-900/60 border-2 border-slate-200/40 dark:border-slate-700/40 rounded-3xl backdrop-blur-xl text-lg p-6 font-mono text-slate-100 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-4 focus:ring-slate-500/10 focus:border-slate-500/60 transition-all duration-500 resize-none leading-relaxed group-hover:border-slate-300/60 dark:group-hover:border-slate-600/60"
+                  />
+                  <div className="absolute inset-0 rounded-3xl bg-slate-100/20 dark:bg-slate-700/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <Label htmlFor="apiDocumentation" className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                  API Documentation
+                </Label>
+                <div className="relative group">
+                  <Textarea
+                    id="apiDocumentation"
+                    {...register("apiDocumentation")}
+                    placeholder={`## API Endpoints
+
+GET /api/users
+POST /api/users
+PUT /api/users/:id
+DELETE /api/users/:id
+
+Authentication: Bearer token required`}
+                    rows={6}
+                    data-testid="textarea-api-docs"
+                    className="bg-white/60 dark:bg-slate-800/60 border-2 border-slate-200/40 dark:border-slate-700/40 rounded-3xl backdrop-blur-xl text-lg p-6 font-mono text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-4 focus:ring-slate-500/10 focus:border-slate-500/60 transition-all duration-500 resize-none leading-relaxed group-hover:border-slate-300/60 dark:group-hover:border-slate-600/60"
+                  />
+                  <div className="absolute inset-0 rounded-3xl bg-slate-100/20 dark:bg-slate-700/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Enhanced Source Code Upload Section */}
+            <div className="space-y-4">
+              <Label className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                Source Code & Assets Upload
+              </Label>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="relative group">
+                  <div className="border-3 border-dashed border-slate-200/50 dark:border-slate-700/50 rounded-3xl p-8 text-center bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl hover:bg-white/60 dark:hover:bg-slate-800/60 hover:border-slate-300/60 dark:hover:border-slate-600/60 transition-all duration-500 cursor-pointer">
+                    <div className="w-16 h-16 bg-slate-100/90 dark:bg-slate-800/90 rounded-3xl flex items-center justify-center mx-auto mb-4 backdrop-blur-sm group-hover:scale-110 transition-transform duration-300">
+                      <div className="w-8 h-8 bg-slate-400 dark:bg-slate-500 rounded-2xl"></div>
+                    </div>
+                    <p className="text-xl text-slate-700 dark:text-slate-200 mb-2 font-bold">
+                      Source Code (ZIP)
+                    </p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
+                      Upload your complete project as ZIP
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="relative group">
+                  <div className="border-3 border-dashed border-slate-200/50 dark:border-slate-700/50 rounded-3xl p-8 text-center bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl hover:bg-white/60 dark:hover:bg-slate-800/60 hover:border-slate-300/60 dark:hover:border-slate-600/60 transition-all duration-500 cursor-pointer">
+                    <div className="w-16 h-16 bg-slate-100/90 dark:bg-slate-800/90 rounded-3xl flex items-center justify-center mx-auto mb-4 backdrop-blur-sm group-hover:scale-110 transition-transform duration-300">
+                      <div className="w-8 h-8 bg-slate-400 dark:bg-slate-500 rounded-2xl"></div>
+                    </div>
+                    <p className="text-xl text-slate-700 dark:text-slate-200 mb-2 font-bold">
+                      Documentation & Assets
+                    </p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
+                      PDF, Images, Documentation files
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Enhanced Action Buttons with GitHub-style */}
             <div className="flex items-center justify-between pt-10 border-t border-slate-200/30 dark:border-slate-700/30">
-              <div className="text-sm text-slate-500 dark:text-slate-400 font-medium">
-                All fields are saved automatically as you type
+              <div className="flex items-center space-x-4">
+                <div className="text-sm text-slate-500 dark:text-slate-400 font-medium">
+                  Repository will be created with modern structure
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <span className="text-sm text-slate-600 dark:text-slate-300 font-medium">Ready to deploy</span>
+                </div>
               </div>
               <div className="flex items-center space-x-6">
                 <Button 
@@ -299,9 +500,9 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
                   type="submit" 
                   disabled={createProjectMutation.isPending}
                   data-testid="button-create"
-                  className="h-16 px-12 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200 rounded-3xl text-xl font-black tracking-tight transition-all duration-500 hover:scale-110 hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  className="h-16 px-12 bg-green-600 hover:bg-green-700 text-white rounded-3xl text-xl font-black tracking-tight transition-all duration-500 hover:scale-110 hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
-                  {createProjectMutation.isPending ? "Creating Project..." : "Create Project"}
+                  {createProjectMutation.isPending ? "Creating Repository..." : "Create Repository"}
                 </Button>
               </div>
             </div>
