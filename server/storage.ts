@@ -17,7 +17,7 @@ import {
   collegeDomains
 } from "@shared/schema";
 import bcrypt from "bcryptjs";
-import { db } from "./db";
+import { databaseManager, db } from "./database/connection";
 import { eq, and, or, ilike, desc, count, sql } from "drizzle-orm";
 
 // Extended types for frontend use
@@ -168,10 +168,150 @@ export class DatabaseStorage implements IStorage {
 
   async getUsersByInstitution(institution: string): Promise<User[]> {
     try {
-      return await db.select().from(users).where(eq(users.institution, institution));
+      if (!institution || typeof institution !== 'string') {
+        throw new Error('Invalid institution parameter');
+      }
+      
+      const institutionUsers = await db.select().from(users).where(eq(users.institution, institution));
+      console.log(`📊 Found ${institutionUsers.length} users for institution: ${institution}`);
+      return institutionUsers;
     } catch (error) {
-      console.error('Error getting users by institution:', error);
-      return [];
+      console.error('❌ Error fetching users by institution:', error);
+      throw new Error(`Failed to fetch users for institution: ${institution}`);
+    }
+  }
+
+  // Enhanced method to validate user permissions
+  async validateUserPermission(userId: string, requiredRole: string, institution?: string): Promise<boolean> {
+    try {
+      const user = await this.getUser(userId);
+      if (!user) {
+        console.warn(`⚠️ Permission validation failed: User ${userId} not found`);
+        return false;
+      }
+
+      // Check role permission
+      if (user.role !== requiredRole) {
+        console.warn(`⚠️ Permission denied: User ${userId} has role ${user.role}, required ${requiredRole}`);
+        return false;
+      }
+
+      // Check institution if specified
+      if (institution && user.institution !== institution) {
+        console.warn(`⚠️ Institution mismatch: User ${userId} belongs to ${user.institution}, required ${institution}`);
+        return false;
+      }
+
+      console.log(`✅ Permission validated: User ${userId} has required access`);
+      return true;
+    } catch (error) {
+      console.error('❌ Error validating user permission:', error);
+      return false;
+    }
+  }
+
+  // Method to safely update user role with validation
+  async updateUserRole(userId: string, newRole: string, adminUserId: string): Promise<User> {
+    try {
+      const targetUser = await this.getUser(userId);
+      const adminUser = await this.getUser(adminUserId);
+
+      if (!targetUser) {
+        throw new Error('Target user not found');
+      }
+
+      if (!adminUser) {
+        throw new Error('Admin user not found');
+      }
+
+      // Validate admin permissions
+      if (adminUser.role !== 'ADMIN') {
+        throw new Error('Insufficient permissions to update user role');
+      }
+
+      // Validate same institution
+      if (targetUser.institution !== adminUser.institution) {
+        throw new Error('Cannot modify users from different institutions');
+      }
+
+      // Prevent modifying other admins
+      if (targetUser.role === 'ADMIN' && targetUser.id !== adminUserId) {
+        throw new Error('Cannot modify other administrators');
+      }
+
+      // Validate new role
+      const validRoles = ['STUDENT', 'FACULTY', 'GUEST'];
+      if (!validRoles.includes(newRole)) {
+        throw new Error(`Invalid role: ${newRole}`);
+      }
+
+      // Update user role using transaction
+      const result = await db.transaction(async (tx) => {
+        return await tx.update(users)
+          .set({ 
+            role: newRole as any, 
+            updatedAt: new Date() 
+          })
+          .where(eq(users.id, userId))
+          .returning();
+      });
+
+      if (!result || result.length === 0) {
+        throw new Error('Failed to update user role');
+      }
+
+      console.log(`✅ User role updated: ${userId} -> ${newRole} by admin ${adminUserId}`);
+      return result[0];
+    } catch (error) {
+      console.error('❌ Error updating user role:', error);
+      throw error;
+    }
+  }
+
+  // Method to safely remove user with validation
+  async removeUser(userId: string, adminUserId: string): Promise<boolean> {
+    try {
+      const targetUser = await this.getUser(userId);
+      const adminUser = await this.getUser(adminUserId);
+
+      if (!targetUser) {
+        throw new Error('Target user not found');
+      }
+
+      if (!adminUser) {
+        throw new Error('Admin user not found');
+      }
+
+      // Validate admin permissions
+      if (adminUser.role !== 'ADMIN') {
+        throw new Error('Insufficient permissions to remove user');
+      }
+
+      // Validate same institution
+      if (targetUser.institution !== adminUser.institution) {
+        throw new Error('Cannot remove users from different institutions');
+      }
+
+      // Prevent removing other admins
+      if (targetUser.role === 'ADMIN') {
+        throw new Error('Cannot remove other administrators');
+      }
+
+      // Prevent self-removal
+      if (targetUser.id === adminUserId) {
+        throw new Error('Cannot remove yourself');
+      }
+
+      // Remove user using transaction
+      await db.transaction(async (tx) => {
+        await tx.delete(users).where(eq(users.id, userId));
+      });
+
+      console.log(`✅ User removed: ${userId} by admin ${adminUserId}`);
+      return true;
+    } catch (error) {
+      console.error('❌ Error removing user:', error);
+      throw error;
     }
   }
 

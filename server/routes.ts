@@ -5,6 +5,12 @@ import multer from "multer";
 import { z } from "zod";
 import { storage } from "./storage";
 import { loginSchema, registerSchema, insertProjectSchema, insertCommentSchema, type User } from "@shared/schema";
+import { 
+  requireAdmin, 
+  validateParams, 
+  adminRateLimit, 
+  auditLog 
+} from "./middleware/roleValidation";
 
 // Extend Express Request interface to include user
 declare global {
@@ -558,44 +564,298 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin routes for college management
-  app.get("/api/admin/faculty", authenticateToken, async (req, res) => {
+  // Enhanced admin routes with comprehensive middleware and error handling
+  app.get("/api/admin/faculty", 
+    authenticateToken, 
+    requireAdmin, 
+    auditLog('FETCH_FACULTY_LIST'),
+    async (req, res) => {
     try {
       const user = req.user as any;
       
-      // Only college admins can access this
+      // Comprehensive role validation
+      if (!user) {
+        console.warn('⚠️ Admin faculty access: No user found in request');
+        return res.status(401).json({ 
+          message: "Authentication required",
+          code: "AUTH_REQUIRED" 
+        });
+      }
+
       if (user.role !== 'ADMIN') {
-        return res.status(403).json({ message: "Access denied. Admin role required." });
+        console.warn(`⚠️ Admin faculty access denied: User ${user.id} has role ${user.role}`);
+        return res.status(403).json({ 
+          message: "Access denied. College Administrator role required.",
+          code: "INSUFFICIENT_PERMISSIONS",
+          requiredRole: "ADMIN",
+          currentRole: user.role
+        });
+      }
+
+      if (!user.institution) {
+        console.warn(`⚠️ Admin faculty access: User ${user.id} has no institution`);
+        return res.status(400).json({ 
+          message: "User institution not found",
+          code: "MISSING_INSTITUTION" 
+        });
       }
       
-      // Get faculty members from the same institution
+      // Get faculty members with enhanced error handling
       const faculty = await storage.getUsersByInstitution(user.institution);
       const facultyMembers = faculty.filter(u => u.role === 'FACULTY');
       
-      res.json(facultyMembers);
+      console.log(`✅ Admin ${user.id} accessed faculty list: ${facultyMembers.length} members`);
+      res.json({
+        success: true,
+        data: facultyMembers,
+        count: facultyMembers.length,
+        institution: user.institution
+      });
     } catch (error: any) {
-      console.error('Error fetching faculty:', error);
-      res.status(500).json({ message: "Failed to fetch faculty members" });
+      console.error('❌ Error fetching faculty:', error);
+      
+      // Detailed error response
+      if (error.message.includes('Invalid institution')) {
+        return res.status(400).json({ 
+          message: "Invalid institution parameter",
+          code: "INVALID_INSTITUTION" 
+        });
+      }
+      
+      res.status(500).json({ 
+        message: "Internal server error while fetching faculty members",
+        code: "INTERNAL_ERROR",
+        timestamp: new Date().toISOString()
+      });
     }
   });
 
-  app.get("/api/admin/students", authenticateToken, async (req, res) => {
+  app.get("/api/admin/students", 
+    authenticateToken, 
+    requireAdmin, 
+    auditLog('FETCH_STUDENT_LIST'),
+    async (req, res) => {
     try {
       const user = req.user as any;
       
-      // Only college admins can access this
+      // Comprehensive role validation
+      if (!user) {
+        console.warn('⚠️ Admin students access: No user found in request');
+        return res.status(401).json({ 
+          message: "Authentication required",
+          code: "AUTH_REQUIRED" 
+        });
+      }
+
       if (user.role !== 'ADMIN') {
-        return res.status(403).json({ message: "Access denied. Admin role required." });
+        console.warn(`⚠️ Admin students access denied: User ${user.id} has role ${user.role}`);
+        return res.status(403).json({ 
+          message: "Access denied. College Administrator role required.",
+          code: "INSUFFICIENT_PERMISSIONS",
+          requiredRole: "ADMIN",
+          currentRole: user.role
+        });
+      }
+
+      if (!user.institution) {
+        console.warn(`⚠️ Admin students access: User ${user.id} has no institution`);
+        return res.status(400).json({ 
+          message: "User institution not found",
+          code: "MISSING_INSTITUTION" 
+        });
       }
       
-      // Get students from the same institution
+      // Get students with enhanced error handling
       const students = await storage.getUsersByInstitution(user.institution);
       const studentMembers = students.filter(u => u.role === 'STUDENT');
       
-      res.json(studentMembers);
+      console.log(`✅ Admin ${user.id} accessed student list: ${studentMembers.length} members`);
+      res.json({
+        success: true,
+        data: studentMembers,
+        count: studentMembers.length,
+        institution: user.institution
+      });
     } catch (error: any) {
-      console.error('Error fetching students:', error);
-      res.status(500).json({ message: "Failed to fetch students" });
+      console.error('❌ Error fetching students:', error);
+      
+      // Detailed error response
+      if (error.message.includes('Invalid institution')) {
+        return res.status(400).json({ 
+          message: "Invalid institution parameter",
+          code: "INVALID_INSTITUTION" 
+        });
+      }
+      
+      res.status(500).json({ 
+        message: "Internal server error while fetching students",
+        code: "INTERNAL_ERROR",
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
+  app.delete("/api/admin/users/:userId", 
+    authenticateToken, 
+    requireAdmin,
+    validateParams(['userId']),
+    adminRateLimit(),
+    auditLog('REMOVE_USER'),
+    async (req, res) => {
+    try {
+      const user = req.user as any;
+      const { userId } = req.params;
+      
+      // Validate parameters
+      if (!userId) {
+        return res.status(400).json({ 
+          message: "User ID is required",
+          code: "MISSING_USER_ID" 
+        });
+      }
+
+      // Comprehensive permission validation
+      if (!user) {
+        return res.status(401).json({ 
+          message: "Authentication required",
+          code: "AUTH_REQUIRED" 
+        });
+      }
+
+      if (user.role !== 'ADMIN') {
+        console.warn(`⚠️ User removal denied: User ${user.id} has role ${user.role}`);
+        return res.status(403).json({ 
+          message: "Access denied. College Administrator role required.",
+          code: "INSUFFICIENT_PERMISSIONS"
+        });
+      }
+      
+      // Use enhanced storage method for safe removal
+      await storage.removeUser(userId, user.id);
+      
+      console.log(`✅ User ${userId} removed by admin ${user.id}`);
+      res.json({ 
+        success: true,
+        message: "User removed successfully",
+        timestamp: new Date().toISOString()
+      });
+    } catch (error: any) {
+      console.error('❌ Error removing user:', error);
+      
+      // Handle specific error types
+      if (error.message.includes('not found')) {
+        return res.status(404).json({ 
+          message: error.message,
+          code: "USER_NOT_FOUND" 
+        });
+      }
+      
+      if (error.message.includes('Insufficient permissions') || 
+          error.message.includes('Cannot remove') || 
+          error.message.includes('Cannot modify')) {
+        return res.status(403).json({ 
+          message: error.message,
+          code: "PERMISSION_DENIED" 
+        });
+      }
+      
+      res.status(500).json({ 
+        message: "Internal server error while removing user",
+        code: "INTERNAL_ERROR",
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
+  app.patch("/api/admin/users/:userId/role", 
+    authenticateToken, 
+    requireAdmin,
+    validateParams(['userId', 'role']),
+    adminRateLimit(),
+    auditLog('UPDATE_USER_ROLE'),
+    async (req, res) => {
+    try {
+      const user = req.user as any;
+      const { userId } = req.params;
+      const { role } = req.body;
+      
+      // Validate parameters
+      if (!userId) {
+        return res.status(400).json({ 
+          message: "User ID is required",
+          code: "MISSING_USER_ID" 
+        });
+      }
+
+      if (!role) {
+        return res.status(400).json({ 
+          message: "Role is required",
+          code: "MISSING_ROLE" 
+        });
+      }
+
+      // Comprehensive permission validation
+      if (!user) {
+        return res.status(401).json({ 
+          message: "Authentication required",
+          code: "AUTH_REQUIRED" 
+        });
+      }
+
+      if (user.role !== 'ADMIN') {
+        console.warn(`⚠️ Role update denied: User ${user.id} has role ${user.role}`);
+        return res.status(403).json({ 
+          message: "Access denied. College Administrator role required.",
+          code: "INSUFFICIENT_PERMISSIONS"
+        });
+      }
+      
+      // Use enhanced storage method for safe role update
+      const updatedUser = await storage.updateUserRole(userId, role, user.id);
+      
+      console.log(`✅ User ${userId} role updated to ${role} by admin ${user.id}`);
+      res.json({ 
+        success: true,
+        message: "User role updated successfully",
+        data: {
+          userId: updatedUser.id,
+          newRole: updatedUser.role,
+          updatedAt: updatedUser.updatedAt
+        },
+        timestamp: new Date().toISOString()
+      });
+    } catch (error: any) {
+      console.error('❌ Error updating user role:', error);
+      
+      // Handle specific error types
+      if (error.message.includes('not found')) {
+        return res.status(404).json({ 
+          message: error.message,
+          code: "USER_NOT_FOUND" 
+        });
+      }
+      
+      if (error.message.includes('Invalid role')) {
+        return res.status(400).json({ 
+          message: error.message,
+          code: "INVALID_ROLE",
+          validRoles: ['STUDENT', 'FACULTY', 'GUEST']
+        });
+      }
+      
+      if (error.message.includes('Insufficient permissions') || 
+          error.message.includes('Cannot modify')) {
+        return res.status(403).json({ 
+          message: error.message,
+          code: "PERMISSION_DENIED" 
+        });
+      }
+      
+      res.status(500).json({ 
+        message: "Internal server error while updating user role",
+        code: "INTERNAL_ERROR",
+        timestamp: new Date().toISOString()
+      });
     }
   });
 

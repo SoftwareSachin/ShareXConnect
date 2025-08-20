@@ -1,161 +1,188 @@
 # ShareXConnect - Local Development Setup
 
-This guide helps you set up ShareXConnect on your local machine with a robust PostgreSQL database that can handle unlimited users.
+This guide helps you set up ShareXConnect for robust local development with PostgreSQL.
 
 ## Prerequisites
 
-### 1. PostgreSQL Installation
+### Required Software
+- **Node.js 18+** - [Download from nodejs.org](https://nodejs.org/)
+- **PostgreSQL 14+** - [Download from postgresql.org](https://www.postgresql.org/download/)
+- **Git** - [Download from git-scm.com](https://git-scm.com/)
 
-**Windows:**
+### Optional but Recommended
+- **pgAdmin** - GUI for PostgreSQL management
+- **VS Code** - IDE with PostgreSQL extensions
+
+## Quick Start (5 minutes)
+
+### 1. Clone and Install
 ```bash
-# Download from https://www.postgresql.org/download/windows/
-# Or use chocolatey
-choco install postgresql
-```
-
-**Mac:**
-```bash
-# Using Homebrew
-brew install postgresql
-brew services start postgresql
-```
-
-**Linux (Ubuntu/Debian):**
-```bash
-sudo apt update
-sudo apt install postgresql postgresql-contrib
-sudo systemctl start postgresql
-sudo systemctl enable postgresql
-```
-
-### 2. Node.js
-- Install Node.js 18+ from https://nodejs.org/
-
-## Quick Setup
-
-### 1. Clone and Install Dependencies
-```bash
-git clone <your-repo>
+git clone <repository-url>
 cd sharexconnect
 npm install
 ```
 
 ### 2. Database Setup
+
+#### Option A: Use Existing PostgreSQL Instance
+If you have PostgreSQL running locally:
 ```bash
-# Create PostgreSQL database and user
-sudo -u postgres psql
+# Create database
+createdb sharexconnect_dev
+
+# Set environment variable
+echo "DATABASE_URL=postgresql://username:password@localhost:5432/sharexconnect_dev" > .env
 ```
 
-In PostgreSQL prompt:
-```sql
-CREATE DATABASE sharexconnect;
-CREATE USER sharex_user WITH PASSWORD 'secure_password_123';
-GRANT ALL PRIVILEGES ON DATABASE sharexconnect TO sharex_user;
-\q
+#### Option B: Docker PostgreSQL (Recommended)
+```bash
+# Start PostgreSQL with Docker
+docker run --name sharexconnect-postgres \
+  -e POSTGRES_DB=sharexconnect_dev \
+  -e POSTGRES_USER=dev_user \
+  -e POSTGRES_PASSWORD=dev_password \
+  -p 5432:5432 \
+  -d postgres:15
+
+# Set environment variable
+echo "DATABASE_URL=postgresql://dev_user:dev_password@localhost:5432/sharexconnect_dev" > .env
 ```
 
-### 3. Environment Configuration
-Create `.env` file in project root:
+### 3. Initialize and Run
 ```bash
-# PostgreSQL Database Configuration
-DATABASE_URL=postgresql://sharex_user:secure_password_123@localhost:5432/sharexconnect
-PGHOST=localhost
-PGPORT=5432
-PGUSER=sharex_user
-PGPASSWORD=secure_password_123
-PGDATABASE=sharexconnect
+# Push database schema
+npm run db:push
 
-# JWT Secret (change this!)
-JWT_SECRET=your-super-secure-jwt-secret-key-minimum-32-characters-long
+# Start development server
+npm run dev
+```
 
-# Application Configuration
+Visit http://localhost:5000 - ShareXConnect is ready!
+
+## Detailed Setup Guide
+
+### Environment Configuration
+
+Create `.env` file with these variables:
+```env
+# Database Configuration
+DATABASE_URL=postgresql://username:password@localhost:5432/database_name
+
+# JWT Secret (generate your own for security)
+JWT_SECRET=your-super-secure-jwt-secret-minimum-32-characters
+
+# Environment
 NODE_ENV=development
-PORT=5000
+
+# Optional: Database Pool Settings
+DB_POOL_MAX=15
+DB_POOL_MIN=2
+DB_POOL_TIMEOUT=30000
 ```
 
-### 4. Initialize Database Schema
+### Database Schema Management
+
+#### Push Schema Changes
 ```bash
 npm run db:push
 ```
 
-### 5. Start Development Server
+#### Generate Migrations
 ```bash
-npm run dev
+npm run db:generate
 ```
 
-## Database Features
-
-### Robust Connection Pool
-- **Maximum Connections**: 20 concurrent users
-- **Minimum Connections**: 2 always maintained
-- **Connection Timeout**: 10 seconds
-- **Idle Timeout**: 30 seconds
-- **Acquire Timeout**: 60 seconds
-
-### Enhanced Security
-- **Password Hashing**: bcrypt with 12 salt rounds
-- **Transaction Support**: Atomic user creation
-- **Error Handling**: Detailed PostgreSQL error messages
-- **Connection Monitoring**: Real-time connection status
-
-### Production-Ready Features
-- **Graceful Shutdown**: Proper connection cleanup
-- **Error Recovery**: Automatic reconnection handling
-- **Performance Monitoring**: Connection pool metrics
-- **SSL Support**: Configurable for production environments
-
-## Default User Accounts
-
-The application creates default accounts for testing:
-
-**Admin Account:**
-- Email: `admin@sharex.edu`
-- Password: `AdminPassword123!`
-- Role: Administrator
-
-**Faculty Account:**
-- Email: `faculty@sharex.edu`
-- Password: `FacultyPassword123!`
-- Role: Faculty
-
-## Scaling for Production
-
-### Database Optimization
-```sql
--- Recommended PostgreSQL settings for production
-ALTER SYSTEM SET max_connections = 200;
-ALTER SYSTEM SET shared_buffers = '256MB';
-ALTER SYSTEM SET effective_cache_size = '1GB';
-ALTER SYSTEM SET work_mem = '4MB';
-ALTER SYSTEM SET maintenance_work_mem = '64MB';
-SELECT pg_reload_conf();
-```
-
-### Environment Variables for Production
+#### Reset Database (Development Only)
 ```bash
-# Production Database (example)
-DATABASE_URL=postgresql://username:password@your-db-host:5432/sharexconnect
-
-# Strong JWT Secret
-JWT_SECRET=generate-a-super-secure-random-string-for-production
-
-# Production Mode
-NODE_ENV=production
-PORT=5000
+npm run db:reset
 ```
 
-## Troubleshooting
+### Development Features
 
-### Database Connection Issues
+#### Automatic Database Backups
+- Backups created every 2 hours during development
+- Stored in `./backups/` directory
+- Auto-cleanup keeps last 5 backups
+
+#### Database Health Monitoring
+Visit `/health` endpoint to see:
+- Connection pool status
+- Performance metrics
+- Database connectivity
+- Query statistics
+
+#### Sample Data
+On first run, the system creates:
+- Sample colleges (MIT, Stanford, Harvard)
+- Admin user accounts
+- Development data for testing
+
+### Database Management Commands
+
+#### Create Manual Backup
 ```bash
-# Check PostgreSQL status
-sudo systemctl status postgresql
-
-# Test connection
-psql -h localhost -U sharex_user -d sharexconnect
+node -e "
+const { backupManager } = require('./server/database/backup');
+backupManager.createBackup('my-backup').then(path => 
+  console.log('Backup created:', path)
+);
+"
 ```
 
-### Port Conflicts
+#### List Backups
+```bash
+node -e "
+const { backupManager } = require('./server/database/backup');
+backupManager.listBackups().then(backups => 
+  console.table(backups)
+);
+"
+```
+
+#### Restore Backup
+```bash
+node -e "
+const { backupManager } = require('./server/database/backup');
+backupManager.restoreBackup('backup-name').then(() => 
+  console.log('Backup restored successfully')
+);
+"
+```
+
+### Performance Optimization
+
+#### Database Indexes
+The system automatically creates indexes for:
+- User lookups (email, username, institution)
+- Project queries (owner, visibility, status)
+- Comments and collaborations
+- Full-text search capabilities
+
+#### Connection Pooling
+Optimized settings for local development:
+- **Maximum connections**: 15
+- **Minimum connections**: 2
+- **Idle timeout**: 30 seconds
+- **Connection timeout**: 10 seconds
+
+#### Query Performance
+- Full-text search on project titles and descriptions
+- Optimized joins for project details
+- Efficient pagination and filtering
+
+### Troubleshooting
+
+#### Database Connection Issues
+```bash
+# Test database connection
+psql $DATABASE_URL -c "SELECT version();"
+
+# Check if PostgreSQL is running
+brew services list | grep postgresql  # macOS
+sudo systemctl status postgresql      # Linux
+```
+
+#### Port Conflicts
 ```bash
 # Check what's using port 5000
 lsof -i :5000
@@ -164,31 +191,112 @@ lsof -i :5000
 PORT=3000 npm run dev
 ```
 
-### Permission Issues
+#### Schema Issues
+```bash
+# Reset and rebuild schema
+npm run db:reset
+npm run db:push
+```
+
+#### Permission Errors
 ```bash
 # Fix PostgreSQL permissions
-sudo -u postgres psql
-GRANT ALL PRIVILEGES ON DATABASE sharexconnect TO sharex_user;
+sudo -u postgres createuser --superuser $USER
+sudo -u postgres createdb $USER
 ```
 
-## Performance Testing
+### Development Workflow
 
-Test the system with multiple concurrent users:
-
+#### 1. Daily Development
 ```bash
-# Install artillery for load testing
-npm install -g artillery
+# Start development server
+npm run dev
 
-# Test registration endpoint
-artillery quick --count 10 --num 5 http://localhost:5000/api/auth/register
+# In another terminal, watch database logs
+tail -f logs/database.log
 ```
+
+#### 2. Schema Changes
+```bash
+# Modify schema in shared/schema.ts
+# Push changes to database
+npm run db:push
+
+# If conflicts arise, force push
+npm run db:push --force
+```
+
+#### 3. Testing Role-Based Access
+The system includes four user types:
+- **Students**: Full project creation and collaboration
+- **Faculty**: Review and grading capabilities
+- **College Admin**: User management for their institution
+- **Guest**: Read-only access to public projects
+
+#### 4. Data Management
+```bash
+# Export development data
+node -e "
+const { backupManager } = require('./server/database/backup');
+backupManager.exportDevelopmentData().then(path => 
+  console.log('Data exported:', path)
+);
+"
+
+# Import sample data
+npm run seed:dev
+```
+
+### Production Considerations
+
+#### Environment Variables
+```env
+NODE_ENV=production
+DATABASE_URL=postgresql://prod_user:secure_password@prod_host:5432/prod_db
+JWT_SECRET=very-long-random-string-for-production
+```
+
+#### Database Settings
+- Increase connection pool size
+- Enable SSL connections
+- Set up read replicas if needed
+- Configure backup schedules
+
+#### Security
+- Use strong JWT secrets
+- Enable PostgreSQL SSL
+- Implement rate limiting
+- Set up monitoring and alerts
+
+### Getting Help
+
+#### Check System Status
+```bash
+curl http://localhost:5000/health | jq
+```
+
+#### Database Metrics
+```bash
+node -e "
+const { databaseManager } = require('./server/database/connection');
+databaseManager.getPerformanceMetrics().then(metrics => 
+  console.table(metrics)
+);
+"
+```
+
+#### Common Issues
+1. **Database connection refused**: Check PostgreSQL is running
+2. **Schema errors**: Run `npm run db:push`
+3. **Permission denied**: Check database user permissions
+4. **Port in use**: Change PORT environment variable
 
 ## Support
 
-For issues or questions:
-1. Check the troubleshooting section above
-2. Review the application logs in console
-3. Verify PostgreSQL is running and accessible
-4. Ensure all environment variables are set correctly
+For additional help:
+- Check the application logs in the terminal
+- Visit `/health` endpoint for system status
+- Review PostgreSQL logs for database issues
+- Use pgAdmin for database management
 
-The application is designed to handle unlimited user registrations and logins with proper database connection pooling and error handling.
+The system is designed to be robust and self-healing for local development. Most issues resolve automatically with proper PostgreSQL setup.

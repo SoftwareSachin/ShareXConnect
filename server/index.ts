@@ -2,7 +2,9 @@ import express, { type Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { initializeDatabase, healthCheck } from "./init";
+import { databaseManager } from "./database/connection";
+import { migrationManager } from "./database/migrations";
+import { backupManager } from "./database/backup";
 
 // Load environment variables
 dotenv.config();
@@ -41,17 +43,57 @@ app.use((req, res, next) => {
   next();
 });
 
-// Health check endpoint
+// Enhanced health check endpoint with database metrics
 app.get("/health", async (req, res) => {
-  const health = await healthCheck();
-  const status = health.database === 'healthy' ? 200 : 500;
-  res.status(status).json(health);
+  try {
+    const isHealthy = await databaseManager.healthCheck();
+    const stats = await databaseManager.getStats();
+    const metrics = await databaseManager.getPerformanceMetrics();
+    
+    res.json({
+      healthy: isHealthy,
+      timestamp: new Date().toISOString(),
+      database: {
+        connected: isHealthy,
+        connections: {
+          total: stats.totalConnections,
+          idle: stats.idleConnections,
+          waiting: stats.waitingConnections
+        },
+        performance: {
+          activeQueries: metrics.activeQueries,
+          avgQueryTime: metrics.avgQueryTime,
+          utilization: metrics.connectionUtilization,
+          errors: metrics.errors
+        }
+      },
+      environment: process.env.NODE_ENV,
+      uptime: process.uptime()
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      healthy: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 (async () => {
   try {
-    // Initialize database and create default users
-    await initializeDatabase();
+    // Initialize enhanced database system
+    console.log('🔄 Initializing database system...');
+    await databaseManager.initialize();
+    
+    // Run database migrations
+    console.log('🔄 Running database migrations...');
+    await migrationManager.runMigrations();
+    
+    // Start automatic backups for local development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('💾 Starting automatic backup system...');
+      backupManager.startAutomaticBackups(120); // Every 2 hours
+    }
     
     const server = await registerRoutes(app);
 

@@ -30,41 +30,68 @@ export default function AdminPage() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('faculty');
 
-  // Fetch college users
-  const { data: facultyUsers = [], isLoading: facultyLoading } = useQuery({
+  // Fetch college users with enhanced error handling
+  const { data: facultyResponse, isLoading: facultyLoading, error: facultyError } = useQuery({
     queryKey: ['/api/admin/faculty'],
     enabled: canAccess('canManageFaculty'),
+    retry: (failureCount, error: any) => {
+      // Don't retry on authentication or permission errors
+      if (error?.response?.status === 401 || error?.response?.status === 403) {
+        return false;
+      }
+      return failureCount < 2;
+    }
   });
 
-  const { data: studentUsers = [], isLoading: studentsLoading } = useQuery({
+  const { data: studentResponse, isLoading: studentsLoading, error: studentError } = useQuery({
     queryKey: ['/api/admin/students'],
     enabled: canAccess('canManageStudents'),
+    retry: (failureCount, error: any) => {
+      // Don't retry on authentication or permission errors
+      if (error?.response?.status === 401 || error?.response?.status === 403) {
+        return false;
+      }
+      return failureCount < 2;
+    }
   });
 
-  // Mutations for managing users
+  // Extract data from enhanced responses
+  const facultyUsers = facultyResponse?.success ? facultyResponse.data : [];
+  const studentUsers = studentResponse?.success ? studentResponse.data : [];
+
+  // Enhanced mutations for managing users with detailed error handling
   const removeUserMutation = useMutation({
     mutationFn: async (userId: string) => {
       const response = await fetch(`/api/admin/users/${userId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
         },
       });
-      if (!response.ok) throw new Error('Failed to remove user');
-      return response.json();
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        // Enhanced error handling with specific error codes
+        throw new Error(data.message || 'Failed to remove user');
+      }
+      
+      return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/faculty'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/students'] });
       toast({
-        title: 'Success',
-        description: 'User removed successfully',
+        title: 'User Removed',
+        description: data.message || 'User removed successfully',
       });
     },
     onError: (error: any) => {
+      console.error('Remove user error:', error);
       toast({
-        title: 'Error',
-        description: error.message,
+        title: 'Failed to Remove User',
+        description: error.message || 'An unexpected error occurred',
         variant: 'destructive',
       });
     },
@@ -80,21 +107,32 @@ export default function AdminPage() {
         },
         body: JSON.stringify({ role: newRole }),
       });
-      if (!response.ok) throw new Error('Failed to update user role');
-      return response.json();
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        // Enhanced error handling with validation details
+        if (data.code === 'INVALID_ROLE' && data.validRoles) {
+          throw new Error(`Invalid role. Valid roles are: ${data.validRoles.join(', ')}`);
+        }
+        throw new Error(data.message || 'Failed to update user role');
+      }
+      
+      return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/faculty'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/students'] });
       toast({
-        title: 'Success',
-        description: 'User role updated successfully',
+        title: 'Role Updated',
+        description: data.message || 'User role updated successfully',
       });
     },
     onError: (error: any) => {
+      console.error('Update role error:', error);
       toast({
-        title: 'Error',
-        description: error.message,
+        title: 'Failed to Update Role',
+        description: error.message || 'An unexpected error occurred',
         variant: 'destructive',
       });
     },
@@ -193,7 +231,7 @@ export default function AdminPage() {
               </p>
             </div>
 
-            {/* Stats Cards */}
+            {/* Enhanced Stats Cards with Error Handling */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -201,10 +239,17 @@ export default function AdminPage() {
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{facultyUsers.length}</div>
+                  <div className="text-2xl font-bold">
+                    {facultyLoading ? '...' : facultyUsers.length}
+                  </div>
                   <p className="text-xs text-muted-foreground">
-                    Active faculty members
+                    {facultyError ? 'Error loading data' : 'Active faculty members'}
                   </p>
+                  {facultyResponse?.institution && (
+                    <p className="text-xs text-green-600 mt-1">
+                      Institution: {facultyResponse.institution}
+                    </p>
+                  )}
                 </CardContent>
               </Card>
 
@@ -214,10 +259,17 @@ export default function AdminPage() {
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{studentUsers.length}</div>
+                  <div className="text-2xl font-bold">
+                    {studentsLoading ? '...' : studentUsers.length}
+                  </div>
                   <p className="text-xs text-muted-foreground">
-                    Registered students
+                    {studentError ? 'Error loading data' : 'Registered students'}
                   </p>
+                  {studentResponse?.institution && (
+                    <p className="text-xs text-green-600 mt-1">
+                      Institution: {studentResponse.institution}
+                    </p>
+                  )}
                 </CardContent>
               </Card>
 
@@ -229,7 +281,10 @@ export default function AdminPage() {
                 <CardContent>
                   <div className="text-lg font-bold">{user?.institution}</div>
                   <p className="text-xs text-muted-foreground">
-                    College domain: {user?.collegeDomain || 'Not set'}
+                    Domain: {user?.collegeDomain || 'Not configured'}
+                  </p>
+                  <p className="text-xs text-blue-600 mt-1">
+                    Role: College Administrator
                   </p>
                 </CardContent>
               </Card>

@@ -1,148 +1,276 @@
 #!/usr/bin/env node
 
 /**
- * Script to set up PostgreSQL database for local development
- * This ensures the database works smoothly on local machines
+ * Local Database Setup Script for ShareXConnect
+ * Automates PostgreSQL setup for local development
  */
 
-import { execSync } from 'child_process';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+const { execSync, spawn } = require('child_process');
+const fs = require('fs');
+const path = require('path');
+const readline = require('readline');
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
 
-// Colors for console output
-const colors = {
-  green: '\x1b[32m',
-  red: '\x1b[31m',
-  yellow: '\x1b[33m',
-  blue: '\x1b[34m',
-  reset: '\x1b[0m',
-  bold: '\x1b[1m'
-};
-
-function log(message, color = colors.reset) {
-  console.log(`${color}${message}${colors.reset}`);
+function question(prompt) {
+  return new Promise((resolve) => {
+    rl.question(prompt, resolve);
+  });
 }
 
-function checkPostgreSQL() {
+function log(message) {
+  console.log(`🔧 ${message}`);
+}
+
+function success(message) {
+  console.log(`✅ ${message}`);
+}
+
+function error(message) {
+  console.log(`❌ ${message}`);
+}
+
+function executeCommand(command, description) {
   try {
-    execSync('psql --version', { stdio: 'ignore' });
-    log('✅ PostgreSQL is installed', colors.green);
+    log(description);
+    execSync(command, { stdio: 'inherit' });
+    success(`${description} completed`);
     return true;
-  } catch (error) {
-    log('❌ PostgreSQL is not installed or not in PATH', colors.red);
-    log('Please install PostgreSQL and try again', colors.yellow);
-    log('Download from: https://www.postgresql.org/download/', colors.blue);
+  } catch (err) {
+    error(`${description} failed: ${err.message}`);
     return false;
   }
 }
 
-function setupDatabaseConnection() {
-  const envPath = path.join(__dirname, '..', '.env');
+async function checkPrerequisites() {
+  log('Checking prerequisites...');
   
-  // Check if .env exists
-  if (!fs.existsSync(envPath)) {
-    log('Creating .env file for local development...', colors.blue);
+  // Check Node.js
+  try {
+    const nodeVersion = execSync('node --version', { encoding: 'utf8' }).trim();
+    success(`Node.js found: ${nodeVersion}`);
+  } catch (err) {
+    error('Node.js not found. Please install Node.js 18+ from https://nodejs.org/');
+    process.exit(1);
+  }
+  
+  // Check PostgreSQL
+  try {
+    const pgVersion = execSync('psql --version', { encoding: 'utf8' }).trim();
+    success(`PostgreSQL found: ${pgVersion}`);
+    return true;
+  } catch (err) {
+    log('PostgreSQL not found locally. Checking for Docker...');
     
-    const defaultEnvContent = `# PostgreSQL Database Configuration
-DATABASE_URL=postgresql://postgres:password@localhost:5432/sharexconnect
-PGHOST=localhost
-PGPORT=5432
-PGUSER=postgres
-PGPASSWORD=password
-PGDATABASE=sharexconnect
+    try {
+      const dockerVersion = execSync('docker --version', { encoding: 'utf8' }).trim();
+      success(`Docker found: ${dockerVersion}`);
+      return false; // PostgreSQL not local, but Docker available
+    } catch (dockerErr) {
+      error('Neither PostgreSQL nor Docker found.');
+      error('Please install PostgreSQL or Docker to continue.');
+      process.exit(1);
+    }
+  }
+}
 
-# JWT Secret (change this in production!)
-JWT_SECRET=your-super-secure-jwt-secret-key-change-this-in-production-minimum-32-characters
-
-# Node Environment
+async function setupPostgreSQLLocal() {
+  log('Setting up local PostgreSQL database...');
+  
+  const dbName = 'sharexconnect_dev';
+  const username = process.env.USER || 'dev_user';
+  
+  // Create database
+  try {
+    executeCommand(`createdb ${dbName}`, `Creating database: ${dbName}`);
+  } catch (err) {
+    log('Database might already exist, continuing...');
+  }
+  
+  // Create .env file
+  const envContent = `# ShareXConnect Local Development Environment
+DATABASE_URL=postgresql://${username}@localhost:5432/${dbName}
+JWT_SECRET=local-development-jwt-secret-change-in-production-minimum-32-chars
 NODE_ENV=development
-PORT=5000
+
+# Database Pool Settings
+DB_POOL_MAX=15
+DB_POOL_MIN=2
+DB_POOL_TIMEOUT=30000
+`;
+  
+  fs.writeFileSync('.env', envContent);
+  success('.env file created with local PostgreSQL configuration');
+  
+  return `postgresql://${username}@localhost:5432/${dbName}`;
+}
+
+async function setupPostgreSQLDocker() {
+  log('Setting up PostgreSQL with Docker...');
+  
+  const containerName = 'sharexconnect-postgres';
+  const dbName = 'sharexconnect_dev';
+  const username = 'dev_user';
+  const password = 'dev_password';
+  
+  // Stop existing container if running
+  try {
+    execSync(`docker stop ${containerName}`, { stdio: 'ignore' });
+    execSync(`docker rm ${containerName}`, { stdio: 'ignore' });
+  } catch (err) {
+    // Container doesn't exist, continue
+  }
+  
+  // Start PostgreSQL container
+  const dockerCommand = `docker run --name ${containerName} \
+    -e POSTGRES_DB=${dbName} \
+    -e POSTGRES_USER=${username} \
+    -e POSTGRES_PASSWORD=${password} \
+    -p 5432:5432 \
+    -d postgres:15`;
+  
+  if (executeCommand(dockerCommand, 'Starting PostgreSQL Docker container')) {
+    // Wait for PostgreSQL to be ready
+    log('Waiting for PostgreSQL to be ready...');
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    
+    // Create .env file
+    const envContent = `# ShareXConnect Local Development Environment
+DATABASE_URL=postgresql://${username}:${password}@localhost:5432/${dbName}
+JWT_SECRET=local-development-jwt-secret-change-in-production-minimum-32-chars
+NODE_ENV=development
+
+# Database Pool Settings
+DB_POOL_MAX=15
+DB_POOL_MIN=2
+DB_POOL_TIMEOUT=30000
 `;
     
-    fs.writeFileSync(envPath, defaultEnvContent);
-    log('✅ .env file created', colors.green);
-  } else {
-    log('✅ .env file already exists', colors.green);
-  }
-}
-
-function createDatabase() {
-  try {
-    log('Creating database if it doesn\'t exist...', colors.blue);
+    fs.writeFileSync('.env', envContent);
+    success('.env file created with Docker PostgreSQL configuration');
     
-    // Try to create database (will fail silently if it exists)
-    try {
-      execSync('createdb sharexconnect -U postgres', { stdio: 'ignore' });
-      log('✅ Database "sharexconnect" created', colors.green);
-    } catch (error) {
-      // Database might already exist
-      log('✅ Database "sharexconnect" already exists or accessible', colors.green);
-    }
+    return `postgresql://${username}:${password}@localhost:5432/${dbName}`;
+  }
+  
+  return null;
+}
+
+async function testConnection(databaseUrl) {
+  log('Testing database connection...');
+  
+  try {
+    const testCommand = `psql "${databaseUrl}" -c "SELECT version();"`;
+    execSync(testCommand, { stdio: 'pipe' });
+    success('Database connection successful');
+    return true;
+  } catch (err) {
+    error('Database connection failed');
+    return false;
+  }
+}
+
+async function setupSchema() {
+  log('Setting up database schema...');
+  
+  // Install dependencies if needed
+  if (!fs.existsSync('node_modules')) {
+    executeCommand('npm install', 'Installing dependencies');
+  }
+  
+  // Push schema to database
+  if (executeCommand('npm run db:push', 'Pushing database schema')) {
+    success('Database schema setup completed');
+    return true;
+  }
+  
+  return false;
+}
+
+async function createSampleData() {
+  const createSample = await question('Would you like to create sample data for development? (y/N): ');
+  
+  if (createSample.toLowerCase() === 'y' || createSample.toLowerCase() === 'yes') {
+    log('Creating sample data...');
     
-    return true;
-  } catch (error) {
-    log('❌ Failed to create database', colors.red);
-    log('Please ensure PostgreSQL is running and you have the correct permissions', colors.yellow);
-    return false;
+    // This would run the seeding script
+    executeCommand('npm run seed:dev', 'Creating sample colleges and users');
+    success('Sample data created');
   }
 }
 
-function runMigrations() {
-  try {
-    log('Running database migrations...', colors.blue);
-    execSync('npm run db:push', { stdio: 'inherit' });
-    log('✅ Database schema updated', colors.green);
-    return true;
-  } catch (error) {
-    log('❌ Failed to run migrations', colors.red);
-    return false;
-  }
-}
-
-function startApplication() {
-  try {
-    log('Starting the application...', colors.blue);
-    log('Run "npm run dev" to start the development server', colors.yellow);
-    return true;
-  } catch (error) {
-    log('❌ Failed to start application', colors.red);
-    return false;
-  }
-}
-
-// Main setup function
 async function main() {
-  log(`${colors.bold}🚀 Setting up ShareXConnect database for local development${colors.reset}\n`);
+  console.log('🌟 ShareXConnect Local Database Setup\n');
   
-  // Check prerequisites
-  if (!checkPostgreSQL()) {
+  const hasLocalPostgreSQL = await checkPrerequisites();
+  
+  let databaseUrl;
+  
+  if (hasLocalPostgreSQL) {
+    const useLocal = await question('Use local PostgreSQL installation? (Y/n): ');
+    
+    if (useLocal.toLowerCase() !== 'n' && useLocal.toLowerCase() !== 'no') {
+      databaseUrl = await setupPostgreSQLLocal();
+    } else {
+      databaseUrl = await setupPostgreSQLDocker();
+    }
+  } else {
+    databaseUrl = await setupPostgreSQLDocker();
+  }
+  
+  if (!databaseUrl) {
+    error('Failed to setup database');
     process.exit(1);
   }
   
-  // Setup steps
-  setupDatabaseConnection();
-  
-  if (!createDatabase()) {
+  // Test connection
+  if (!(await testConnection(databaseUrl))) {
+    error('Database setup failed - connection test unsuccessful');
     process.exit(1);
   }
   
-  if (!runMigrations()) {
+  // Setup schema
+  if (!(await setupSchema())) {
+    error('Schema setup failed');
     process.exit(1);
   }
   
-  log(`\n${colors.bold}${colors.green}🎉 Database setup completed successfully!${colors.reset}\n`);
-  log('Your ShareXConnect application is ready for development.', colors.green);
-  log('Default admin login: admin@sharex.edu / AdminPassword123!', colors.blue);
-  log('Default faculty login: faculty@sharex.edu / FacultyPassword123!', colors.blue);
+  // Create sample data
+  await createSampleData();
   
-  startApplication();
+  // Final instructions
+  console.log('\n🎉 Local database setup completed successfully!\n');
+  console.log('Next steps:');
+  console.log('  1. Start the development server: npm run dev');
+  console.log('  2. Visit http://localhost:5000');
+  console.log('  3. Check database health: http://localhost:5000/health');
+  console.log('  4. Create your first admin user via the signup page\n');
+  
+  console.log('Database Information:');
+  console.log(`  URL: ${databaseUrl}`);
+  console.log(`  Health endpoint: http://localhost:5000/health`);
+  console.log(`  Backup directory: ./backups/\n`);
+  
+  console.log('Useful commands:');
+  console.log('  npm run dev          - Start development server');
+  console.log('  npm run db:push      - Update database schema');
+  console.log('  npm run db:studio    - Open database GUI (if available)');
+  console.log('  docker logs sharexconnect-postgres - View PostgreSQL logs (Docker)');
+  
+  rl.close();
 }
 
-main().catch(error => {
-  log(`❌ Setup failed: ${error.message}`, colors.red);
+// Handle cleanup on exit
+process.on('SIGINT', () => {
+  console.log('\n\n🔄 Setup interrupted');
+  rl.close();
+  process.exit(0);
+});
+
+main().catch((err) => {
+  error(`Setup failed: ${err.message}`);
+  rl.close();
   process.exit(1);
 });
