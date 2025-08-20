@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { ProjectCard } from "@/components/project-card";
 import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
@@ -8,6 +9,7 @@ import { Star } from "lucide-react";
 import type { ProjectWithDetails } from "@shared/schema";
 
 export default function Starred() {
+  const [, navigate] = useLocation();
   const { data: starredProjects, isLoading } = useQuery<ProjectWithDetails[]>({
     queryKey: ["/api/projects/starred/all"],
     queryFn: () => apiGet("/api/projects/starred/all"),
@@ -64,7 +66,11 @@ export default function Starred() {
           ) : starredProjects?.length ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {starredProjects.map((project) => (
-                <ProjectCard key={project.id} project={project} />
+                <ProjectCard 
+                  key={project.id} 
+                  project={project} 
+                  onView={(project) => navigate(`/project/${project.id}`)}
+                />
               ))}
             </div>
           ) : (

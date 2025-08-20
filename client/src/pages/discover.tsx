@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +16,7 @@ import type { ProjectWithDetails } from "@shared/schema";
 
 export default function Discover() {
   const { canAccess, isGuest, isStudent, isFaculty, isAdmin } = usePermissions();
+  const [, navigate] = useLocation();
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [visibilityFilter, setVisibilityFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -50,7 +52,7 @@ export default function Discover() {
 
   // Get unique tech stacks from projects for filtering
   const availableTech = Array.from(
-    new Set(projects?.flatMap(p => p.techStack) || [])
+    new Set(projects?.flatMap(p => p.techStack || []) || [])
   ).slice(0, 10);
 
   const filteredProjects = projects?.filter(project => {
@@ -223,7 +225,11 @@ export default function Discover() {
           ) : filteredProjects?.length ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProjects.map((project) => (
-                <ProjectCard key={project.id} project={project} />
+                <ProjectCard 
+                  key={project.id} 
+                  project={project} 
+                  onView={(project) => navigate(`/project/${project.id}`)}
+                />
               ))}
             </div>
           ) : (

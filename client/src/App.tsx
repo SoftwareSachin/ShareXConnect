@@ -15,6 +15,7 @@ import Discover from "@/pages/discover";
 import Reviews from "@/pages/reviews";
 import Starred from "@/pages/starred";
 import Admin from "@/pages/admin";
+import ProjectDetail from "@/pages/project-detail";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -36,6 +37,7 @@ function Router() {
 
       <ProtectedRoute path="/dashboard" component={Dashboard} />
       <ProtectedRoute path="/projects" component={Projects} />
+      <ProtectedRoute path="/project/:id" component={ProjectDetail} />
       <ProtectedRoute path="/discover" component={Discover} />
       <ProtectedRoute path="/reviews" component={Reviews} />
       <ProtectedRoute path="/starred" component={Starred} />

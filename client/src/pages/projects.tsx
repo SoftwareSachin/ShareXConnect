@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ProjectCard } from "@/components/project-card";
 import { Header } from "@/components/layout/header";
@@ -14,6 +15,7 @@ import type { ProjectWithDetails } from "@shared/schema";
 
 export default function Projects() {
   const { canAccess, isStudent } = usePermissions();
+  const [, navigate] = useLocation();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -125,7 +127,11 @@ export default function Projects() {
           ) : projects?.length ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {projects.map((project) => (
-                <ProjectCard key={project.id} project={project} />
+                <ProjectCard 
+                  key={project.id} 
+                  project={project} 
+                  onView={(project) => navigate(`/project/${project.id}`)}
+                />
               ))}
             </div>
           ) : (
