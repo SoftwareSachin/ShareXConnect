@@ -7,7 +7,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Star, MessageCircle, ExternalLink, Github } from "lucide-react";
 import { Link } from "wouter";
-import type { Project } from "@shared/schema";
+import { apiGet } from "@/lib/api";
+import type { ProjectWithDetails } from "@shared/schema";
 
 interface ProjectDetailParams {
   id: string;
@@ -17,8 +18,9 @@ export default function ProjectDetail() {
   const params = useParams<ProjectDetailParams>();
   const [, setLocation] = useLocation();
   
-  const { data: project, isLoading, error } = useQuery<Project & { owner: { firstName: string; lastName: string; institution: string } }>({
+  const { data: project, isLoading, error } = useQuery<ProjectWithDetails>({
     queryKey: [`/api/projects/${params.id}`],
+    queryFn: () => apiGet(`/api/projects/${params.id}`),
     enabled: !!params.id,
   });
 
@@ -106,15 +108,15 @@ export default function ProjectDetail() {
               <div className="flex items-center gap-3">
                 <Avatar className="w-10 h-10">
                   <AvatarFallback>
-                    {getInitials(project.owner?.firstName || '', project.owner?.lastName || '')}
+                    {getInitials(project.owner.firstName || '', project.owner.lastName || '')}
                   </AvatarFallback>
                 </Avatar>
                 <div>
                   <p className="font-medium text-slate-900 dark:text-slate-100">
-                    {project.owner?.firstName} {project.owner?.lastName}
+                    {project.owner.firstName} {project.owner.lastName}
                   </p>
                   <p className="text-sm text-slate-600 dark:text-slate-400">
-                    {project.owner?.institution}
+                    {project.owner.institution}
                   </p>
                 </div>
               </div>
