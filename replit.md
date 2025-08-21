@@ -38,6 +38,15 @@ The application uses PostgreSQL with the following core tables:
 - ✅ Added missing fields to TypeScript form schema
 - ✅ Confirmed project detail view displays these academic fields correctly
 
+### Fixed Database Schema Mismatch (August 21, 2025)
+- ✅ Added missing `academic_level` column to projects table
+- ✅ Added missing `department` column to projects table  
+- ✅ Added missing `course_subject` column to projects table
+- ✅ Added missing `project_methodology` column to projects table
+- ✅ Added missing `setup_instructions` column to projects table
+- ✅ Added other missing academic columns (repository_url, live_demo_url, etc.)
+- ✅ Resolved internal server error during project creation
+
 ## User Preferences
 - Language: English
 - Communication: Clear, professional, technical when needed
