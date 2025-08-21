@@ -84,25 +84,25 @@ export const projectStars = pgTable("project_stars", {
 });
 
 // Comments table
-export const comments = pgTable("comments", {
+export const projectComments = pgTable("project_comments", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   projectId: uuid("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
-  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  authorId: uuid("author_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
   content: text("content").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Faculty assignments table
-export const facultyAssignments = pgTable("faculty_assignments", {
+// Project reviews table
+export const projectReviews = pgTable("project_reviews", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   projectId: uuid("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
-  facultyId: uuid("faculty_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
-  reviewStatus: reviewStatusEnum("review_status").notNull(),
-  grade: varchar("grade", { length: 10 }),
+  reviewerId: uuid("reviewer_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  status: reviewStatusEnum("status").notNull(),
+  grade: integer("grade"),
   feedback: text("feedback"),
-  assignedAt: timestamp("assigned_at").defaultNow().notNull(),
-  reviewedAt: timestamp("reviewed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 // Relations
@@ -110,8 +110,8 @@ export const usersRelations = relations(users, ({ many }) => ({
   projects: many(projects),
   collaborations: many(projectCollaborators),
   stars: many(projectStars),
-  comments: many(comments),
-  facultyAssignments: many(facultyAssignments),
+  comments: many(projectComments),
+  reviews: many(projectReviews),
 }));
 
 export const projectsRelations = relations(projects, ({ one, many }) => ({
@@ -121,9 +121,8 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   }),
   collaborators: many(projectCollaborators),
   stars: many(projectStars),
-  comments: many(comments),
-  facultyAssignments: many(facultyAssignments),
-  files: many(projectFiles),
+  comments: many(projectComments),
+  reviews: many(projectReviews),
 }));
 
 export const projectCollaboratorsRelations = relations(projectCollaborators, ({ one }) => ({
@@ -148,61 +147,41 @@ export const projectStarsRelations = relations(projectStars, ({ one }) => ({
   }),
 }));
 
-export const commentsRelations = relations(comments, ({ one }) => ({
+export const projectCommentsRelations = relations(projectComments, ({ one }) => ({
   project: one(projects, {
-    fields: [comments.projectId],
+    fields: [projectComments.projectId],
     references: [projects.id],
   }),
-  user: one(users, {
-    fields: [comments.userId],
+  author: one(users, {
+    fields: [projectComments.authorId],
     references: [users.id],
   }),
 }));
 
-export const facultyAssignmentsRelations = relations(facultyAssignments, ({ one }) => ({
+export const projectReviewsRelations = relations(projectReviews, ({ one }) => ({
   project: one(projects, {
-    fields: [facultyAssignments.projectId],
+    fields: [projectReviews.projectId],
     references: [projects.id],
   }),
-  faculty: one(users, {
-    fields: [facultyAssignments.facultyId],
+  reviewer: one(users, {
+    fields: [projectReviews.reviewerId],
     references: [users.id],
   }),
 }));
 
-// Project files table for uploaded code, documentation, images, etc.
-export const projectFiles = pgTable("project_files", {
-  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  projectId: uuid("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
-  fileName: varchar("file_name", { length: 255 }).notNull(),
-  filePath: varchar("file_path", { length: 500 }).notNull(),
-  fileType: varchar("file_type", { length: 50 }).notNull(), // code, image, document, archive
-  fileSize: integer("file_size").notNull(),
-  content: text("content"), // for text files that can be displayed
-  isArchive: boolean("is_archive").default(false), // for ZIP files
-  archiveContents: text("archive_contents"), // extracted file structure from ZIP as JSON string
-  uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
-});
 
-export const projectFilesRelations = relations(projectFiles, ({ one }) => ({
-  project: one(projects, {
-    fields: [projectFiles.projectId],
-    references: [projects.id],
-  }),
-}));
 
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type Project = typeof projects.$inferSelect;
 export type InsertProject = typeof projects.$inferInsert;
-export type Comment = typeof comments.$inferSelect;
-export type InsertComment = typeof comments.$inferInsert;
+export type ProjectComment = typeof projectComments.$inferSelect;
+export type InsertProjectComment = typeof projectComments.$inferInsert;
 export type ProjectCollaborator = typeof projectCollaborators.$inferSelect;
 export type ProjectStar = typeof projectStars.$inferSelect;
-export type FacultyAssignment = typeof facultyAssignments.$inferSelect;
-export type ProjectFile = typeof projectFiles.$inferSelect;
-export type InsertProjectFile = typeof projectFiles.$inferInsert;
+export type ProjectReview = typeof projectReviews.$inferSelect;
+export type InsertProjectReview = typeof projectReviews.$inferInsert;
 
 // Authentication schemas with robust validation for production use
 export const loginSchema = z.object({

@@ -3,19 +3,18 @@ import {
   type InsertUser, 
   type Project, 
   type InsertProject, 
-  type Comment, 
-  type InsertComment, 
-  type FacultyAssignment, 
+  type ProjectComment, 
+  type InsertProjectComment, 
+  type ProjectReview, 
   type ProjectCollaborator, 
   type ProjectStar,
   users,
   projects,
   projectCollaborators,
   projectStars,
-  comments,
-  facultyAssignments,
-  collegeDomains,
-  projectFiles
+  projectComments,
+  projectReviews,
+  collegeDomains
 } from "@shared/schema";
 import bcrypt from "bcryptjs";
 import { databaseManager, db } from "./database/connection";
@@ -28,7 +27,7 @@ export type ProjectWithDetails = Project & {
   starCount: number;
   commentCount: number;
   isStarred?: boolean;
-  assignment?: FacultyAssignment;
+  review?: ProjectReview;
 };
 
 export type DashboardStats = {
@@ -90,9 +89,9 @@ export interface IStorage {
   createComment(comment: InsertComment): Promise<Comment>;
 
   // Faculty assignment operations
-  assignProjectToFaculty(projectId: string, facultyId: string): Promise<FacultyAssignment>;
-  getFacultyAssignments(facultyId: string): Promise<(FacultyAssignment & { project: ProjectWithDetails })[]>;
-  submitReview(assignmentId: string, grade: string, feedback: string): Promise<FacultyAssignment | undefined>;
+  assignProjectToReviewer(projectId: string, reviewerId: string): Promise<ProjectReview>;
+  getProjectReviews(reviewerId: string): Promise<(ProjectReview & { project: ProjectWithDetails })[]>;
+  submitReview(reviewId: string, grade: string, feedback: string): Promise<ProjectReview | undefined>;
 
   // Dashboard statistics
   getDashboardStats(userId: string, role: string): Promise<DashboardStats>;
@@ -419,19 +418,19 @@ export class DatabaseStorage implements IStorage {
       // Get comment count
       const commentResults = await db
         .select({ count: count() })
-        .from(comments)
-        .where(eq(comments.projectId, id));
+        .from(projectComments)
+        .where(eq(projectComments.projectId, id));
       
       const commentCount = commentResults[0]?.count || 0;
 
-      // Get faculty assignment
-      const assignmentResults = await db
+      // Get project review
+      const reviewResults = await db
         .select()
-        .from(facultyAssignments)
-        .where(eq(facultyAssignments.projectId, id))
+        .from(projectReviews)
+        .where(eq(projectReviews.projectId, id))
         .limit(1);
       
-      const assignment = assignmentResults[0] || undefined;
+      const review = reviewResults[0] || undefined;
 
       return {
         ...project,
@@ -521,19 +520,19 @@ export class DatabaseStorage implements IStorage {
         // Get comment count
         const commentResults = await db
           .select({ count: count() })
-          .from(comments)
-          .where(eq(comments.projectId, project.id));
+          .from(projectComments)
+          .where(eq(projectComments.projectId, project.id));
         
         const commentCount = commentResults[0]?.count || 0;
 
         // Get faculty assignment
-        const assignmentResults = await db
+        const reviewResults = await db
           .select()
-          .from(facultyAssignments)
-          .where(eq(facultyAssignments.projectId, project.id))
+          .from(projectReviews)
+          .where(eq(projectReviews.projectId, project.id))
           .limit(1);
         
-        const assignment = assignmentResults[0] || undefined;
+        const review = reviewResults[0] || undefined;
 
         projectsWithDetails.push({
           ...project,
@@ -717,19 +716,19 @@ export class DatabaseStorage implements IStorage {
         // Get comment count
         const commentResults = await db
           .select({ count: count() })
-          .from(comments)
-          .where(eq(comments.projectId, project.id));
+          .from(projectComments)
+          .where(eq(projectComments.projectId, project.id));
         
         const commentCount = commentResults[0]?.count || 0;
 
         // Get faculty assignment
-        const assignmentResults = await db
+        const reviewResults = await db
           .select()
-          .from(facultyAssignments)
-          .where(eq(facultyAssignments.projectId, project.id))
+          .from(projectReviews)
+          .where(eq(projectReviews.projectId, project.id))
           .limit(1);
         
-        const assignment = assignmentResults[0] || undefined;
+        const review = reviewResults[0] || undefined;
 
         projectsWithDetails.push({
           ...project,
@@ -754,13 +753,13 @@ export class DatabaseStorage implements IStorage {
     try {
       const results = await db
         .select()
-        .from(comments)
-        .innerJoin(users, eq(comments.userId, users.id))
-        .where(eq(comments.projectId, projectId))
-        .orderBy(desc(comments.createdAt));
+        .from(projectComments)
+        .innerJoin(users, eq(projectComments.userId, users.id))
+        .where(eq(projectComments.projectId, projectId))
+        .orderBy(desc(projectComments.createdAt));
       
       return results.map(result => ({
-        ...result.comments,
+        ...result.project_comments,
         user: result.users
       }));
     } catch (error) {
@@ -780,12 +779,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Faculty assignment operations
-  async assignProjectToFaculty(projectId: string, facultyId: string): Promise<FacultyAssignment> {
+  async assignProjectToReviewer(projectId: string, reviewerId: string): Promise<FacultyAssignment> {
     try {
-      const result = await db.insert(facultyAssignments).values({
+      const result = await db.insert(projectReviews).values({
         projectId,
-        facultyId,
-        reviewStatus: "PENDING"
+        reviewerId,
+        status: "PENDING"
       }).returning();
       return result[0];
     } catch (error) {
@@ -794,19 +793,19 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async getFacultyAssignments(facultyId: string): Promise<(FacultyAssignment & { project: ProjectWithDetails })[]> {
+  async getFacultyAssignments(reviewerId: string): Promise<(FacultyAssignment & { project: ProjectWithDetails })[]> {
     try {
-      const assignments = await db
+      const reviews = await db
         .select()
-        .from(facultyAssignments)
-        .innerJoin(projects, eq(facultyAssignments.projectId, projects.id))
+        .from(projectReviews)
+        .innerJoin(projects, eq(projectReviews.projectId, projects.id))
         .innerJoin(users, eq(projects.ownerId, users.id))
-        .where(eq(facultyAssignments.facultyId, facultyId));
+        .where(eq(projectReviews.reviewerId, reviewerId));
 
-      const assignmentsWithDetails: (FacultyAssignment & { project: ProjectWithDetails })[] = [];
+      const reviewsWithDetails: (FacultyAssignment & { project: ProjectWithDetails })[] = [];
 
       for (const result of assignments) {
-        const assignment = result.faculty_assignments;
+        const review = result.faculty_assignments;
         const project = result.projects;
         const owner = result.users;
 
@@ -828,17 +827,17 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async submitReview(assignmentId: string, grade: string, feedback: string): Promise<FacultyAssignment | undefined> {
+  async submitReview(reviewId: string, grade: string, feedback: string): Promise<FacultyAssignment | undefined> {
     try {
       const result = await db
-        .update(facultyAssignments)
+        .update(projectReviews)
         .set({
           grade,
           feedback,
-          reviewStatus: "COMPLETED",
-          reviewedAt: new Date()
+          status: "COMPLETED",
+          updatedAt: new Date()
         })
-        .where(eq(facultyAssignments.id, assignmentId))
+        .where(eq(projectReviews.id, reviewId))
         .returning();
       
       return result[0] || undefined;
@@ -913,18 +912,18 @@ export class DatabaseStorage implements IStorage {
         // Total assignments
         const totalResults = await db
           .select({ count: count() })
-          .from(facultyAssignments)
-          .where(eq(facultyAssignments.facultyId, userId));
+          .from(projectReviews)
+          .where(eq(projectReviews.reviewerId, userId));
         
         const totalProjects = totalResults[0]?.count || 0;
 
         // Pending reviews
         const inReviewResults = await db
           .select({ count: count() })
-          .from(facultyAssignments)
+          .from(projectReviews)
           .where(and(
-            eq(facultyAssignments.facultyId, userId),
-            eq(facultyAssignments.reviewStatus, "PENDING")
+            eq(projectReviews.reviewerId, userId),
+            eq(projectReviews.status, "PENDING")
           ));
         
         const inReview = inReviewResults[0]?.count || 0;
@@ -932,10 +931,10 @@ export class DatabaseStorage implements IStorage {
         // Completed reviews
         const approvedResults = await db
           .select({ count: count() })
-          .from(facultyAssignments)
+          .from(projectReviews)
           .where(and(
-            eq(facultyAssignments.facultyId, userId),
-            eq(facultyAssignments.reviewStatus, "COMPLETED")
+            eq(projectReviews.reviewerId, userId),
+            eq(projectReviews.status, "COMPLETED")
           ));
         
         const approved = approvedResults[0]?.count || 0;
@@ -1024,15 +1023,15 @@ export class DatabaseStorage implements IStorage {
         // Get recent comments on user's projects
         const recentComments = await db
           .select()
-          .from(comments)
-          .innerJoin(projects, eq(comments.projectId, projects.id))
-          .innerJoin(users, eq(comments.userId, users.id))
+          .from(projectComments)
+          .innerJoin(projects, eq(projectComments.projectId, projects.id))
+          .innerJoin(users, eq(projectComments.authorId, users.id))
           .where(eq(projects.ownerId, userId))
-          .orderBy(desc(comments.createdAt))
+          .orderBy(desc(projectComments.createdAt))
           .limit(Math.floor(limit / 2));
 
         for (const result of recentComments) {
-          const comment = result.comments;
+          const comment = result.project_comments;
           const project = result.projects;
           const user = result.users;
           
@@ -1043,7 +1042,7 @@ export class DatabaseStorage implements IStorage {
             description: comment.content.slice(0, 100) + (comment.content.length > 100 ? '...' : ''),
             timestamp: comment.createdAt,
             projectId: project.id,
-            userId: comment.userId
+            userId: comment.authorId
           });
         }
         
@@ -1051,28 +1050,28 @@ export class DatabaseStorage implements IStorage {
         // Get recent faculty assignments
         const recentAssignments = await db
           .select()
-          .from(facultyAssignments)
-          .innerJoin(projects, eq(facultyAssignments.projectId, projects.id))
+          .from(projectReviews)
+          .innerJoin(projects, eq(projectReviews.projectId, projects.id))
           .innerJoin(users, eq(projects.ownerId, users.id))
-          .where(eq(facultyAssignments.facultyId, userId))
-          .orderBy(desc(facultyAssignments.assignedAt))
+          .where(eq(projectReviews.reviewerId, userId))
+          .orderBy(desc(projectReviews.createdAt))
           .limit(limit);
 
         for (const result of recentAssignments) {
-          const assignment = result.faculty_assignments;
+          const review = result.faculty_assignments;
           const project = result.projects;
           const student = result.users;
           
           activities.push({
             id: assignment.id,
-            type: assignment.reviewStatus === 'COMPLETED' ? 'review_completed' : 'project_updated',
-            title: assignment.reviewStatus === 'COMPLETED' 
+            type: assignment.status === 'COMPLETED' ? 'review_completed' : 'project_updated',
+            title: assignment.status === 'COMPLETED' 
               ? `Completed review for "${project.title}"`
               : `New assignment: "${project.title}"`,
             description: `Project by ${student.firstName} ${student.lastName}`,
-            timestamp: assignment.reviewedAt || assignment.assignedAt,
+            timestamp: assignment.updatedAt || assignment.createdAt,
             projectId: project.id,
-            userId: assignment.facultyId
+            userId: assignment.reviewerId
           });
         }
         
