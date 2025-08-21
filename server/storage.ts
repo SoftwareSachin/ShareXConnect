@@ -104,6 +104,11 @@ export interface IStorage {
   getCollegeDomainById(id: string): Promise<any | undefined>;
   createCollegeDomain(data: { collegeName: string; domain: string; adminId: string }): Promise<any>;
   verifyCollegeDomain(domain: string): Promise<boolean>;
+
+  // Project files operations
+  getProjectFiles(projectId: string): Promise<any[]>;
+  getProjectFileById(fileId: string): Promise<any | undefined>;
+  uploadProjectFile(fileData: any): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1197,6 +1202,20 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error getting project files:', error);
       return [];
+    }
+  }
+
+  async getProjectFileById(fileId: string): Promise<any | undefined> {
+    try {
+      const result = await db
+        .select()
+        .from(projectFiles)
+        .where(eq(projectFiles.id, fileId))
+        .limit(1);
+      return result[0] || undefined;
+    } catch (error) {
+      console.error('Error getting project file by ID:', error);
+      return undefined;
     }
   }
 

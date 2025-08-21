@@ -145,6 +145,63 @@ function getLatestCommitMessage(files: ProjectFile[] | undefined): string {
   return 'Remove all promotional advertisements from the main landing page';
 }
 
+function formatFileSize(bytes: number): string {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+
+function getFileTypeLabel(file: ProjectFile): string {
+  if (file.isArchive) return 'Archive';
+  const extension = file.fileName.split('.').pop()?.toLowerCase() || '';
+  switch (extension) {
+    case 'js': return 'JavaScript';
+    case 'jsx': return 'React JSX';
+    case 'ts': return 'TypeScript';
+    case 'tsx': return 'React TSX';
+    case 'py': return 'Python';
+    case 'html': return 'HTML';
+    case 'css': return 'CSS';
+    case 'scss': return 'Sass';
+    case 'md': return 'Markdown';
+    case 'txt': return 'Text';
+    case 'json': return 'JSON';
+    case 'png': case 'jpg': case 'jpeg': return 'Image';
+    default: return 'File';
+  }
+}
+
+function getFilesInFolder(folderName: string, files: ProjectFile[]): ProjectFile[] {
+  return files.filter(file => 
+    file.filePath && file.filePath.startsWith(folderName + '/')
+  );
+}
+
+function handleFileClick(file: ProjectFile): void {
+  console.log('File clicked:', file.fileName);
+  // Add file preview logic here
+}
+
+function handleFolderClick(folderName: string): void {
+  console.log('Folder clicked:', folderName);
+  // Add folder navigation logic here
+}
+
+function handleFileDownload(e: React.MouseEvent, file: ProjectFile): void {
+  e.stopPropagation();
+  console.log('Download file:', file.fileName);
+  // Add download logic here
+  window.open(`/api/projects/files/${file.id}/download`, '_blank');
+}
+
+function handleFolderDownload(e: React.MouseEvent, folderName: string): void {
+  e.stopPropagation();
+  console.log('Download folder:', folderName);
+  // Add folder download logic here
+}
+
 export default function ProjectDetail() {
   const params = useParams<ProjectDetailParams>();
   const [, setLocation] = useLocation();
@@ -677,88 +734,107 @@ export default function ProjectDetail() {
               </div>
             </div>
 
-            {/* Source Code Repository Section - GitHub Style */}
-            <div className="bg-[#0d1117] border border-[#21262d] rounded-lg overflow-hidden">
+            {/* Source Code Repository Section - Modern GitHub Style */}
+            <div className="bg-[#0d1117] border border-[#21262d] rounded-xl overflow-hidden shadow-2xl">
               {/* Repository Header */}
-              <div className="px-4 py-3 bg-[#161b22] border-b border-[#21262d]">
+              <div className="px-6 py-4 bg-gradient-to-r from-[#161b22] to-[#1c2128] border-b border-[#21262d]">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-[#7c3aed] flex items-center justify-center flex-shrink-0">
-                      <span className="text-white text-xs font-semibold">
+                  <div className="flex items-center gap-4">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#7c3aed] to-[#a855f7] flex items-center justify-center shadow-lg">
+                      <span className="text-white text-sm font-bold">
                         {(project.owner?.username || 'owner').charAt(0).toUpperCase()}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[#f0f6fc] font-medium text-sm">{project.owner?.username || 'owner'}</span>
-                      <span className="text-[#7d8590] text-sm">
-                        {getLatestCommitMessage(projectFiles)} 
-                      </span>
+                    <div>
+                      <h3 className="text-[#f0f6fc] font-bold text-lg">Source Code Repository</h3>
+                      <p className="text-[#7d8590] text-sm">Browse and download project files</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4 text-xs text-[#7d8590]">
-                    <div className="flex items-center gap-2">
-                      <span className="bg-[#21262d] px-2 py-1 rounded text-xs font-mono">
-                        295 Commits
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      <span>{formatTimeAgo(project.updatedAt)}</span>
-                    </div>
+                  <div className="flex items-center gap-3">
+                    <button className="px-4 py-2 bg-[#238636] hover:bg-[#2ea043] text-white text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-2 shadow-lg">
+                      <Download className="w-4 h-4" />
+                      Download All
+                    </button>
                   </div>
                 </div>
               </div>
 
               {/* File Browser */}
-              <div className="divide-y divide-[#21262d]">
-                {projectFiles && projectFiles.filter(f => f.isArchive || f.fileType.includes('text') || f.fileType.includes('javascript') || f.fileType.includes('python') || f.fileType.includes('code')).length > 0 ? (
-                  <>
+              <div className="p-2">
+                {projectFiles && projectFiles.filter(f => f.isArchive || f.fileType.includes('text') || f.fileType.includes('javascript') || f.fileType.includes('python') || f.fileType.includes('code') || f.fileName.includes('.js') || f.fileName.includes('.html') || f.fileName.includes('.css') || f.fileName.includes('.zip')).length > 0 ? (
+                  <div className="space-y-1">
                     {/* Folders First */}
                     {getRepositoryFolders(projectFiles).map((folder, index) => (
-                      <div key={`folder-${index}`} className="flex items-center px-4 py-3 hover:bg-[#161b22] transition-colors group">
+                      <div 
+                        key={`folder-${index}`} 
+                        className="flex items-center justify-between px-4 py-3 rounded-lg hover:bg-[#21262d] transition-all duration-200 group cursor-pointer border border-transparent hover:border-[#30363d]"
+                        onClick={() => handleFolderClick(folder)}
+                      >
                         <div className="flex items-center gap-3 flex-1">
-                          <Folder className="w-4 h-4 text-[#54aeff] flex-shrink-0" />
-                          <span className="text-[#58a6ff] hover:underline cursor-pointer text-sm font-medium">
+                          <Folder className="w-5 h-5 text-[#54aeff] flex-shrink-0" />
+                          <span className="text-[#f0f6fc] font-medium text-sm group-hover:text-[#58a6ff] transition-colors">
                             {folder}
                           </span>
+                          <span className="text-xs text-[#7d8590] bg-[#21262d] px-2 py-1 rounded-full">
+                            {getFilesInFolder(folder, projectFiles).length} files
+                          </span>
                         </div>
-                        <div className="flex items-center gap-4 text-xs text-[#7d8590] opacity-0 group-hover:opacity-100 transition-opacity">
-                          <span>Enable students to submit project requests via a detailed onl...</span>
-                          <span>last month</span>
+                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button 
+                            className="px-3 py-1.5 bg-[#21262d] hover:bg-[#30363d] text-[#f0f6fc] text-xs rounded-md transition-colors flex items-center gap-1"
+                            onClick={(e) => handleFolderDownload(e, folder)}
+                          >
+                            <Download className="w-3 h-3" />
+                            Download
+                          </button>
                         </div>
                       </div>
                     ))}
                     
                     {/* Files */}
                     {projectFiles
-                      .filter(f => f.isArchive || f.fileType.includes('text') || f.fileType.includes('javascript') || f.fileType.includes('python') || f.fileType.includes('code'))
+                      .filter(f => f.isArchive || f.fileType.includes('text') || f.fileType.includes('javascript') || f.fileType.includes('python') || f.fileType.includes('code') || f.fileName.includes('.js') || f.fileName.includes('.html') || f.fileName.includes('.css') || f.fileName.includes('.zip'))
                       .map((file) => (
-                      <div key={file.id} className="flex items-center px-4 py-3 hover:bg-[#161b22] transition-colors group">
+                      <div 
+                        key={file.id} 
+                        className="flex items-center justify-between px-4 py-3 rounded-lg hover:bg-[#21262d] transition-all duration-200 group cursor-pointer border border-transparent hover:border-[#30363d]"
+                        onClick={() => handleFileClick(file)}
+                      >
                         <div className="flex items-center gap-3 flex-1">
                           {getFileIcon(file)}
-                          <span className="text-[#58a6ff] hover:underline cursor-pointer text-sm font-medium">
-                            {file.fileName}
-                          </span>
+                          <div className="flex flex-col">
+                            <span className="text-[#f0f6fc] font-medium text-sm group-hover:text-[#58a6ff] transition-colors">
+                              {file.fileName}
+                            </span>
+                            <div className="flex items-center gap-3 text-xs text-[#7d8590]">
+                              <span>{formatFileSize(file.fileSize)}</span>
+                              <span>•</span>
+                              <span>{getFileTypeLabel(file)}</span>
+                              <span>•</span>
+                              <span>{formatTimeAgo(file.uploadedAt)}</span>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-4 text-xs text-[#7d8590] opacity-0 group-hover:opacity-100 transition-opacity">
-                          <span className="max-w-96 truncate">
-                            {getCommitMessage(file)}
-                          </span>
-                          <span className="whitespace-nowrap">
-                            {formatTimeAgo(file.uploadedAt)}
-                          </span>
+                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button 
+                            className="px-3 py-1.5 bg-[#238636] hover:bg-[#2ea043] text-white text-xs rounded-md transition-colors flex items-center gap-1 font-medium"
+                            onClick={(e) => handleFileDownload(e, file)}
+                          >
+                            <Download className="w-3 h-3" />
+                            Download
+                          </button>
                         </div>
                       </div>
                     ))}
-                  </>
+                  </div>
                 ) : (
-                  <div className="px-4 py-12 text-center">
-                    <div className="w-16 h-16 bg-[#21262d] rounded-full flex items-center justify-center mx-auto mb-4">
-                      <FileCode className="w-8 h-8 text-[#7d8590]" />
+                  <div className="px-6 py-16 text-center">
+                    <div className="w-20 h-20 bg-gradient-to-br from-[#21262d] to-[#30363d] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                      <FileCode className="w-10 h-10 text-[#7d8590]" />
                     </div>
-                    <h4 className="text-[#f0f6fc] font-medium mb-2">No source code files</h4>
-                    <p className="text-[#7d8590] text-sm">
-                      Upload source code files, archives, or documentation to see them here
+                    <h4 className="text-[#f0f6fc] font-semibold text-lg mb-2">No source code files</h4>
+                    <p className="text-[#7d8590] text-sm max-w-md mx-auto">
+                      Upload source code files, archives, or documentation to browse and download them here
                     </p>
                   </div>
                 )}

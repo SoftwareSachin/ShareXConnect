@@ -633,6 +633,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
+  // Download file route
+  app.get("/api/projects/files/:fileId/download", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      const file = await storage.getProjectFileById(req.params.fileId);
+      if (!file) {
+        return res.status(404).json({ message: "File not found" });
+      }
+
+      const project = await storage.getProject(file.projectId);
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+
+      // Check access permissions
+      if (project.visibility === 'PRIVATE' && project.ownerId !== req.user!.id) {
+        const collaborators = await storage.getProjectCollaborators(file.projectId);
+        const isCollaborator = collaborators.some(c => c.id === req.user!.id);
+        if (!isCollaborator) {
+          return res.status(403).json({ message: "Access denied" });
+        }
+      }
+
+      // Set headers for file download
+      res.setHeader('Content-Disposition', `attachment; filename="${file.fileName}"`);
+      res.setHeader('Content-Type', file.fileType || 'application/octet-stream');
+      res.setHeader('Content-Length', file.fileSize);
+
+      // Stream the file
+      const fs = require('fs');
+      const path = require('path');
+      const filePath = path.join(process.cwd(), file.filePath);
+      
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ message: "File not found on disk" });
+      }
+
+      console.log('📥 Downloading file:', file.fileName, 'from path:', filePath);
+      const fileStream = fs.createReadStream(filePath);
+      fileStream.pipe(res);
+    } catch (error) {
+      console.error('❌ Error downloading file:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }));
+
   // Get users (for collaboration invites)
   app.get("/api/users/search", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
