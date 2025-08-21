@@ -122,14 +122,19 @@ export default function Login() {
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginFormData) => {
+      console.log("🔐 Attempting login with:", { usernameOrEmail: data.usernameOrEmail, password: "***" });
       const response = await apiRequest("POST", "/api/auth/login", data);
-      return await response.json();
+      const result = await response.json();
+      console.log("✅ Login response received:", { user: result.user?.username, hasToken: !!result.token });
+      return result;
     },
     onSuccess: (data) => {
+      console.log("🎉 Login successful, navigating to dashboard");
       login(data.user, data.token);
       navigate("/dashboard");
     },
     onError: (error: any) => {
+      console.error("❌ Login error:", error);
       loginForm.setError("root", {
         message: error.message || "Login failed. Please check your credentials.",
       });
