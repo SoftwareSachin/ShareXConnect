@@ -2,10 +2,33 @@ import { useParams, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Star, MessageCircle, ExternalLink, Github, Users, Folder, File, FileText, FileCode, Image, Archive } from "lucide-react";
+import { 
+  ArrowLeft, 
+  Star, 
+  MessageCircle, 
+  ExternalLink, 
+  Github, 
+  Users, 
+  Folder, 
+  File, 
+  FileText, 
+  FileCode, 
+  Image, 
+  Archive,
+  Calendar,
+  Eye,
+  Shield,
+  Zap,
+  Code2,
+  BookOpen,
+  Settings,
+  Globe,
+  Lock,
+  Building
+} from "lucide-react";
 import { Link } from "wouter";
 import { apiGet } from "@/lib/api";
 import type { ProjectWithDetails } from "@shared/schema";
@@ -115,179 +138,133 @@ export default function ProjectDetail() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => setLocation("/projects")}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Projects
-          </Button>
-        </div>
-
-        {/* Project Header */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-8 mb-6">
-          <div className="flex items-start justify-between mb-6">
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-4">
-                {project.title}
-              </h1>
-              <p className="text-lg text-slate-600 dark:text-slate-400 mb-6">
-                {project.description}
-              </p>
-              
-              {/* Status and Category */}
-              <div className="flex items-center gap-3 mb-6">
-                <Badge className={getStatusColor(project.status)}>
-                  {project.status.replace("_", " ")}
-                </Badge>
-                <Badge variant="outline">
-                  {project.category}
-                </Badge>
-              </div>
-
-              {/* Author Info */}
-              <div className="flex items-center gap-3">
-                <Avatar className="w-10 h-10">
-                  <AvatarFallback>
-                    {getInitials(project.owner.firstName || '', project.owner.lastName || '')}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-medium text-slate-900 dark:text-slate-100">
-                    {project.owner.firstName} {project.owner.lastName}
-                  </p>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
-                    {project.owner.institution}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm">
-                <Star className="w-4 h-4 mr-2" />
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950">
+      {/* Navigation Header */}
+      <div className="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 sticky top-0 z-10">
+        <div className="container mx-auto px-6 py-4 max-w-7xl">
+          <div className="flex items-center justify-between">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setLocation("/projects")}
+              className="flex items-center gap-2 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Projects
+            </Button>
+            
+            {/* Quick Actions */}
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" className="gap-2">
+                <Star className="w-4 h-4" />
                 Star
               </Button>
-              <Button variant="outline" size="sm">
-                <MessageCircle className="w-4 h-4 mr-2" />
+              <Button variant="outline" size="sm" className="gap-2">
+                <MessageCircle className="w-4 h-4" />
                 Comment
               </Button>
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* README Section */}
-            {project.readmeContent && (
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="w-4 h-4 bg-slate-600 rounded-sm flex items-center justify-center">
-                      <span className="text-xs text-white font-bold">📄</span>
+      <div className="container mx-auto px-6 py-8 max-w-7xl">
+        {/* Hero Section */}
+        <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-gray-200 dark:border-slate-800 overflow-hidden mb-8">
+          {/* Project Header */}
+          <div className="px-8 py-8 bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 border-b border-gray-100 dark:border-slate-800">
+            <div className="flex items-start justify-between gap-8">
+              <div className="flex-1 max-w-3xl">
+                <div className="flex items-center gap-3 mb-4">
+                  <Badge 
+                    className={`${getStatusColor(project.status)} font-medium px-3 py-1`}
+                  >
+                    {project.status.replace("_", " ")}
+                  </Badge>
+                  <Badge variant="secondary" className="font-medium px-3 py-1">
+                    {project.category}
+                  </Badge>
+                  <div className="flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
+                    {project.visibility === 'PUBLIC' ? <Globe className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+                    {project.visibility}
+                  </div>
+                </div>
+                
+                <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-50 mb-4 leading-tight">
+                  {project.title}
+                </h1>
+                
+                <p className="text-xl text-slate-600 dark:text-slate-300 mb-6 leading-relaxed">
+                  {project.description}
+                </p>
+
+                {/* Author & Metadata */}
+                <div className="flex items-center gap-6 pt-4">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="w-12 h-12 ring-2 ring-white dark:ring-slate-800">
+                      <AvatarFallback className="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold">
+                        {getInitials(project.owner.firstName || '', project.owner.lastName || '')}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-semibold text-slate-900 dark:text-slate-100">
+                        {project.owner.firstName} {project.owner.lastName}
+                      </p>
+                      <div className="flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
+                        <Building className="w-3 h-3" />
+                        {project.owner.institution}
+                      </div>
                     </div>
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                      README.md
-                    </h3>
                   </div>
-                  <div className="prose prose-slate dark:prose-invert max-w-none">
-                    <pre className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg overflow-x-auto text-sm">
-                      <code>{project.readmeContent}</code>
-                    </pre>
+                  
+                  <div className="h-8 w-px bg-gray-200 dark:bg-slate-700"></div>
+                  
+                  <div className="flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
+                    <Calendar className="w-4 h-4" />
+                    {new Date(project.createdAt).toLocaleDateString('en-US', { 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })}
                   </div>
-                </CardContent>
-              </Card>
-            )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-            {/* Repository Structure */}
-            {project.repositoryStructure && (
-              <Card>
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
-                    <span className="text-blue-600">📁</span>
-                    Repository Structure
-                  </h3>
-                  <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg">
-                    <pre className="text-sm text-slate-700 dark:text-slate-300 font-mono overflow-x-auto">
-                      <code>{project.repositoryStructure}</code>
-                    </pre>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Installation Instructions */}
-            {project.installationInstructions && (
-              <Card>
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
-                    <span className="text-green-600">⚡</span>
-                    Installation
-                  </h3>
-                  <div className="bg-slate-900 dark:bg-slate-950 p-4 rounded-lg">
-                    <pre className="text-green-400 text-sm overflow-x-auto">
-                      <code>{project.installationInstructions}</code>
-                    </pre>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* API Documentation */}
-            {project.apiDocumentation && (
-              <Card>
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
-                    <span className="text-purple-600">🔌</span>
-                    API Documentation
-                  </h3>
-                  <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg">
-                    <pre className="text-sm text-slate-700 dark:text-slate-300 overflow-x-auto">
-                      <code>{project.apiDocumentation}</code>
-                    </pre>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Contributing Guidelines */}
-            {project.contributingGuidelines && (
-              <Card>
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
-                    <span className="text-orange-600">🤝</span>
-                    Contributing
-                  </h3>
-                  <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg">
-                    <pre className="text-sm text-slate-700 dark:text-slate-300 overflow-x-auto">
-                      <code>{project.contributingGuidelines}</code>
-                    </pre>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-3 space-y-8">
+            
             {/* Technology Stack */}
             {project.techStack && project.techStack.length > 0 && (
-              <Card>
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
-                    <span className="text-blue-600">🛠️</span>
-                    Technology Stack
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {project.techStack.map((tech: string) => (
-                      <div key={tech} className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{tech}</span>
+              <Card className="border-0 shadow-sm">
+                <CardHeader className="pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
+                      <Code2 className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                        Technology Stack
+                      </h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        Tools and frameworks used in this project
+                      </p>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {project.techStack.map((tech: string, index: number) => (
+                      <div key={tech} className="group relative">
+                        <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200 hover:shadow-md">
+                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                          <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                            {tech}
+                          </span>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -297,32 +274,43 @@ export default function ProjectDetail() {
 
             {/* Project Links */}
             {(project.githubUrl || project.demoUrl) && (
-              <Card>
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
-                    <span className="text-indigo-600">🔗</span>
-                    Project Links
-                  </h3>
-                  <div className="grid gap-3">
+              <Card className="border-0 shadow-sm">
+                <CardHeader className="pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center">
+                      <ExternalLink className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                        Project Links
+                      </h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        External resources and live demos
+                      </p>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="grid gap-4">
                     {project.githubUrl && (
                       <a 
                         href={project.githubUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-3 p-4 rounded-lg border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-colors group"
+                        className="group flex items-center gap-4 p-5 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-200 hover:shadow-md bg-white dark:bg-slate-800/50"
                       >
-                        <div className="w-10 h-10 bg-black dark:bg-white rounded-lg flex items-center justify-center">
-                          <Github className="w-5 h-5 text-white dark:text-black" />
+                        <div className="w-12 h-12 bg-black dark:bg-white rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
+                          <Github className="w-6 h-6 text-white dark:text-black" />
                         </div>
                         <div className="flex-1">
-                          <p className="font-semibold text-slate-900 dark:text-slate-100 group-hover:text-blue-600">
+                          <p className="font-semibold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                             View Repository
                           </p>
                           <p className="text-sm text-slate-600 dark:text-slate-400">
                             Browse source code and documentation
                           </p>
                         </div>
-                        <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+                        <ExternalLink className="w-5 h-5 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
                       </a>
                     )}
                     {project.demoUrl && (
@@ -330,26 +318,235 @@ export default function ProjectDetail() {
                         href={project.demoUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-3 p-4 rounded-lg border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-colors group"
+                        className="group flex items-center gap-4 p-5 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-200 hover:shadow-md bg-white dark:bg-slate-800/50"
                       >
-                        <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
-                          <ExternalLink className="w-5 h-5 text-white" />
+                        <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
+                          <Zap className="w-6 h-6 text-white" />
                         </div>
                         <div className="flex-1">
-                          <p className="font-semibold text-slate-900 dark:text-slate-100 group-hover:text-green-600">
+                          <p className="font-semibold text-slate-900 dark:text-slate-100 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
                             Live Demo
                           </p>
                           <p className="text-sm text-slate-600 dark:text-slate-400">
                             Try the application in your browser
                           </p>
                         </div>
-                        <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-green-600" />
+                        <ExternalLink className="w-5 h-5 text-slate-400 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors" />
                       </a>
                     )}
                   </div>
                 </CardContent>
               </Card>
             )}
+
+            {/* README Section */}
+            {project.readmeContent && (
+              <Card className="border-0 shadow-sm">
+                <CardHeader className="pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center">
+                      <BookOpen className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                        README.md
+                      </h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        Project documentation and setup instructions
+                      </p>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="relative">
+                    <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                      <div className="flex items-center justify-between px-4 py-3 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+                        <div className="flex items-center gap-2">
+                          <div className="flex gap-1">
+                            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                            <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                          </div>
+                          <span className="text-sm font-medium text-slate-600 dark:text-slate-300 ml-2">README.md</span>
+                        </div>
+                        <FileText className="w-4 h-4 text-slate-400" />
+                      </div>
+                      <div className="p-6">
+                        <pre className="text-sm text-slate-700 dark:text-slate-300 overflow-x-auto whitespace-pre-wrap leading-relaxed">
+                          <code>{project.readmeContent}</code>
+                        </pre>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Repository Structure */}
+            {project.repositoryStructure && (
+              <Card className="border-0 shadow-sm">
+                <CardHeader className="pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center">
+                      <Folder className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                        Repository Structure
+                      </h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        Project file organization and directory tree
+                      </p>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-3 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+                      <div className="flex items-center gap-2">
+                        <div className="flex gap-1">
+                          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                          <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        </div>
+                        <span className="text-sm font-medium text-slate-600 dark:text-slate-300 ml-2">File Structure</span>
+                      </div>
+                      <Folder className="w-4 h-4 text-slate-400" />
+                    </div>
+                    <div className="p-6">
+                      <pre className="text-sm text-slate-700 dark:text-slate-300 font-mono overflow-x-auto whitespace-pre-wrap leading-relaxed">
+                        <code>{project.repositoryStructure}</code>
+                      </pre>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Installation Instructions */}
+            {project.installationInstructions && (
+              <Card className="border-0 shadow-sm">
+                <CardHeader className="pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center">
+                      <Zap className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                        Installation Guide
+                      </h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        Step-by-step setup and installation instructions
+                      </p>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="bg-slate-900 dark:bg-slate-950 rounded-2xl border border-slate-700 overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-3 bg-slate-800 border-b border-slate-700">
+                      <div className="flex items-center gap-2">
+                        <div className="flex gap-1">
+                          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                          <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        </div>
+                        <span className="text-sm font-medium text-slate-300 ml-2">Terminal</span>
+                      </div>
+                      <Settings className="w-4 h-4 text-slate-400" />
+                    </div>
+                    <div className="p-6">
+                      <pre className="text-green-400 text-sm overflow-x-auto whitespace-pre-wrap leading-relaxed">
+                        <code>{project.installationInstructions}</code>
+                      </pre>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* API Documentation */}
+            {project.apiDocumentation && (
+              <Card className="border-0 shadow-sm">
+                <CardHeader className="pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-cyan-500 rounded-xl flex items-center justify-center">
+                      <Code2 className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                        API Documentation
+                      </h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        Interface specifications and usage examples
+                      </p>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-3 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+                      <div className="flex items-center gap-2">
+                        <div className="flex gap-1">
+                          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                          <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        </div>
+                        <span className="text-sm font-medium text-slate-600 dark:text-slate-300 ml-2">API.md</span>
+                      </div>
+                      <FileCode className="w-4 h-4 text-slate-400" />
+                    </div>
+                    <div className="p-6">
+                      <pre className="text-sm text-slate-700 dark:text-slate-300 overflow-x-auto whitespace-pre-wrap leading-relaxed">
+                        <code>{project.apiDocumentation}</code>
+                      </pre>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Contributing Guidelines */}
+            {project.contributingGuidelines && (
+              <Card className="border-0 shadow-sm">
+                <CardHeader className="pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center">
+                      <Users className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                        Contributing Guidelines
+                      </h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        How to contribute to this project and development workflow
+                      </p>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-3 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+                      <div className="flex items-center gap-2">
+                        <div className="flex gap-1">
+                          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                          <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        </div>
+                        <span className="text-sm font-medium text-slate-600 dark:text-slate-300 ml-2">CONTRIBUTING.md</span>
+                      </div>
+                      <Users className="w-4 h-4 text-slate-400" />
+                    </div>
+                    <div className="p-6">
+                      <pre className="text-sm text-slate-700 dark:text-slate-300 overflow-x-auto whitespace-pre-wrap leading-relaxed">
+                        <code>{project.contributingGuidelines}</code>
+                      </pre>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+
 
             {/* File Explorer - GitHub-like file browser */}
             <Card>
