@@ -12,6 +12,7 @@ import { apiPost } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { useState } from "react";
+import { useAuthStore } from "@/lib/auth";
 
 
 const createProjectSchema = insertProjectSchema.extend({
@@ -34,6 +35,7 @@ interface CreateProjectModalProps {
 export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { token } = useAuthStore();
   
   // File upload state
   const [uploadedFiles, setUploadedFiles] = useState({
@@ -115,7 +117,7 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
       };
 
       console.log('🚀 Creating project:', enhancedProjectData.title);
-      const result = await apiPost("/api/projects", enhancedProjectData);
+      const result = await apiPost("/api/projects", enhancedProjectData) as { id: string };
       console.log('✅ Project created successfully:', result);
 
       // Upload files if any were selected
@@ -139,7 +141,7 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
             const response = await fetch(`/api/projects/${result.id}/files`, {
               method: 'POST',
               headers: {
-                'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+                'Authorization': `Bearer ${token}`,
               },
               body: formData,
             });
