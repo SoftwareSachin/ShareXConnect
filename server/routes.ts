@@ -451,7 +451,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const commentData = insertCommentSchema.parse({
         ...req.body,
         projectId: req.params.id,
-        userId: req.user!.id
+        authorId: req.user!.id
       });
       
       const comment = await storage.createComment(commentData);
@@ -475,7 +475,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid faculty member" });
       }
 
-      const assignment = await storage.assignProjectToFaculty(req.params.id, facultyId);
+      const assignment = await storage.assignProjectToReviewer(req.params.id, facultyId);
       res.status(201).json(assignment);
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });

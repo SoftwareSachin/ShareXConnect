@@ -5,6 +5,9 @@ import {
   type InsertProject, 
   type ProjectComment, 
   type InsertProjectComment, 
+  type Comment,
+  type InsertComment,
+  type FacultyAssignment,
   type ProjectReview, 
   type ProjectCollaborator, 
   type ProjectStar,
@@ -757,7 +760,7 @@ export class DatabaseStorage implements IStorage {
       const results = await db
         .select()
         .from(projectComments)
-        .innerJoin(users, eq(projectComments.userId, users.id))
+        .innerJoin(users, eq(projectComments.authorId, users.id))
         .where(eq(projectComments.projectId, projectId))
         .orderBy(desc(projectComments.createdAt));
       
@@ -773,7 +776,7 @@ export class DatabaseStorage implements IStorage {
 
   async createComment(comment: InsertComment): Promise<Comment> {
     try {
-      const result = await db.insert(comments).values(comment).returning();
+      const result = await db.insert(projectComments).values(comment).returning();
       return result[0];
     } catch (error) {
       console.error('Error creating comment:', error);
@@ -828,6 +831,10 @@ export class DatabaseStorage implements IStorage {
       console.error('Error getting faculty assignments:', error);
       return [];
     }
+  }
+
+  async getProjectReviews(reviewerId: string): Promise<(ProjectReview & { project: ProjectWithDetails })[]> {
+    return this.getFacultyAssignments(reviewerId);
   }
 
   async submitReview(reviewId: string, grade: string, feedback: string): Promise<ProjectReview | undefined> {

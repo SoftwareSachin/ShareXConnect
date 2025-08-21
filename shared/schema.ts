@@ -197,10 +197,13 @@ export type Project = typeof projects.$inferSelect;
 export type InsertProject = typeof projects.$inferInsert;
 export type ProjectComment = typeof projectComments.$inferSelect;
 export type InsertProjectComment = typeof projectComments.$inferInsert;
+export type Comment = ProjectComment; // Alias for storage layer compatibility
+export type InsertComment = InsertProjectComment; // Alias for storage layer compatibility
 export type ProjectCollaborator = typeof projectCollaborators.$inferSelect;
 export type ProjectStar = typeof projectStars.$inferSelect;
 export type ProjectReview = typeof projectReviews.$inferSelect;
 export type InsertProjectReview = typeof projectReviews.$inferInsert;
+export type FacultyAssignment = ProjectReview; // Alias for storage layer compatibility
 export type ProjectFile = typeof projectFiles.$inferSelect;
 export type InsertProjectFile = typeof projectFiles.$inferInsert;
 
@@ -276,7 +279,7 @@ export const insertProjectSchema = z.object({
 
 export const insertCommentSchema = z.object({
   projectId: z.string(),
-  userId: z.string(),
+  authorId: z.string(),
   content: z.string().min(1, "Comment content is required").max(1000, "Comment is too long"),
 });
 
@@ -287,7 +290,7 @@ export type ProjectWithDetails = Project & {
   starCount: number;
   commentCount: number;
   isStarred?: boolean;
-  assignment?: FacultyAssignment;
+  assignment?: ProjectReview;
 };
 
 export type DashboardStats = {
