@@ -314,12 +314,12 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
         {children}
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[90vh] p-0">
-        <div className="p-6 border-b bg-white">
+        <div className="p-6 border-b bg-white dark:bg-gray-900">
           <DialogHeader>
-            <DialogTitle className="text-xl font-medium">
+            <DialogTitle className="text-xl font-medium text-gray-900 dark:text-gray-100">
               {isOwner ? "Team management" : "Request collaboration"}
             </DialogTitle>
-            <DialogDescription className="text-sm text-gray-600">
+            <DialogDescription className="text-sm text-gray-600 dark:text-gray-400">
               {isOwner 
                 ? "Manage your project team and collaboration requests"
                 : "Send a collaboration request to join this project"
@@ -347,7 +347,7 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
 
               <TabsContent value="team" className="px-6 pb-6 space-y-4">
                 <div className="space-y-3">
-                  <h3 className="text-sm font-medium text-gray-900">Team members</h3>
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">Team members</h3>
                   {collaborators.length === 0 ? (
                     <div className="text-center py-8 text-gray-500">
                       <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
@@ -359,7 +359,7 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
                       {collaborators.map((collaborator) => (
                         <div 
                           key={collaborator.id} 
-                          className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50"
+                          className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 bg-white dark:bg-gray-900"
                         >
                           <div className="flex items-center gap-3">
                             <Avatar className="h-10 w-10">
@@ -369,12 +369,12 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
                             </Avatar>
                             <div>
                               <div className="flex items-center gap-2">
-                                <span className="font-medium text-sm">
+                                <span className="font-medium text-sm text-gray-900 dark:text-gray-100">
                                   {collaborator.firstName} {collaborator.lastName}
                                   {collaborator.isOwner && " (Owner)"}
                                 </span>
                               </div>
-                              <div className="text-xs text-gray-500">
+                              <div className="text-xs text-gray-500 dark:text-gray-400">
                                 {collaborator.email} • @{collaborator.username}
                               </div>
                             </div>
@@ -402,7 +402,7 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
 
               <TabsContent value="requests" className="px-6 pb-6 space-y-4">
                 <div className="space-y-3">
-                  <h3 className="text-sm font-medium text-gray-900">Pending requests</h3>
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">Pending requests</h3>
                   {pendingRequests.length === 0 ? (
                     <div className="text-center py-8 text-gray-500">
                       <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
@@ -422,10 +422,10 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
                               <div className="flex-1">
                                 <div className="flex items-center justify-between">
                                   <div>
-                                    <p className="font-medium text-sm">
+                                    <p className="font-medium text-sm text-gray-900 dark:text-gray-100">
                                       {request.requester.firstName} {request.requester.lastName}
                                     </p>
-                                    <p className="text-xs text-gray-500">
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">
                                       {request.requester.email} • @{request.requester.username}
                                     </p>
                                   </div>
@@ -435,7 +435,7 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
                                 </div>
                               </div>
                             </div>
-                            <div className="bg-gray-50 p-3 rounded mb-3 text-sm">
+                            <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded mb-3 text-sm text-gray-900 dark:text-gray-100">
                               {request.message}
                             </div>
                             <div className="flex gap-2">
@@ -476,8 +476,8 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
               <TabsContent value="invite" className="px-6 pb-6">
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-sm font-medium text-gray-900 mb-1">Add collaborator</h3>
-                    <p className="text-sm text-gray-600 mb-4">Search for users to add as collaborators to your project.</p>
+                    <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">Add collaborator</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Search for users to add as collaborators to your project.</p>
                     
                     <div className="relative mb-4">
                       <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -493,7 +493,7 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
                     {/* Selected Users */}
                     {selectedUsers.length > 0 && (
                       <div className="mb-4">
-                        <Label className="text-sm font-medium mb-2 block">Selected users</Label>
+                        <Label className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2 block">Selected users</Label>
                         <div className="flex flex-wrap gap-2 mb-3">
                           {selectedUsers.map((user) => (
                             <Badge key={user.id} variant="secondary" className="gap-1">
@@ -536,10 +536,10 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
                                 </AvatarFallback>
                               </Avatar>
                               <div>
-                                <p className="font-medium text-sm">
+                                <p className="font-medium text-sm text-gray-900 dark:text-gray-100">
                                   {user.firstName} {user.lastName}
                                 </p>
-                                <p className="text-xs text-gray-500">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
                                   {user.email}
                                 </p>
                               </div>
@@ -555,7 +555,7 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
 
                   <div className="border-t pt-6">
                     <div className="space-y-3">
-                      <Label htmlFor="email-input" className="text-sm font-medium">Or add by email address</Label>
+                      <Label htmlFor="email-input" className="text-sm font-medium text-gray-900 dark:text-gray-100">Or add by email address</Label>
                       <div className="flex gap-2">
                         <Input
                           id="email-input"
