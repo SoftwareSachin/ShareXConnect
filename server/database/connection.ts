@@ -151,25 +151,25 @@ export class DatabaseManager {
       
       const client = await this.pool.connect();
       try {
-        // Check if tables exist
+        // Auto-create schema if tables are missing
+        await this.ensureSchemaExists(client);
+        
+        // Check if all tables exist
         const tableCheck = await client.query(`
           SELECT table_name 
           FROM information_schema.tables 
           WHERE table_schema = 'public' 
-          AND table_name IN ('users', 'colleges', 'projects', 'comments')
+          AND table_name IN ('users', 'projects', 'college_domains', 'project_collaborators', 'project_comments', 'project_stars', 'project_reviews')
         `);
         
         const existingTables = tableCheck.rows.map(row => row.table_name);
         console.log(`📋 Found tables: ${existingTables.length > 0 ? existingTables.join(', ') : 'none'}`);
         
-        if (tableCheck.rows.length === 0) {
-          console.log('🔧 No tables found, schema needs to be created');
-          console.log('💡 Run "npm run db:push" to create schema');
-        } else if (tableCheck.rows.length < 4) {
-          console.log('⚠️ Some tables missing, schema may need updates');
-          console.log('💡 Run "npm run db:push" to update schema');
-        } else {
+        if (existingTables.length === 7) {
           console.log('✅ All required tables exist');
+        } else {
+          console.log('🔄 Auto-creating missing tables...');
+          await this.createMissingTables(client);
         }
       } finally {
         client.release();
@@ -339,6 +339,129 @@ export class DatabaseManager {
       };
     } finally {
       client.release();
+    }
+  }
+
+  private async ensureSchemaExists(client: any): Promise<void> {
+    try {
+      // Create enums if they don't exist
+      await client.query(`
+        DO $$
+        BEGIN
+          IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'role') THEN
+            CREATE TYPE role AS ENUM ('STUDENT', 'FACULTY', 'ADMIN', 'GUEST');
+          END IF;
+          IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'visibility') THEN
+            CREATE TYPE visibility AS ENUM ('PRIVATE', 'INSTITUTION', 'PUBLIC');
+          END IF;
+          IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'project_status') THEN
+            CREATE TYPE project_status AS ENUM ('DRAFT', 'SUBMITTED', 'UNDER_REVIEW', 'APPROVED');
+          END IF;
+          IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'review_status') THEN
+            CREATE TYPE review_status AS ENUM ('PENDING', 'COMPLETED');
+          END IF;
+        END
+        $$;
+      `);
+      console.log('✅ Database enums ensured');
+    } catch (error) {
+      console.error('❌ Error creating enums:', error);
+    }
+  }
+
+  private async createMissingTables(client: any): Promise<void> {
+    try {
+      // Create all tables with proper relationships
+      await client.query(`
+        -- College domains table
+        CREATE TABLE IF NOT EXISTS college_domains (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          college_name VARCHAR(200) NOT NULL,
+          domain VARCHAR(100) UNIQUE NOT NULL,
+          admin_id UUID,
+          is_verified BOOLEAN DEFAULT false NOT NULL,
+          created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+          updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+        );
+
+        -- Users table
+        CREATE TABLE IF NOT EXISTS users (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          username VARCHAR(30) UNIQUE NOT NULL,
+          email VARCHAR(320) UNIQUE NOT NULL,
+          password VARCHAR(255) NOT NULL,
+          first_name VARCHAR(50) NOT NULL,
+          last_name VARCHAR(50) NOT NULL,
+          role role NOT NULL,
+          institution VARCHAR(100) NOT NULL,
+          college_domain VARCHAR(100),
+          is_verified BOOLEAN DEFAULT false NOT NULL,
+          created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+          updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+        );
+
+        -- Projects table
+        CREATE TABLE IF NOT EXISTS projects (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          title VARCHAR(200) NOT NULL,
+          description TEXT NOT NULL,
+          category VARCHAR(100) NOT NULL,
+          visibility visibility NOT NULL,
+          status project_status NOT NULL,
+          tech_stack TEXT[] DEFAULT '{}',
+          github_url VARCHAR(500),
+          demo_url VARCHAR(500),
+          repository_structure TEXT,
+          readme_content TEXT,
+          license_type VARCHAR(50) DEFAULT 'MIT',
+          contributing_guidelines TEXT,
+          installation_instructions TEXT,
+          api_documentation TEXT,
+          owner_id UUID NOT NULL REFERENCES users(id),
+          created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+          updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+        );
+
+        -- Supporting tables
+        CREATE TABLE IF NOT EXISTS project_collaborators (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+          user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          created_at TIMESTAMP DEFAULT NOW() NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS project_comments (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          content TEXT NOT NULL,
+          project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+          author_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+          updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS project_stars (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+          user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+          UNIQUE(project_id, user_id)
+        );
+
+        CREATE TABLE IF NOT EXISTS project_reviews (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+          reviewer_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          grade INTEGER,
+          feedback TEXT,
+          status review_status NOT NULL,
+          created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+          updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+        );
+      `);
+      console.log('✅ All database tables auto-created successfully');
+    } catch (error) {
+      console.error('❌ Error creating tables:', error);
+      throw error;
     }
   }
 }
