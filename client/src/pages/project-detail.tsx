@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { apiGet, apiRequest } from "@/lib/api";
+import { useAuthStore } from "@/store/auth-store";
 import type { ProjectWithDetails } from "@shared/schema";
 import { 
   Folder, 
@@ -368,6 +369,14 @@ export default function ProjectDetail() {
   const getInitials = (firstName: string, lastName: string) => {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   };
+
+  // Get current user from auth store
+  const { user } = useAuthStore();
+  
+  // Check ownership and collaboration status
+  const isOwner = user && project ? user.id === project.ownerId : false;
+  const isCollaborator = user && project?.collaborators ? 
+    project.collaborators.some(collaborator => collaborator.id === user.id) : false;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
