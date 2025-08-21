@@ -34,19 +34,30 @@ const authenticateToken = async (req: Request, res: Response, next: any) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
+  console.log('🔐 Auth middleware - Header:', authHeader ? 'Present' : 'Missing');
+  console.log('🔐 Auth middleware - Token extracted:', token ? 'Token present' : 'No token');
+
   if (!token) {
+    console.log('❌ Auth middleware - No token provided');
     return res.status(401).json({ message: "Authentication token required" });
   }
 
   try {
+    console.log('🔐 Auth middleware - Verifying token...');
     const decoded = jwt.verify(token, JWT_SECRET) as any;
+    console.log('🔐 Auth middleware - Token decoded, userId:', decoded.userId);
+    
     const user = await storage.getUser(decoded.userId);
     if (!user) {
+      console.log('❌ Auth middleware - User not found for ID:', decoded.userId);
       return res.status(401).json({ message: "Invalid token" });
     }
+    
+    console.log('✅ Auth middleware - User found:', user.username);
     req.user = user;
     next();
   } catch (err) {
+    console.log('❌ Auth middleware - Token verification failed:', err);
     return res.status(403).json({ message: "Invalid or expired token" });
   }
 };
@@ -588,6 +599,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/projects/:id/files", authenticateToken, upload.single("file"), withAuth(async (req: AuthRequest, res) => {
     try {
       console.log('🔄 File upload request received for project:', req.params.id);
+      console.log('🔑 Auth header:', req.headers.authorization ? 'Bearer token present' : 'NO AUTH HEADER');
       console.log('👤 User:', req.user?.id, req.user?.username);
       console.log('📂 File info:', req.file ? {
         name: req.file.originalname,
