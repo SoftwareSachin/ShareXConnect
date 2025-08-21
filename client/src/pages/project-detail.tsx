@@ -9,7 +9,30 @@ import { Button } from "@/components/ui/button";
 import { apiGet, apiRequest } from "@/lib/api";
 import { useAuthStore } from "@/store/auth-store";
 import type { ProjectWithDetails } from "@shared/schema";
-// Removed lucid-react icons
+import { 
+  FileCode, 
+  Download, 
+  Upload, 
+  Calendar, 
+  User, 
+  Building, 
+  BookOpen, 
+  Eye, 
+  Star, 
+  MessageCircle, 
+  Share, 
+  File, 
+  Image, 
+  Archive, 
+  Folder, 
+  X,
+  Clock,
+  GitFork,
+  ExternalLink,
+  Heart,
+  Bookmark,
+  Code2
+} from 'lucide-react';
 
 interface ProjectDetailParams {
   id: string;
@@ -51,7 +74,7 @@ function formatTimeAgo(dateString: string): string {
 
 function getFileIcon(file: ProjectFile) {
   if (file.isArchive) {
-    return <span className="w-4 text-[#7d8590] text-center text-xs font-mono">📦</span>;
+    return <Archive className="w-4 h-4 text-amber-500 dark:text-amber-400" />;
   }
   
   const extension = file.fileName.split('.').pop()?.toLowerCase() || '';
@@ -59,33 +82,33 @@ function getFileIcon(file: ProjectFile) {
   switch (extension) {
     case 'js':
     case 'jsx':
-      return <span className="w-4 text-[#f1e05a] text-center text-xs font-mono">JS</span>;
+      return <FileCode className="w-4 h-4 text-yellow-500 dark:text-yellow-400" />;
     case 'ts':
     case 'tsx':
-      return <span className="w-4 text-[#3178c6] text-center text-xs font-mono">TS</span>;
+      return <FileCode className="w-4 h-4 text-blue-500 dark:text-blue-400" />;
     case 'py':
-      return <span className="w-4 text-[#3572A5] text-center text-xs font-mono">PY</span>;
+      return <FileCode className="w-4 h-4 text-green-500 dark:text-green-400" />;
     case 'html':
     case 'htm':
-      return <span className="w-4 text-[#e34c26] text-center text-xs font-mono">H</span>;
+      return <FileCode className="w-4 h-4 text-orange-500 dark:text-orange-400" />;
     case 'css':
     case 'scss':
     case 'sass':
-      return <span className="w-4 text-[#563d7c] text-center text-xs font-mono">C</span>;
+      return <FileCode className="w-4 h-4 text-purple-500 dark:text-purple-400" />;
     case 'md':
-      return <span className="w-4 text-[#7d8590] text-center text-xs font-mono">M</span>;
+      return <BookOpen className="w-4 h-4 text-slate-500 dark:text-slate-400" />;
     case 'txt':
-      return <span className="w-4 text-[#7d8590] text-center text-xs font-mono">T</span>;
+      return <File className="w-4 h-4 text-slate-500 dark:text-slate-400" />;
     case 'png':
     case 'jpg':
     case 'jpeg':
     case 'gif':
     case 'svg':
-      return <span className="w-4 text-[#7d8590] text-center text-xs">🖼️</span>;
+      return <Image className="w-4 h-4 text-pink-500 dark:text-pink-400" />;
     case 'pdf':
-      return <span className="w-4 text-[#d73a49] text-center text-xs font-mono">P</span>;
+      return <File className="w-4 h-4 text-red-500 dark:text-red-400" />;
     default:
-      return <span className="w-4 text-[#7d8590] text-center text-xs font-mono">•</span>;
+      return <File className="w-4 h-4 text-slate-500 dark:text-slate-400" />;
   }
 }
 
@@ -372,24 +395,26 @@ export default function ProjectDetail() {
     project.collaborators.some(collaborator => collaborator.id === user.id) : false;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      {/* Navigation Header */}
-      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50">
+    <div className="min-h-screen bg-slate-900">
+      {/* Navigation Header - Material Design 3 */}
+      <div className="bg-slate-800/90 backdrop-blur-xl border-b border-slate-700/50 sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4 max-w-7xl">
           <div className="flex items-center justify-between">
             <button 
               onClick={() => setLocation("/projects")}
-              className="px-4 py-2 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5 text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-xl transition-all duration-200 font-medium"
             >
               ← Back to Projects
             </button>
             
             {/* Quick Actions */}
             <div className="flex items-center gap-3">
-              <button className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+              <button className="inline-flex items-center gap-2 px-4 py-2.5 border border-slate-600/50 rounded-xl hover:border-slate-500 hover:bg-slate-700/30 transition-all duration-200 text-slate-300 hover:text-white">
+                <Star className="w-4 h-4" />
                 Star
               </button>
-              <button className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+              <button className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-700/50 rounded-xl hover:bg-slate-700 transition-all duration-200 text-slate-300 hover:text-white">
+                <MessageCircle className="w-4 h-4" />
                 Comment
               </button>
             </div>
@@ -398,25 +423,25 @@ export default function ProjectDetail() {
       </div>
 
       <div className="container mx-auto px-6 py-8 max-w-7xl">
-        {/* Hero Section */}
-        <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 mb-8">
-          <div className="px-8 py-8">
+        {/* Hero Section - Material Design 3 */}
+        <div className="bg-slate-800/50 backdrop-blur-sm rounded-3xl border border-slate-700/50 mb-8 shadow-2xl shadow-slate-950/20">
+          <div className="px-8 py-10">
             {/* Status and Metadata Row */}
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <Badge 
-                  className={`${getStatusColor(project.status)} font-medium px-3 py-1.5 text-sm`}
+                  className="bg-green-500/20 text-green-300 border border-green-500/30 font-medium px-4 py-2 text-sm rounded-xl"
                 >
                   {project.status.replace("_", " ")}
                 </Badge>
                 <Badge 
-                  variant="secondary" 
-                  className="font-medium px-3 py-1.5 text-sm bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                  className="bg-blue-500/20 text-blue-300 border border-blue-500/30 font-medium px-4 py-2 text-sm rounded-xl"
                 >
                   {project.category}
                 </Badge>
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-slate-100 dark:bg-slate-800">
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-700/50 border border-slate-600/50">
+                  <Eye className="w-4 h-4 text-slate-400" />
+                  <span className="text-sm font-medium text-slate-300">
                     {project.visibility === 'PUBLIC' ? 'Public' : 'Private'}
                   </span>
                 </div>
@@ -849,43 +874,44 @@ export default function ProjectDetail() {
               </div>
             </div>
 
-            {/* Source Code Repository Section - Clean GitHub Style */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+            {/* Source Code Repository Section - Material Design 3 */}
+            <div className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-3xl overflow-hidden shadow-xl shadow-slate-950/10">
               {/* Repository Header */}
-              <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+              <div className="px-8 py-6 bg-slate-800/60 border-b border-slate-700/50">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-6 h-6 rounded bg-slate-600 dark:bg-slate-400 flex items-center justify-center">
-                      <span className="text-white dark:text-slate-900 text-xs font-bold">
-                        {project.owner?.firstName?.charAt(0) || 'P'}
-                      </span>
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-2xl bg-slate-700/50 border border-slate-600/50 flex items-center justify-center shadow-lg">
+                      <Code2 className="w-5 h-5 text-slate-300" />
                     </div>
                     <div>
-                      <h3 className="text-slate-900 dark:text-slate-100 font-semibold text-lg">
+                      <h3 className="text-slate-100 font-bold text-xl">
                         {project.title}
                       </h3>
-                      <p className="text-slate-600 dark:text-slate-400 text-sm">
+                      <p className="text-slate-400 text-sm flex items-center gap-2">
+                        <File className="w-4 h-4" />
                         {projectFiles?.length || 0} files
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <button className="px-3 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-900 dark:text-slate-100 text-sm rounded-md transition-colors">
+                  <div className="flex items-center gap-3">
+                    <button className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-700/50 hover:bg-slate-700 text-slate-300 hover:text-white text-sm rounded-xl transition-all duration-200 border border-slate-600/50">
+                      <GitFork className="w-4 h-4" />
                       Clone
                     </button>
-                    <button className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-sm rounded-md transition-colors">
-                      ↓ Code
+                    <button className="inline-flex items-center gap-2 px-4 py-2.5 bg-green-600/90 hover:bg-green-600 text-white text-sm rounded-xl transition-all duration-200 shadow-lg shadow-green-600/20">
+                      <Download className="w-4 h-4" />
+                      Download
                     </button>
                   </div>
                 </div>
               </div>
 
               {/* File Browser */}
-              <div className="divide-y divide-slate-200 dark:divide-slate-700">
+              <div className="divide-y divide-slate-700/30">
                 {projectFiles && projectFiles.length > 0 ? (
                   <>
                     {/* Header Row */}
-                    <div className="px-6 py-2 bg-slate-50 dark:bg-slate-800 text-xs font-medium text-slate-600 dark:text-slate-400">
+                    <div className="px-8 py-4 bg-slate-800/30 text-xs font-semibold text-slate-400 uppercase tracking-wide">
                       <div className="flex items-center justify-between">
                         <span>Name</span>
                         <span>Size</span>
@@ -896,31 +922,34 @@ export default function ProjectDetail() {
                     {projectFiles.map((file) => (
                       <div 
                         key={file.id} 
-                        className="px-6 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors"
+                        className="px-8 py-4 hover:bg-slate-700/20 cursor-pointer transition-all duration-200 group border-l-2 border-transparent hover:border-l-blue-500/50"
                         onClick={() => handleFileClick(file)}
                       >
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-4">
                             {getFileIcon(file)}
                             <div className="min-w-0">
-                              <span className="text-slate-900 dark:text-slate-100 text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 hover:underline">
+                              <span className="text-slate-200 text-sm font-medium hover:text-blue-400 hover:underline transition-colors">
                                 {file.fileName}
                               </span>
-                              <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                                {getFileTypeLabel(file)} • {formatTimeAgo(file.uploadedAt)}
+                              <div className="text-xs text-slate-400 mt-1 flex items-center gap-2">
+                                <Clock className="w-3 h-3" />
+                                {formatTimeAgo(file.uploadedAt)}
+                                <span>•</span>
+                                {getFileTypeLabel(file)}
                               </div>
                             </div>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <span className="text-sm text-slate-600 dark:text-slate-400 font-mono">
+                          <div className="flex items-center gap-4">
+                            <span className="text-sm text-slate-400 font-mono">
                               {formatFileSize(file.fileSize)}
                             </span>
                             <button 
-                              className="opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-all"
+                              className="opacity-0 group-hover:opacity-100 p-2 hover:bg-slate-600/50 rounded-lg transition-all duration-200"
                               onClick={(e) => handleFileDownload(e, file)}
                               title="Download file"
                             >
-                              <span className="text-slate-600 dark:text-slate-400 text-sm">↓</span>
+                              <Download className="w-4 h-4 text-slate-400 hover:text-white" />
                             </button>
                           </div>
                         </div>
@@ -928,15 +957,15 @@ export default function ProjectDetail() {
                     ))}
                   </>
                 ) : (
-                  <div className="px-6 py-16 text-center">
-                    <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center mx-auto mb-4">
-                      <span className="text-slate-400 dark:text-slate-500 text-2xl">📁</span>
+                  <div className="px-8 py-20 text-center">
+                    <div className="w-20 h-20 bg-slate-700/30 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-slate-600/30">
+                      <Folder className="w-8 h-8 text-slate-500" />
                     </div>
-                    <h4 className="text-slate-900 dark:text-slate-100 font-medium text-lg mb-2">
-                      No files yet
+                    <h4 className="text-slate-200 font-semibold text-lg mb-3">
+                      No files uploaded yet
                     </h4>
-                    <p className="text-slate-600 dark:text-slate-400 text-sm max-w-md mx-auto">
-                      Upload source code, documentation, or other project files
+                    <p className="text-slate-400 text-sm max-w-md mx-auto leading-relaxed">
+                      Upload source code, documentation, or other project files to get started
                     </p>
                   </div>
                 )}
