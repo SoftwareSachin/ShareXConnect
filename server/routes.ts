@@ -587,22 +587,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // File upload
   app.post("/api/projects/:id/files", authenticateToken, upload.single("file"), withAuth(async (req: AuthRequest, res) => {
     try {
+      console.log('🔄 File upload request received for project:', req.params.id);
+      console.log('👤 User:', req.user?.id, req.user?.username);
+      console.log('📂 File info:', req.file ? {
+        name: req.file.originalname,
+        size: req.file.size,
+        type: req.file.mimetype,
+        path: req.file.path
+      } : 'NO FILE');
+
       if (!req.file) {
+        console.log('❌ No file in request');
         return res.status(400).json({ message: "No file uploaded" });
       }
 
       const project = await storage.getProject(req.params.id);
       if (!project) {
+        console.log('❌ Project not found:', req.params.id);
         return res.status(404).json({ message: "Project not found" });
       }
 
+      console.log('✅ Project found:', project.title, 'Owner:', project.ownerId);
+
       // Check ownership or collaboration
       if (project.ownerId !== req.user!.id) {
+        console.log('🔍 Checking collaboration access...');
         const collaborators = await storage.getProjectCollaborators(req.params.id);
         const isCollaborator = collaborators.some(c => c.id === req.user!.id);
         if (!isCollaborator) {
+          console.log('❌ User not owner or collaborator');
           return res.status(403).json({ message: "Access denied" });
         }
+        console.log('✅ User is collaborator');
+      } else {
+        console.log('✅ User is project owner');
       }
 
       // Save file info to database
@@ -617,14 +635,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         archiveContents: null
       };
 
+      console.log('💾 Saving file to database:', fileData);
       const savedFile = await storage.uploadProjectFile(fileData);
+      console.log('✅ File saved successfully:', savedFile.id);
 
       res.json({
         message: "File uploaded successfully",
         file: savedFile
       });
     } catch (error) {
-      console.error('Error uploading file:', error);
+      console.error('❌ Error uploading file:', error);
       res.status(500).json({ message: "Internal server error" });
     }
   }));
