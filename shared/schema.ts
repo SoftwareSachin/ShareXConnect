@@ -236,7 +236,7 @@ export const projectRepository = pgTable("project_repository", {
   name: varchar("name", { length: 255 }).notNull(),
   type: repoItemTypeEnum("type").notNull(),
   content: text("content"), // file content for code files
-  parentId: uuid("parent_id").references(() => projectRepository.id, { onDelete: "cascade" }), // for nested structure
+  parentId: uuid("parent_id"), // for nested structure - will be self-referencing
   size: integer("size").default(0), // file size in bytes
   language: varchar("language", { length: 50 }), // programming language for syntax highlighting
   lastModifiedBy: uuid("last_modified_by").references(() => users.id).notNull(),
