@@ -124,9 +124,16 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
         department: data.department || "",
         courseSubject: data.courseSubject || "",
         projectMethodology: data.projectMethodology || "",
+        setupInstructions: data.installationInstructions || "",
       };
 
       console.log('🚀 Creating project:', enhancedProjectData.title);
+      console.log('📋 Academic fields being sent:', {
+        department: enhancedProjectData.department,
+        courseSubject: enhancedProjectData.courseSubject,
+        projectMethodology: enhancedProjectData.projectMethodology,
+        setupInstructions: enhancedProjectData.setupInstructions
+      });
       const result = await apiPost("/api/projects", enhancedProjectData) as { id: string };
       console.log('✅ Project created successfully:', result);
 
