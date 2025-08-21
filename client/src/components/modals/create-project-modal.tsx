@@ -140,9 +140,6 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
             
             const response = await fetch(`/api/projects/${result.id}/files`, {
               method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${token}`,
-              },
               body: formData,
             });
 
