@@ -395,25 +395,25 @@ export default function ProjectDetail() {
     project.collaborators.some(collaborator => collaborator.id === user.id) : false;
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-slate-50">
       {/* Navigation Header - Material Design 3 */}
-      <div className="bg-slate-800/90 backdrop-blur-xl border-b border-slate-700/50 sticky top-0 z-50">
+      <div className="bg-white/90 backdrop-blur-xl border-b border-slate-200 sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-6 py-4 max-w-7xl">
           <div className="flex items-center justify-between">
             <button 
               onClick={() => setLocation("/projects")}
-              className="inline-flex items-center gap-2 px-4 py-2.5 text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-xl transition-all duration-200 font-medium"
+              className="inline-flex items-center gap-2 px-4 py-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all duration-200 font-medium"
             >
               ← Back to Projects
             </button>
             
             {/* Quick Actions */}
             <div className="flex items-center gap-3">
-              <button className="inline-flex items-center gap-2 px-4 py-2.5 border border-slate-600/50 rounded-xl hover:border-slate-500 hover:bg-slate-700/30 transition-all duration-200 text-slate-300 hover:text-white">
+              <button className="inline-flex items-center gap-2 px-4 py-2.5 border border-slate-300 rounded-xl hover:border-slate-400 hover:bg-slate-50 transition-all duration-200 text-slate-600 hover:text-slate-900">
                 <Star className="w-4 h-4" />
                 Star
               </button>
-              <button className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-700/50 rounded-xl hover:bg-slate-700 transition-all duration-200 text-slate-300 hover:text-white">
+              <button className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-100 rounded-xl hover:bg-slate-200 transition-all duration-200 text-slate-600 hover:text-slate-900">
                 <MessageCircle className="w-4 h-4" />
                 Comment
               </button>
@@ -424,24 +424,24 @@ export default function ProjectDetail() {
 
       <div className="container mx-auto px-6 py-8 max-w-7xl">
         {/* Hero Section - Material Design 3 */}
-        <div className="bg-slate-800/50 backdrop-blur-sm rounded-3xl border border-slate-700/50 mb-8 shadow-2xl shadow-slate-950/20">
+        <div className="bg-white backdrop-blur-sm rounded-3xl border border-slate-200 mb-8 shadow-xl shadow-slate-900/5">
           <div className="px-8 py-10">
             {/* Status and Metadata Row */}
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <Badge 
-                  className="bg-green-500/20 text-green-300 border border-green-500/30 font-medium px-4 py-2 text-sm rounded-xl"
+                  className="bg-green-100 text-green-700 border border-green-200 font-medium px-4 py-2 text-sm rounded-xl"
                 >
                   {project.status.replace("_", " ")}
                 </Badge>
                 <Badge 
-                  className="bg-blue-500/20 text-blue-300 border border-blue-500/30 font-medium px-4 py-2 text-sm rounded-xl"
+                  className="bg-blue-100 text-blue-700 border border-blue-200 font-medium px-4 py-2 text-sm rounded-xl"
                 >
                   {project.category}
                 </Badge>
-                <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-700/50 border border-slate-600/50">
-                  <Eye className="w-4 h-4 text-slate-400" />
-                  <span className="text-sm font-medium text-slate-300">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 border border-slate-200">
+                  <Eye className="w-4 h-4 text-slate-600" />
+                  <span className="text-sm font-medium text-slate-700">
                     {project.visibility === 'PUBLIC' ? 'Public' : 'Private'}
                   </span>
                 </div>
@@ -460,11 +460,11 @@ export default function ProjectDetail() {
             
             {/* Project Title and Description */}
             <div className="mb-8">
-              <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-4 leading-tight">
+              <h1 className="text-4xl font-bold text-slate-900 mb-4 leading-tight">
                 {project.title}
               </h1>
               
-              <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed max-w-4xl">
+              <p className="text-lg text-slate-600 leading-relaxed max-w-4xl">
                 {project.description}
               </p>
             </div>
@@ -973,12 +973,12 @@ export default function ProjectDetail() {
             </div>
 
             {/* Documentation & Reports Section */}
-            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-                <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+            <div className="bg-white rounded-lg border border-slate-200 shadow-sm">
+              <div className="px-6 py-4 border-b border-slate-200">
+                <h3 className="text-xl font-semibold text-slate-900">
                   Documentation & Reports
                 </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                <p className="text-sm text-slate-600 mt-1">
                   Project documentation, reports, and written materials
                 </p>
               </div>
