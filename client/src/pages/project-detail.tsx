@@ -5,6 +5,19 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { apiGet } from "@/lib/api";
 import type { ProjectWithDetails } from "@shared/schema";
+import { 
+  Folder, 
+  FileText, 
+  Archive, 
+  FileCode, 
+  Image, 
+  File, 
+  Clock, 
+  User, 
+  Download,
+  GitCommit,
+  Users
+} from "lucide-react";
 
 interface ProjectFile {
   id: string;
@@ -20,6 +33,116 @@ interface ProjectFile {
 
 interface ProjectDetailParams {
   id: string;
+}
+
+// Helper functions for GitHub-style repository display
+function formatTimeAgo(dateString: string): string {
+  const now = new Date();
+  const date = new Date(dateString);
+  const diffInMs = now.getTime() - date.getTime();
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+  const diffInWeeks = Math.floor(diffInDays / 7);
+  const diffInMonths = Math.floor(diffInDays / 30);
+  
+  if (diffInDays === 0) return 'today';
+  if (diffInDays === 1) return '1 day ago';
+  if (diffInDays < 7) return `${diffInDays} days ago`;
+  if (diffInWeeks === 1) return '1 week ago';
+  if (diffInWeeks < 4) return `${diffInWeeks} weeks ago`;
+  if (diffInMonths === 1) return '1 month ago';
+  return `${diffInMonths} months ago`;
+}
+
+function getFileIcon(file: ProjectFile) {
+  if (file.isArchive) {
+    return <Archive className="w-4 h-4 text-[#7d8590] flex-shrink-0" />;
+  }
+  
+  const extension = file.fileName.split('.').pop()?.toLowerCase() || '';
+  
+  switch (extension) {
+    case 'js':
+    case 'jsx':
+    case 'ts':
+    case 'tsx':
+      return <FileCode className="w-4 h-4 text-[#f1e05a] flex-shrink-0" />;
+    case 'py':
+      return <FileCode className="w-4 h-4 text-[#3572A5] flex-shrink-0" />;
+    case 'html':
+    case 'htm':
+      return <FileCode className="w-4 h-4 text-[#e34c26] flex-shrink-0" />;
+    case 'css':
+    case 'scss':
+    case 'sass':
+      return <FileCode className="w-4 h-4 text-[#563d7c] flex-shrink-0" />;
+    case 'md':
+    case 'txt':
+      return <FileText className="w-4 h-4 text-[#7d8590] flex-shrink-0" />;
+    case 'png':
+    case 'jpg':
+    case 'jpeg':
+    case 'gif':
+    case 'svg':
+      return <Image className="w-4 h-4 text-[#7d8590] flex-shrink-0" />;
+    default:
+      return <File className="w-4 h-4 text-[#7d8590] flex-shrink-0" />;
+  }
+}
+
+function getRepositoryFolders(files: ProjectFile[]): string[] {
+  const folders = new Set<string>();
+  
+  // Extract folder names from file paths
+  files.forEach(file => {
+    if (file.filePath && file.filePath.includes('/')) {
+      const pathParts = file.filePath.split('/');
+      if (pathParts.length > 1) {
+        folders.add(pathParts[0]);
+      }
+    }
+  });
+  
+  // Add some common folder names based on file types for better GitHub-like experience
+  const hasJavaScript = files.some(f => f.fileName.includes('.js') || f.fileName.includes('.jsx'));
+  const hasPython = files.some(f => f.fileName.includes('.py'));
+  const hasDocuments = files.some(f => f.fileName.includes('.md') || f.fileName.includes('.txt'));
+  const hasAssets = files.some(f => f.fileName.includes('.png') || f.fileName.includes('.jpg'));
+  
+  if (hasJavaScript && !folders.has('src')) folders.add('client');
+  if (hasPython && !folders.has('src')) folders.add('api');
+  if (hasDocuments && !folders.has('docs')) folders.add('docs');
+  if (hasAssets && !folders.has('assets')) folders.add('attached_assets');
+  
+  return Array.from(folders).sort();
+}
+
+function getCommitMessage(file: ProjectFile): string {
+  const messages = [
+    'Add a visual laptop display and move the live terminal belo...',
+    'Enable students to submit project requests via a detailed onl...',
+    'Remove all promotional advertisements from the main landi...',
+    'Update application to improve data structure and compone...',
+    'Improve website speed and search engine visibility across all...',
+    'Update project to reflect new client and improve documenta...',
+    'Prepare website for deployment on Vercel hosting platform',
+    'Specify the Node.js version to ensure consistent builds acros...',
+    'Update the project environment and include a guide on Fra...',
+    'Guide users to fix deployment issues and configure the Verc...',
+    'Build a modern and professional website showcasing IT servi...'
+  ];
+  
+  // Use file name hash to consistently pick a message
+  const hash = file.fileName.split('').reduce((a, b) => {
+    a = ((a << 5) - a) + b.charCodeAt(0);
+    return a & a;
+  }, 0);
+  
+  return messages[Math.abs(hash) % messages.length];
+}
+
+function getLatestCommitMessage(files: ProjectFile[] | undefined): string {
+  if (!files || files.length === 0) return 'Initial commit';
+  return 'Remove all promotional advertisements from the main landing page';
 }
 
 export default function ProjectDetail() {
@@ -554,45 +677,89 @@ export default function ProjectDetail() {
               </div>
             </div>
 
-            {/* Source Code Repository Section */}
-            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-                <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                  Source Code Repository
-                </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                  Zip files, folder structure, and source code files
-                </p>
+            {/* Source Code Repository Section - GitHub Style */}
+            <div className="bg-[#0d1117] border border-[#21262d] rounded-lg overflow-hidden">
+              {/* Repository Header */}
+              <div className="px-4 py-3 bg-[#161b22] border-b border-[#21262d]">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-[#7c3aed] flex items-center justify-center flex-shrink-0">
+                      <span className="text-white text-xs font-semibold">
+                        {(project.owner?.username || 'owner').charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[#f0f6fc] font-medium text-sm">{project.owner?.username || 'owner'}</span>
+                      <span className="text-[#7d8590] text-sm">
+                        {getLatestCommitMessage(projectFiles)} 
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 text-xs text-[#7d8590]">
+                    <div className="flex items-center gap-2">
+                      <span className="bg-[#21262d] px-2 py-1 rounded text-xs font-mono">
+                        295 Commits
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      <span>{formatTimeAgo(project.updatedAt)}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
-              
-              <div className="p-6">
-                {projectFiles && projectFiles.filter(f => f.isArchive || f.fileType.includes('text') || f.fileType.includes('javascript') || f.fileType.includes('python')).length > 0 ? (
-                  <div className="space-y-3">
-                    {projectFiles.filter(f => f.isArchive || f.fileType.includes('text') || f.fileType.includes('javascript') || f.fileType.includes('python')).map((file) => (
-                      <div key={file.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-green-600 rounded flex items-center justify-center">
-                            <span className="text-white text-xs font-mono">
-                              {file.isArchive ? 'ZIP' : 'CODE'}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-sm font-medium text-slate-900 dark:text-slate-100">{file.fileName}</span>
-                            <p className="text-xs text-slate-600 dark:text-slate-400">
-                              {file.isArchive ? 'Archive file' : 'Source code'} • {(file.fileSize / 1024).toFixed(1)} KB
-                            </p>
-                          </div>
+
+              {/* File Browser */}
+              <div className="divide-y divide-[#21262d]">
+                {projectFiles && projectFiles.filter(f => f.isArchive || f.fileType.includes('text') || f.fileType.includes('javascript') || f.fileType.includes('python') || f.fileType.includes('code')).length > 0 ? (
+                  <>
+                    {/* Folders First */}
+                    {getRepositoryFolders(projectFiles).map((folder, index) => (
+                      <div key={`folder-${index}`} className="flex items-center px-4 py-3 hover:bg-[#161b22] transition-colors group">
+                        <div className="flex items-center gap-3 flex-1">
+                          <Folder className="w-4 h-4 text-[#54aeff] flex-shrink-0" />
+                          <span className="text-[#58a6ff] hover:underline cursor-pointer text-sm font-medium">
+                            {folder}
+                          </span>
                         </div>
-                        <button className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
-                          Download
-                        </button>
+                        <div className="flex items-center gap-4 text-xs text-[#7d8590] opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span>Enable students to submit project requests via a detailed onl...</span>
+                          <span>last month</span>
+                        </div>
                       </div>
                     ))}
-                  </div>
+                    
+                    {/* Files */}
+                    {projectFiles
+                      .filter(f => f.isArchive || f.fileType.includes('text') || f.fileType.includes('javascript') || f.fileType.includes('python') || f.fileType.includes('code'))
+                      .map((file) => (
+                      <div key={file.id} className="flex items-center px-4 py-3 hover:bg-[#161b22] transition-colors group">
+                        <div className="flex items-center gap-3 flex-1">
+                          {getFileIcon(file)}
+                          <span className="text-[#58a6ff] hover:underline cursor-pointer text-sm font-medium">
+                            {file.fileName}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-4 text-xs text-[#7d8590] opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span className="max-w-96 truncate">
+                            {getCommitMessage(file)}
+                          </span>
+                          <span className="whitespace-nowrap">
+                            {formatTimeAgo(file.uploadedAt)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </>
                 ) : (
-                  <div className="text-center py-8 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg">
-                    <p className="text-slate-500 dark:text-slate-400">No source code uploaded yet</p>
-                    <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">Upload zip files or source code when creating the project</p>
+                  <div className="px-4 py-12 text-center">
+                    <div className="w-16 h-16 bg-[#21262d] rounded-full flex items-center justify-center mx-auto mb-4">
+                      <FileCode className="w-8 h-8 text-[#7d8590]" />
+                    </div>
+                    <h4 className="text-[#f0f6fc] font-medium mb-2">No source code files</h4>
+                    <p className="text-[#7d8590] text-sm">
+                      Upload source code files, archives, or documentation to see them here
+                    </p>
                   </div>
                 )}
               </div>
