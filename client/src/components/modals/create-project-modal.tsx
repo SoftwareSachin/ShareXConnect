@@ -137,6 +137,7 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
             formData.append('file', file);
             
             console.log('📤 Uploading file:', file.name, 'Size:', file.size, 'Type:', file.type);
+            console.log('🔑 Token being used:', token ? `Token present (${token.substring(0, 20)}...)` : 'NO TOKEN');
             
             const response = await fetch(`/api/projects/${result.id}/files`, {
               method: 'POST',

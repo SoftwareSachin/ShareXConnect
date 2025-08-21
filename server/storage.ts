@@ -1050,7 +1050,7 @@ export class DatabaseStorage implements IStorage {
           .innerJoin(projects, eq(facultyAssignments.projectId, projects.id))
           .innerJoin(users, eq(projects.ownerId, users.id))
           .where(eq(facultyAssignments.facultyId, userId))
-          .orderBy(desc(facultyAssignments.createdAt))
+          .orderBy(desc(facultyAssignments.assignedAt))
           .limit(limit);
 
         for (const result of recentAssignments) {
@@ -1065,7 +1065,7 @@ export class DatabaseStorage implements IStorage {
               ? `Completed review for "${project.title}"`
               : `New assignment: "${project.title}"`,
             description: `Project by ${student.firstName} ${student.lastName}`,
-            timestamp: assignment.reviewedAt || assignment.createdAt,
+            timestamp: assignment.reviewedAt || assignment.assignedAt,
             projectId: project.id,
             userId: assignment.facultyId
           });
