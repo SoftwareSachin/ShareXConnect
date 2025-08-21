@@ -180,7 +180,6 @@ export default function ProjectDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-3 space-y-8">
-            
             {/* Technology Stack */}
             {project.techStack && project.techStack.length > 0 && (
               <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
@@ -573,233 +572,35 @@ export default function ProjectDetail() {
               </div>
             </div>
 
-            {/* Media Gallery */}
-            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-                <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                  Media & Screenshots
-                </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                  Project images, screenshots, and visual assets
-                </p>
-              </div>
-              
-              <div className="p-6">
-                {/* Demo Images Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                  {/* Sample screenshot placeholders - these would be actual uploaded images */}
-                  <div className="bg-slate-100 dark:bg-slate-800 rounded-lg aspect-video flex items-center justify-center border border-slate-200 dark:border-slate-700">
-                    <div className="text-center">
-                      <div className="w-12 h-12 bg-slate-300 dark:bg-slate-600 rounded-lg mx-auto mb-2 flex items-center justify-center">
-                        <span className="text-slate-600 dark:text-slate-400 text-sm font-mono">IMG</span>
-                      </div>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">Application Screenshot</p>
-                    </div>
-                  </div>
-                  <div className="bg-slate-100 dark:bg-slate-800 rounded-lg aspect-video flex items-center justify-center border border-slate-200 dark:border-slate-700">
-                    <div className="text-center">
-                      <div className="w-12 h-12 bg-slate-300 dark:bg-slate-600 rounded-lg mx-auto mb-2 flex items-center justify-center">
-                        <span className="text-slate-600 dark:text-slate-400 text-sm font-mono">PIC</span>
-                      </div>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">Feature Demo</p>
-                    </div>
-                  </div>
-                  <div className="bg-slate-100 dark:bg-slate-800 rounded-lg aspect-video flex items-center justify-center border border-slate-200 dark:border-slate-700">
-                    <div className="text-center">
-                      <div className="w-12 h-12 bg-slate-300 dark:bg-slate-600 rounded-lg mx-auto mb-2 flex items-center justify-center">
-                        <span className="text-slate-600 dark:text-slate-400 text-sm font-mono">MOB</span>
-                      </div>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">Mobile View</p>
-                    </div>
-                  </div>
+
+
+            {/* License Information */}
+            {project.licenseType && (
+              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                  <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                    License
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                    Project licensing information
+                  </p>
                 </div>
                 
-                {/* File Upload Info */}
-                <div className="border-t border-slate-200 dark:border-slate-800 pt-4">
-                  <h4 className="font-medium text-slate-900 dark:text-slate-100 mb-3">Uploaded Files</h4>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
-                          <span className="text-white text-xs">IMG</span>
-                        </div>
-                        <div>
-                          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">project-screenshot-1.png</span>
-                          <p className="text-xs text-slate-600 dark:text-slate-400">1.2 MB • Uploaded during creation</p>
-                        </div>
-                      </div>
-                      <button className="px-3 py-1 text-sm bg-slate-600 text-white rounded hover:bg-slate-700 transition-colors">
-                        View
-                      </button>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-green-600 rounded flex items-center justify-center">
-                          <span className="text-white text-xs">DOC</span>
-                        </div>
-                        <div>
-                          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">project-documentation.pdf</span>
-                          <p className="text-xs text-slate-600 dark:text-slate-400">2.5 MB • Documentation file</p>
-                        </div>
-                      </div>
-                      <button className="px-3 py-1 text-sm bg-slate-600 text-white rounded hover:bg-slate-700 transition-colors">
-                        Download
-                      </button>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-purple-600 rounded flex items-center justify-center">
-                          <span className="text-white text-xs">VID</span>
-                        </div>
-                        <div>
-                          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">demo-video.mp4</span>
-                          <p className="text-xs text-slate-600 dark:text-slate-400">15.3 MB • Project demonstration</p>
-                        </div>
-                      </div>
-                      <button className="px-3 py-1 text-sm bg-slate-600 text-white rounded hover:bg-slate-700 transition-colors">
-                        Play
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Project Files */}
-            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-                <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                  Project Files
-                </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                  Source code and project assets
-                </p>
-              </div>
-              
-              <div className="p-6">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
-                        <span className="text-white text-xs font-mono">ZIP</span>
-                      </div>
+                <div className="p-6">
+                  <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <div className="flex items-center justify-between">
                       <div>
-                        <span className="text-sm font-medium text-slate-900 dark:text-slate-100">project-source.zip</span>
-                        <p className="text-xs text-slate-600 dark:text-slate-400">Complete source code archive</p>
+                        <span className="text-sm font-medium text-slate-900 dark:text-slate-100">{project.licenseType}</span>
+                        <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                          Project license type
+                        </p>
                       </div>
+                      <span className="text-xs text-slate-500 dark:text-slate-400">License</span>
                     </div>
-                    <button className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
-                      Download
-                    </button>
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* License */}
-            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-                <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                  License
-                </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                  Project licensing information
-                </p>
-              </div>
-              
-              <div className="p-6">
-                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="text-sm font-medium text-slate-900 dark:text-slate-100">MIT License</span>
-                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                        Free and open source software license
-                      </p>
-                    </div>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">Open Source</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Statistics */}
-            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-                <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                  Statistics
-                </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                  Project engagement and activity metrics
-                </p>
-              </div>
-              
-              <div className="p-6">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                    <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">0</div>
-                    <div className="text-sm text-slate-600 dark:text-slate-400">Stars</div>
-                  </div>
-                  <div className="text-center p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                    <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">0</div>
-                    <div className="text-sm text-slate-600 dark:text-slate-400">Forks</div>
-                  </div>
-                  <div className="text-center p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                    <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">0</div>
-                    <div className="text-sm text-slate-600 dark:text-slate-400">Views</div>
-                  </div>
-                  <div className="text-center p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                    <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">0</div>
-                    <div className="text-sm text-slate-600 dark:text-slate-400">Downloads</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Code Preview */}
-            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-                <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                  Code Preview
-                </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                  Sample code from the project
-                </p>
-              </div>
-              
-              <div className="p-6">
-                <div className="bg-slate-900 rounded-lg overflow-hidden border border-slate-700">
-                  <div className="flex items-center justify-between px-4 py-3 bg-slate-800 border-b border-slate-700">
-                    <div className="flex items-center gap-3">
-                      <div className="flex gap-2">
-                        <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                        <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                      </div>
-                      <span className="text-sm font-mono text-slate-300">main.js</span>
-                    </div>
-                    <div className="text-xs text-slate-400">javascript</div>
-                  </div>
-                  
-                  <div className="p-6">
-                    <pre className="text-sm font-mono text-slate-300 leading-relaxed">
-                      <code>{`// Sample code preview
-function initializeApp() {
-  console.log('Application starting...');
-  
-  const config = {
-    version: '1.0.0',
-    environment: 'production'
-  };
-  
-  return config;
-}
-
-export default initializeApp;`}</code>
-                    </pre>
-                  </div>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
 
           {/* Sidebar */}
