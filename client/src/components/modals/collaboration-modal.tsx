@@ -15,13 +15,11 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/api";
 import { 
-  Users, Send, Check, X, Clock, UserPlus, Search,
-  User, Trash2
+  Users, Send, Check, X, Clock, UserPlus, Search, Trash2
 } from "lucide-react";
 
 interface CollaborationModalProps {
@@ -279,11 +277,11 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
   const getRoleBadge = (role: string) => {
     switch (role) {
       case 'ADMIN':
-        return <Badge variant="default" className="bg-purple-100 text-purple-800 hover:bg-purple-100">Admin</Badge>;
+        return <Badge className="bg-purple-500 hover:bg-purple-500 text-white">Admin</Badge>;
       case 'FACULTY':
-        return <Badge variant="default" className="bg-blue-100 text-blue-800 hover:bg-blue-100">Faculty</Badge>;
+        return <Badge className="bg-blue-500 hover:bg-blue-500 text-white">Faculty</Badge>;
       case 'STUDENT':
-        return <Badge variant="default" className="bg-green-100 text-green-800 hover:bg-green-100">Student</Badge>;
+        return <Badge className="bg-green-500 hover:bg-green-500 text-white">Student</Badge>;
       default:
         return <Badge variant="outline">Member</Badge>;
     }
@@ -313,13 +311,14 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] p-0">
-        <div className="p-6 border-b bg-white dark:bg-gray-900">
+      <DialogContent className="max-w-4xl max-h-[90vh] p-0 bg-white">
+        {/* Header */}
+        <div className="p-6 border-b border-gray-200">
           <DialogHeader>
-            <DialogTitle className="text-xl font-medium text-gray-900 dark:text-gray-100">
+            <DialogTitle className="text-xl font-semibold text-black">
               {isOwner ? "Team management" : "Request collaboration"}
             </DialogTitle>
-            <DialogDescription className="text-sm text-gray-600 dark:text-gray-400">
+            <DialogDescription className="text-gray-700 mt-1">
               {isOwner 
                 ? "Manage your project team and collaboration requests"
                 : "Send a collaboration request to join this project"
@@ -328,58 +327,60 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
           </DialogHeader>
         </div>
 
-        <ScrollArea className="max-h-[calc(90vh-120px)]">
+        <ScrollArea className="max-h-[calc(90vh-120px)] bg-white">
           {isOwner ? (
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <div className="px-6 pt-4">
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="team">
+              {/* Tab Navigation */}
+              <div className="px-6 pt-4 border-b border-gray-200">
+                <TabsList className="grid w-full grid-cols-3 bg-gray-100">
+                  <TabsTrigger value="team" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-600">
                     Team ({collaborators.length})
                   </TabsTrigger>
-                  <TabsTrigger value="requests">
+                  <TabsTrigger value="requests" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-600">
                     Requests ({pendingRequests.length})
                   </TabsTrigger>
-                  <TabsTrigger value="invite">
+                  <TabsTrigger value="invite" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-600">
                     Add collaborator
                   </TabsTrigger>
                 </TabsList>
               </div>
 
-              <TabsContent value="team" className="px-6 pb-6 space-y-4">
-                <div className="space-y-3">
-                  <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">Team members</h3>
+              {/* Team Tab */}
+              <TabsContent value="team" className="px-6 py-6 space-y-4">
+                <div className="space-y-4">
+                  <h3 className="text-base font-semibold text-black">Team members</h3>
                   {collaborators.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
-                      <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p>No team members yet</p>
-                      <p className="text-sm">Add collaborators to start building your team</p>
+                    <div className="text-center py-12 bg-gray-50 rounded-lg">
+                      <Users className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                      <p className="text-gray-900 font-medium mb-2">No team members yet</p>
+                      <p className="text-gray-600">Add collaborators to start building your team</p>
                     </div>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       {collaborators.map((collaborator) => (
                         <div 
                           key={collaborator.id} 
-                          className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 bg-white dark:bg-gray-900"
+                          className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-white hover:bg-gray-50"
                         >
                           <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10">
-                              <AvatarFallback className={`text-white ${getAvatarColor(collaborator.role)}`}>
+                            <Avatar className="h-12 w-12">
+                              <AvatarFallback className={`text-white font-semibold ${getAvatarColor(collaborator.role)}`}>
                                 {getInitials(collaborator.firstName, collaborator.lastName)}
                               </AvatarFallback>
                             </Avatar>
                             <div>
                               <div className="flex items-center gap-2">
-                                <span className="font-medium text-sm text-gray-900 dark:text-gray-100">
+                                <span className="font-semibold text-black">
                                   {collaborator.firstName} {collaborator.lastName}
                                   {collaborator.isOwner && " (Owner)"}
                                 </span>
                               </div>
-                              <div className="text-xs text-gray-500 dark:text-gray-400">
+                              <div className="text-sm text-gray-700">
                                 {collaborator.email} • @{collaborator.username}
                               </div>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-3">
                             {getRoleBadge(collaborator.role)}
                             {!collaborator.isOwner && (
                               <Button
@@ -400,108 +401,120 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
                 </div>
               </TabsContent>
 
-              <TabsContent value="requests" className="px-6 pb-6 space-y-4">
-                <div className="space-y-3">
-                  <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">Pending requests</h3>
+              {/* Requests Tab */}
+              <TabsContent value="requests" className="px-6 py-6 space-y-4">
+                <div className="space-y-4">
+                  <h3 className="text-base font-semibold text-black">Pending requests</h3>
                   {pendingRequests.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
-                      <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p>No pending requests</p>
+                    <div className="text-center py-12 bg-gray-50 rounded-lg">
+                      <Clock className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                      <p className="text-gray-900 font-medium mb-2">No pending requests</p>
+                      <p className="text-gray-600">All collaboration requests have been processed</p>
                     </div>
                   ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       {pendingRequests.map((request) => (
-                        <Card key={request.id} data-testid={`request-${request.id}`}>
-                          <CardContent className="p-4">
-                            <div className="flex items-start gap-3 mb-3">
-                              <Avatar className="h-10 w-10">
-                                <AvatarFallback className={getAvatarColor(request.requester.role)}>
-                                  {getInitials(request.requester.firstName || '', request.requester.lastName || '')}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div className="flex-1">
-                                <div className="flex items-center justify-between">
-                                  <div>
-                                    <p className="font-medium text-sm text-gray-900 dark:text-gray-100">
-                                      {request.requester.firstName} {request.requester.lastName}
-                                    </p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                                      {request.requester.email} • @{request.requester.username}
-                                    </p>
-                                  </div>
-                                  <span className="text-xs text-gray-500">
-                                    {new Date(request.createdAt).toLocaleDateString()}
-                                  </span>
+                        <div 
+                          key={request.id} 
+                          className="border border-gray-200 rounded-lg bg-white p-4"
+                          data-testid={`request-${request.id}`}
+                        >
+                          <div className="flex items-start gap-3 mb-4">
+                            <Avatar className="h-12 w-12">
+                              <AvatarFallback className={`font-semibold text-white ${getAvatarColor(request.requester.role)}`}>
+                                {getInitials(request.requester.firstName || '', request.requester.lastName || '')}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="font-semibold text-black">
+                                    {request.requester.firstName} {request.requester.lastName}
+                                  </p>
+                                  <p className="text-sm text-gray-700">
+                                    {request.requester.email} • @{request.requester.username}
+                                  </p>
                                 </div>
+                                <span className="text-sm text-gray-600">
+                                  {new Date(request.createdAt).toLocaleDateString()}
+                                </span>
                               </div>
                             </div>
-                            <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded mb-3 text-sm text-gray-900 dark:text-gray-100">
+                          </div>
+                          
+                          <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                            <p className="text-gray-900 leading-relaxed">
                               {request.message}
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                data-testid={`button-approve-${request.id}`}
-                                onClick={() => respondToRequest.mutate({ 
-                                  requestId: request.id, 
-                                  status: 'APPROVED' 
-                                })}
-                                disabled={respondToRequest.isPending}
-                              >
-                                <Check className="h-4 w-4 mr-1" />
-                                Accept
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                data-testid={`button-reject-${request.id}`}
-                                onClick={() => respondToRequest.mutate({ 
-                                  requestId: request.id, 
-                                  status: 'REJECTED' 
-                                })}
-                                disabled={respondToRequest.isPending}
-                              >
-                                <X className="h-4 w-4 mr-1" />
-                                Decline
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
+                            </p>
+                          </div>
+                          
+                          <div className="flex gap-3">
+                            <Button
+                              size="sm"
+                              data-testid={`button-approve-${request.id}`}
+                              onClick={() => respondToRequest.mutate({ 
+                                requestId: request.id, 
+                                status: 'APPROVED' 
+                              })}
+                              disabled={respondToRequest.isPending}
+                              className="bg-green-600 hover:bg-green-700 text-white"
+                            >
+                              <Check className="h-4 w-4 mr-2" />
+                              Accept
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              data-testid={`button-reject-${request.id}`}
+                              onClick={() => respondToRequest.mutate({ 
+                                requestId: request.id, 
+                                status: 'REJECTED' 
+                              })}
+                              disabled={respondToRequest.isPending}
+                              className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                            >
+                              <X className="h-4 w-4 mr-2" />
+                              Decline
+                            </Button>
+                          </div>
+                        </div>
                       ))}
                     </div>
                   )}
                 </div>
               </TabsContent>
 
-              <TabsContent value="invite" className="px-6 pb-6">
+              {/* Add Collaborator Tab */}
+              <TabsContent value="invite" className="px-6 py-6">
                 <div className="space-y-6">
+                  {/* Search Section */}
                   <div>
-                    <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">Add collaborator</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Search for users to add as collaborators to your project.</p>
+                    <h3 className="text-base font-semibold text-black mb-2">Add collaborator</h3>
+                    <p className="text-gray-700 mb-4">Search for users to add as collaborators to your project.</p>
                     
                     <div className="relative mb-4">
-                      <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Search className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
                       <Input
                         data-testid="input-user-search"
                         placeholder="Search by name or email..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10"
+                        className="pl-10 border-gray-300 text-black placeholder-gray-500"
                       />
                     </div>
                     
                     {/* Selected Users */}
                     {selectedUsers.length > 0 && (
                       <div className="mb-4">
-                        <Label className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2 block">Selected users</Label>
+                        <Label className="text-sm font-semibold text-black mb-2 block">Selected users</Label>
                         <div className="flex flex-wrap gap-2 mb-3">
                           {selectedUsers.map((user) => (
-                            <Badge key={user.id} variant="secondary" className="gap-1">
+                            <Badge key={user.id} variant="secondary" className="gap-2 bg-blue-100 text-blue-800">
                               {user.firstName} {user.lastName}
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                className="h-4 w-4 p-0 hover:bg-transparent"
+                                className="h-4 w-4 p-0 hover:bg-transparent text-blue-600"
                                 onClick={() => handleRemoveSelectedUser(user.id)}
                               >
                                 <X className="h-3 w-3" />
@@ -512,7 +525,7 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
                         <Button
                           onClick={() => batchInviteUsers.mutate(selectedUsers)}
                           disabled={batchInviteUsers.isPending}
-                          className="w-full"
+                          className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                         >
                           <Send className="h-4 w-4 mr-2" />
                           Send {selectedUsers.length} invitation{selectedUsers.length > 1 ? 's' : ''}
@@ -522,7 +535,7 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
                     
                     {/* Search Results */}
                     {showSearchResults && searchResults.length > 0 && (
-                      <div className="border rounded-lg divide-y max-h-64 overflow-y-auto">
+                      <div className="border border-gray-200 rounded-lg divide-y divide-gray-200 max-h-64 overflow-y-auto bg-white">
                         {searchResults.map((user) => (
                           <div
                             key={user.id}
@@ -530,21 +543,21 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
                             onClick={() => handleSelectUser(user)}
                           >
                             <div className="flex items-center gap-3">
-                              <Avatar className="h-8 w-8">
-                                <AvatarFallback className={getAvatarColor(user.role)}>
+                              <Avatar className="h-10 w-10">
+                                <AvatarFallback className={`text-white font-semibold ${getAvatarColor(user.role)}`}>
                                   {getInitials(user.firstName, user.lastName)}
                                 </AvatarFallback>
                               </Avatar>
                               <div>
-                                <p className="font-medium text-sm text-gray-900 dark:text-gray-100">
+                                <p className="font-semibold text-black">
                                   {user.firstName} {user.lastName}
                                 </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                <p className="text-sm text-gray-700">
                                   {user.email}
                                 </p>
                               </div>
                             </div>
-                            <Button size="sm" variant="outline">
+                            <Button size="sm" variant="outline" className="border-gray-300 text-gray-700">
                               <UserPlus className="h-4 w-4" />
                             </Button>
                           </div>
@@ -553,9 +566,10 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
                     )}
                   </div>
 
-                  <div className="border-t pt-6">
+                  {/* Email Section */}
+                  <div className="border-t border-gray-200 pt-6">
                     <div className="space-y-3">
-                      <Label htmlFor="email-input" className="text-sm font-medium text-gray-900 dark:text-gray-100">Or add by email address</Label>
+                      <Label htmlFor="email-input" className="text-sm font-semibold text-black">Or add by email address</Label>
                       <div className="flex gap-2">
                         <Input
                           id="email-input"
@@ -564,11 +578,13 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
                           value={collaboratorEmail}
                           onChange={(e) => setCollaboratorEmail(e.target.value)}
                           type="email"
+                          className="border-gray-300 text-black placeholder-gray-500"
                         />
                         <Button
                           data-testid="button-add-collaborator"
                           onClick={handleAddCollaborator}
                           disabled={addCollaboratorByEmail.isPending}
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
                         >
                           Add
                         </Button>
@@ -580,10 +596,10 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
             </Tabs>
           ) : (
             /* Non-Owner View */
-            <div className="p-6">
+            <div className="p-6 bg-white">
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="collaboration-message" className="text-sm font-medium mb-2 block">
+                  <Label htmlFor="collaboration-message" className="text-sm font-semibold text-black mb-2 block">
                     Your message
                   </Label>
                   <Textarea
@@ -593,9 +609,9 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
                     value={requestMessage}
                     onChange={(e) => setRequestMessage(e.target.value)}
                     rows={5}
-                    className="resize-none"
+                    className="resize-none border-gray-300 text-black placeholder-gray-500"
                   />
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-sm text-gray-700 mt-1">
                     Explain your background and how you can contribute to this project.
                   </p>
                 </div>
@@ -603,7 +619,7 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
                   data-testid="button-send-request"
                   onClick={handleRequestCollaboration}
                   disabled={requestCollaboration.isPending || !requestMessage.trim()}
-                  className="w-full"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   <Send className="h-4 w-4 mr-2" />
                   {requestCollaboration.isPending ? "Sending request..." : "Send collaboration request"}
