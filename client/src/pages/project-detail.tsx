@@ -270,15 +270,51 @@ export default function ProjectDetail() {
               </div>
             )}
 
-            {/* Documentation */}
+            {/* Repository Structure */}
+            {project.repositoryStructure && (
+              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                  <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                    Folder Structure
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                    Project directory structure and file organization
+                  </p>
+                </div>
+                
+                <div className="p-6">
+                  <div className="bg-slate-900 dark:bg-black rounded-lg overflow-hidden border border-slate-700">
+                    <div className="flex items-center justify-between px-4 py-3 bg-slate-800 border-b border-slate-700">
+                      <div className="flex items-center gap-3">
+                        <div className="flex gap-2">
+                          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                          <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        </div>
+                        <span className="text-sm font-mono text-slate-300">file-tree</span>
+                      </div>
+                      <div className="text-xs text-slate-400">directory</div>
+                    </div>
+                    
+                    <div className="p-6 max-h-96 overflow-y-auto">
+                      <pre className="text-sm font-mono text-blue-400 leading-relaxed whitespace-pre-wrap">
+                        <code>{project.repositoryStructure}</code>
+                      </pre>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Documentation & README */}
             {project.readmeContent && (
               <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
                 <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
                   <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                    Documentation
+                    Documentation & README
                   </h3>
                   <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                    Project guide and setup instructions
+                    Project guide, setup instructions, and detailed documentation
                   </p>
                 </div>
                 
@@ -306,45 +342,323 @@ export default function ProjectDetail() {
               </div>
             )}
 
-            {/* Project Info */}
+            {/* Installation Instructions */}
+            {project.installationInstructions && (
+              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                  <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                    Installation Instructions
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                    Step-by-step setup and installation guide
+                  </p>
+                </div>
+                
+                <div className="p-6">
+                  <div className="bg-slate-900 dark:bg-black rounded-lg overflow-hidden border border-slate-700">
+                    <div className="flex items-center justify-between px-4 py-3 bg-slate-800 border-b border-slate-700">
+                      <div className="flex items-center gap-3">
+                        <div className="flex gap-2">
+                          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                          <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        </div>
+                        <span className="text-sm font-mono text-slate-300">INSTALL.md</span>
+                      </div>
+                      <div className="text-xs text-slate-400">guide</div>
+                    </div>
+                    
+                    <div className="p-6 max-h-96 overflow-y-auto">
+                      <pre className="text-sm font-mono text-yellow-400 leading-relaxed whitespace-pre-wrap">
+                        <code>{project.installationInstructions}</code>
+                      </pre>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* API Documentation */}
+            {project.apiDocumentation && (
+              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                  <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                    API Documentation
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                    API endpoints, parameters, and usage examples
+                  </p>
+                </div>
+                
+                <div className="p-6">
+                  <div className="bg-slate-900 dark:bg-black rounded-lg overflow-hidden border border-slate-700">
+                    <div className="flex items-center justify-between px-4 py-3 bg-slate-800 border-b border-slate-700">
+                      <div className="flex items-center gap-3">
+                        <div className="flex gap-2">
+                          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                          <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        </div>
+                        <span className="text-sm font-mono text-slate-300">API.md</span>
+                      </div>
+                      <div className="text-xs text-slate-400">documentation</div>
+                    </div>
+                    
+                    <div className="p-6 max-h-96 overflow-y-auto">
+                      <pre className="text-sm font-mono text-cyan-400 leading-relaxed whitespace-pre-wrap">
+                        <code>{project.apiDocumentation}</code>
+                      </pre>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Contributing Guidelines */}
+            {project.contributingGuidelines && (
+              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                  <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                    Contributing Guidelines
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                    How to contribute to this project and development workflow
+                  </p>
+                </div>
+                
+                <div className="p-6">
+                  <div className="bg-slate-900 dark:bg-black rounded-lg overflow-hidden border border-slate-700">
+                    <div className="flex items-center justify-between px-4 py-3 bg-slate-800 border-b border-slate-700">
+                      <div className="flex items-center gap-3">
+                        <div className="flex gap-2">
+                          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                          <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        </div>
+                        <span className="text-sm font-mono text-slate-300">CONTRIBUTING.md</span>
+                      </div>
+                      <div className="text-xs text-slate-400">guide</div>
+                    </div>
+                    
+                    <div className="p-6 max-h-96 overflow-y-auto">
+                      <pre className="text-sm font-mono text-purple-400 leading-relaxed whitespace-pre-wrap">
+                        <code>{project.contributingGuidelines}</code>
+                      </pre>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Comprehensive Project Info */}
             <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
               <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
                 <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                  Project Info
+                  Project Information
                 </h3>
                 <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                  Basic project information and metadata
+                  Complete project details and metadata from creation form
                 </p>
               </div>
               
               <div className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="space-y-4">
                     <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Project Title</dt>
+                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1 font-medium">{project.title}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Description</dt>
+                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">{project.description}</dd>
+                    </div>
+                    <div>
                       <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Status</dt>
-                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">{project.status.replace("_", " ")}</dd>
+                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">
+                        <Badge className={getStatusColor(project.status)}>
+                          {project.status.replace("_", " ")}
+                        </Badge>
+                      </dd>
                     </div>
                     <div>
                       <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Category</dt>
                       <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">{project.category}</dd>
                     </div>
+                  </div>
+                  <div className="space-y-4">
                     <div>
                       <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Visibility</dt>
                       <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">{project.visibility}</dd>
                     </div>
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">GitHub Repository</dt>
+                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">
+                        {project.githubUrl ? (
+                          <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                            {project.githubUrl}
+                          </a>
+                        ) : (
+                          <span className="text-slate-400">Not provided</span>
+                        )}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Live Demo URL</dt>
+                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">
+                        {project.demoUrl ? (
+                          <a href={project.demoUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                            {project.demoUrl}
+                          </a>
+                        ) : (
+                          <span className="text-slate-400">Not provided</span>
+                        )}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">License Type</dt>
+                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">{project.licenseType || 'MIT'}</dd>
+                    </div>
                   </div>
                   <div className="space-y-4">
                     <div>
-                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Created</dt>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Project Owner</dt>
                       <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">
-                        {new Date(project.createdAt).toLocaleDateString()}
+                        {project.owner.firstName} {project.owner.lastName}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Institution</dt>
+                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">{project.owner.institution}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Created Date</dt>
+                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">
+                        {new Date(project.createdAt).toLocaleDateString('en-US', { 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
                       </dd>
                     </div>
                     <div>
                       <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Last Updated</dt>
                       <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">
-                        {new Date(project.updatedAt).toLocaleDateString()}
+                        {new Date(project.updatedAt).toLocaleDateString('en-US', { 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
                       </dd>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Technology Stack Display */}
+                {project.techStack && project.techStack.length > 0 && (
+                  <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
+                    <dt className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-3">Technology Stack</dt>
+                    <dd className="flex flex-wrap gap-2">
+                      {project.techStack.map((tech, index) => (
+                        <span key={index} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full text-sm">
+                          {tech}
+                        </span>
+                      ))}
+                    </dd>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Media Gallery */}
+            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                  Media & Screenshots
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                  Project images, screenshots, and visual assets
+                </p>
+              </div>
+              
+              <div className="p-6">
+                {/* Demo Images Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                  {/* Sample screenshot placeholders - these would be actual uploaded images */}
+                  <div className="bg-slate-100 dark:bg-slate-800 rounded-lg aspect-video flex items-center justify-center border border-slate-200 dark:border-slate-700">
+                    <div className="text-center">
+                      <div className="w-12 h-12 bg-slate-300 dark:bg-slate-600 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                        <span className="text-slate-600 dark:text-slate-400 text-sm font-mono">IMG</span>
+                      </div>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">Application Screenshot</p>
+                    </div>
+                  </div>
+                  <div className="bg-slate-100 dark:bg-slate-800 rounded-lg aspect-video flex items-center justify-center border border-slate-200 dark:border-slate-700">
+                    <div className="text-center">
+                      <div className="w-12 h-12 bg-slate-300 dark:bg-slate-600 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                        <span className="text-slate-600 dark:text-slate-400 text-sm font-mono">PIC</span>
+                      </div>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">Feature Demo</p>
+                    </div>
+                  </div>
+                  <div className="bg-slate-100 dark:bg-slate-800 rounded-lg aspect-video flex items-center justify-center border border-slate-200 dark:border-slate-700">
+                    <div className="text-center">
+                      <div className="w-12 h-12 bg-slate-300 dark:bg-slate-600 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                        <span className="text-slate-600 dark:text-slate-400 text-sm font-mono">MOB</span>
+                      </div>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">Mobile View</p>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* File Upload Info */}
+                <div className="border-t border-slate-200 dark:border-slate-800 pt-4">
+                  <h4 className="font-medium text-slate-900 dark:text-slate-100 mb-3">Uploaded Files</h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
+                          <span className="text-white text-xs">IMG</span>
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">project-screenshot-1.png</span>
+                          <p className="text-xs text-slate-600 dark:text-slate-400">1.2 MB • Uploaded during creation</p>
+                        </div>
+                      </div>
+                      <button className="px-3 py-1 text-sm bg-slate-600 text-white rounded hover:bg-slate-700 transition-colors">
+                        View
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-green-600 rounded flex items-center justify-center">
+                          <span className="text-white text-xs">DOC</span>
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">project-documentation.pdf</span>
+                          <p className="text-xs text-slate-600 dark:text-slate-400">2.5 MB • Documentation file</p>
+                        </div>
+                      </div>
+                      <button className="px-3 py-1 text-sm bg-slate-600 text-white rounded hover:bg-slate-700 transition-colors">
+                        Download
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-purple-600 rounded flex items-center justify-center">
+                          <span className="text-white text-xs">VID</span>
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">demo-video.mp4</span>
+                          <p className="text-xs text-slate-600 dark:text-slate-400">15.3 MB • Project demonstration</p>
+                        </div>
+                      </div>
+                      <button className="px-3 py-1 text-sm bg-slate-600 text-white rounded hover:bg-slate-700 transition-colors">
+                        Play
+                      </button>
                     </div>
                   </div>
                 </div>
