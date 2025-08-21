@@ -21,7 +21,8 @@ import {
   GitCommit,
   Users,
   X,
-  Eye
+  Eye,
+  Upload
 } from "lucide-react";
 
 interface ProjectFile {
@@ -232,6 +233,41 @@ export default function ProjectDetail() {
     } catch (error) {
       console.error('❌ Download failed:', error);
       alert(`Failed to download file: ${error}`);
+    }
+  }
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>): Promise<void> {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    try {
+      for (const file of Array.from(files)) {
+        console.log('📤 Uploading file:', file.name);
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const response = await fetch(`/api/projects/${params.id}/files`, {
+          method: 'POST',
+          body: formData,
+          credentials: 'include'
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Upload failed: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        console.log('✅ File uploaded successfully:', result);
+      }
+      
+      // Reset the input and refresh the files list
+      e.target.value = '';
+      window.location.reload(); // Simple refresh to show new files
+      
+    } catch (error) {
+      console.error('❌ Upload failed:', error);
+      alert(`Failed to upload files: ${error}`);
     }
   }
 
@@ -782,7 +818,30 @@ export default function ProjectDetail() {
                 ) : (
                   <div className="text-center py-8 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg">
                     <p className="text-slate-500 dark:text-slate-400">No files uploaded yet</p>
-                    <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">Files can be uploaded when creating or editing the project</p>
+                    {(isOwner || isCollaborator) ? (
+                      <div className="mt-4">
+                        <input
+                          type="file"
+                          multiple
+                          accept=".zip,.rar,.tar,.gz,.js,.ts,.jsx,.tsx,.py,.java,.cpp,.c,.html,.css,.md,.txt,.pdf,.doc,.docx,.png,.jpg,.jpeg,.gif,.svg"
+                          onChange={handleFileUpload}
+                          className="hidden"
+                          id="file-upload"
+                        />
+                        <label
+                          htmlFor="file-upload"
+                          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer transition-colors"
+                        >
+                          <Upload className="w-4 h-4 mr-2" />
+                          Upload Files
+                        </label>
+                        <p className="text-sm text-slate-400 dark:text-slate-500 mt-2">
+                          Upload source code, archives, documentation, or images
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">Only project owners and collaborators can upload files</p>
+                    )}
                   </div>
                 )}
               </div>
