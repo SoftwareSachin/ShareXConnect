@@ -7,6 +7,7 @@ import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
 import { CreateProjectModal } from "@/components/modals/create-project-modal";
 import { RoleProtectedComponent, usePermissions } from "@/components/RoleProtectedComponent";
+import { useAuthStore } from "@/lib/auth";
 import { apiGet } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -20,19 +21,27 @@ export default function Projects() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  // Check if user can create projects
-  if (!canAccess('canCreateProject')) {
+  // For debugging - let's see what's happening with permissions
+  console.log('User permissions check:', {
+    canCreateProject: canAccess('canCreateProject'),
+    isStudent: isStudent,
+    userRole: useAuthStore.getState().user?.role
+  });
+
+  // Students should be able to access the projects page
+  // Only block if user is Guest or has no project permissions at all
+  if (!canAccess('canViewAllProjects') && !canAccess('canViewPublicProjects')) {
     return (
       <div className="flex h-screen">
         <Sidebar />
         <div className="flex-1 flex flex-col">
-          <Header title="Access Restricted" description="Only students can create and manage projects." />
+          <Header title="Access Restricted" description="Only authenticated users can view projects." />
           <main className="flex-1 p-6">
             <div className="text-center py-12">
               <Shield className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
               <h2 className="text-2xl font-semibold mb-2">Access Restricted</h2>
               <p className="text-muted-foreground">
-                Only students can create and manage projects.
+                You need to be logged in to view projects.
               </p>
             </div>
           </main>
