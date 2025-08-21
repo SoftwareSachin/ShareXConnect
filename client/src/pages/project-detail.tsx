@@ -495,7 +495,27 @@ export default function ProjectDetail() {
                       <dd className="text-slate-900 dark:text-slate-100 font-medium">{project.courseSubject}</dd>
                     </div>
                   )}
-
+                </div>
+                
+                {/* Additional Academic Details */}
+                <div className="mt-6 space-y-4">
+                  {project.projectMethodology && (
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Project Methodology & Approach</dt>
+                      <dd className="text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <p className="text-sm leading-relaxed whitespace-pre-wrap">{project.projectMethodology}</p>
+                      </dd>
+                    </div>
+                  )}
+                  
+                  {project.setupInstructions && (
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Setup & Installation Instructions</dt>
+                      <dd className="text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <pre className="text-sm font-mono leading-relaxed whitespace-pre-wrap">{project.setupInstructions}</pre>
+                      </dd>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -524,63 +544,7 @@ export default function ProjectDetail() {
           {/* Main Content */}
           <div className="lg:col-span-3 space-y-8">
 
-            {/* Project Methodology & Approach */}
-            {project.projectMethodology && (
-              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-                  <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                    Project Methodology & Approach
-                  </h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                    Research methodology and implementation approach
-                  </p>
-                </div>
-                
-                <div className="p-6">
-                  <div className="prose prose-slate dark:prose-invert max-w-none">
-                    <p className="text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
-                      {project.projectMethodology}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
 
-            {/* Setup & Installation Instructions */}
-            {project.setupInstructions && (
-              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-                  <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                    Setup & Installation Instructions
-                  </h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                    Step-by-step guide to set up and run this project
-                  </p>
-                </div>
-                
-                <div className="p-6">
-                  <div className="bg-slate-900 dark:bg-black rounded-lg overflow-hidden border border-slate-700">
-                    <div className="flex items-center justify-between px-4 py-3 bg-slate-800 border-b border-slate-700">
-                      <div className="flex items-center gap-3">
-                        <div className="flex gap-2">
-                          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                          <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                        </div>
-                        <span className="text-sm font-mono text-slate-300">SETUP.md</span>
-                      </div>
-                      <div className="text-xs text-slate-400">installation guide</div>
-                    </div>
-                    
-                    <div className="p-6 max-h-96 overflow-y-auto">
-                      <pre className="text-sm font-mono text-green-400 leading-relaxed whitespace-pre-wrap">
-                        <code>{project.setupInstructions}</code>
-                      </pre>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* Documentation & Reports */}
             {project.documentationReports && (
