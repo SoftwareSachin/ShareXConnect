@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { apiGet } from "@/lib/api";
+import { apiGet, apiRequest } from "@/lib/api";
 import type { ProjectWithDetails } from "@shared/schema";
 import { 
   Folder, 
@@ -184,110 +184,69 @@ function getFilesInFolder(folderName: string, files: ProjectFile[]): ProjectFile
   );
 }
 
-async function handleFileClick(file: ProjectFile): Promise<void> {
-  console.log('File clicked:', file.fileName);
-  setSelectedFile(file);
-  setIsFileViewerOpen(true);
-  setFileContent('Loading...');
-  
-  try {
-    const authStorage = localStorage.getItem('auth-storage');
-    const authData = authStorage ? JSON.parse(authStorage) : null;
-    const token = authData?.state?.user?.token;
-    
-    if (!token) {
-      setFileContent('Please login to view files');
-      return;
-    }
-
-    const response = await fetch(`/api/projects/files/${file.id}/view`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`${response.status}: ${errorText}`);
-    }
-    
-    const content = await response.text();
-    setFileContent(content);
-  } catch (error) {
-    console.error('❌ View failed:', error);
-    setFileContent(`Error loading file: ${error}`);
-  }
-}
-
-function handleFolderClick(folderName: string): void {
-  console.log('Folder clicked:', folderName);
-  // Toggle folder expansion or navigate into folder
-}
-
-async function handleFileDownload(e: React.MouseEvent, file: ProjectFile): Promise<void> {
-  e.stopPropagation();
-  console.log('🔽 Downloading file:', file.fileName, 'ID:', file.id);
-  
-  try {
-    const authStorage = localStorage.getItem('auth-storage');
-    const authData = authStorage ? JSON.parse(authStorage) : null;
-    const token = authData?.state?.user?.token;
-    
-    if (!token) {
-      alert('Please login to download files');
-      return;
-    }
-
-    const response = await fetch(`/api/projects/files/${file.id}/download`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`${response.status}: ${errorText}`);
-    }
-    
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = file.fileName;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
-    console.log('✅ File download completed:', file.fileName);
-  } catch (error) {
-    console.error('❌ Download failed:', error);
-    alert(`Failed to download file: ${error}`);
-  }
-}
-
-function handleFolderDownload(e: React.MouseEvent, folderName: string): void {
-  e.stopPropagation();
-  console.log('Download folder:', folderName);
-  // In the future, implement zip download of folder contents
-  alert('Folder download will be implemented soon!');
-}
-
-function isViewableFile(file: ProjectFile): boolean {
-  const viewableExtensions = ['txt', 'md', 'js', 'jsx', 'ts', 'tsx', 'py', 'html', 'css', 'json', 'xml', 'yml', 'yaml'];
-  const extension = file.fileName.split('.').pop()?.toLowerCase() || '';
-  return viewableExtensions.includes(extension) || file.fileType.startsWith('text/');
-}
-
+// Move these functions inside the component to access state setters
 export default function ProjectDetail() {
   const params = useParams<ProjectDetailParams>();
   const [, setLocation] = useLocation();
   const [selectedFile, setSelectedFile] = useState<ProjectFile | null>(null);
   const [isFileViewerOpen, setIsFileViewerOpen] = useState(false);
   const [fileContent, setFileContent] = useState<string>('');
+
+  async function handleFileClick(file: ProjectFile): Promise<void> {
+    console.log('File clicked:', file.fileName);
+    setSelectedFile(file);
+    setIsFileViewerOpen(true);
+    setFileContent('Loading...');
+    
+    try {
+      const response = await apiRequest('GET', `/api/projects/files/${file.id}/view`);
+      const content = await response.text();
+      setFileContent(content);
+    } catch (error) {
+      console.error('❌ View failed:', error);
+      setFileContent(`Error loading file: ${error}`);
+    }
+  }
+
+  function handleFolderClick(folderName: string): void {
+    console.log('Folder clicked:', folderName);
+    // Toggle folder expansion or navigate into folder
+  }
+
+  async function handleFileDownload(e: React.MouseEvent, file: ProjectFile): Promise<void> {
+    e.stopPropagation();
+    console.log('🔽 Downloading file:', file.fileName, 'ID:', file.id);
+    
+    try {
+      const response = await apiRequest('GET', `/api/projects/files/${file.id}/download`);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = file.fileName;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      console.log('✅ File download completed:', file.fileName);
+    } catch (error) {
+      console.error('❌ Download failed:', error);
+      alert(`Failed to download file: ${error}`);
+    }
+  }
+
+  function handleFolderDownload(e: React.MouseEvent, folderName: string): void {
+    e.stopPropagation();
+    console.log('Download folder:', folderName);
+    // In the future, implement zip download of folder contents
+    alert('Folder download will be implemented soon!');
+  }
+
+  function isViewableFile(file: ProjectFile): boolean {
+    const viewableExtensions = ['txt', 'md', 'js', 'jsx', 'ts', 'tsx', 'py', 'html', 'css', 'json', 'xml', 'yml', 'yaml'];
+    const extension = file.fileName.split('.').pop()?.toLowerCase() || '';
+    return viewableExtensions.includes(extension) || file.fileType.startsWith('text/');
+  }
   
   const { data: project, isLoading, error } = useQuery<ProjectWithDetails>({
     queryKey: [`/api/projects/${params.id}`],
