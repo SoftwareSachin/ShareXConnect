@@ -961,6 +961,275 @@ export default function ProjectDetail() {
 
 
 
+            {/* Project Information Section */}
+            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                  Project Information
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                  Complete project details and metadata
+                </p>
+              </div>
+              
+              <div className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Project Title</dt>
+                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1 font-medium">{project.title}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Category</dt>
+                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">{project.category}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Status</dt>
+                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">
+                        <Badge className={getStatusColor(project.status)}>
+                          {project.status.replace("_", " ")}
+                        </Badge>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Visibility</dt>
+                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">{project.visibility}</dd>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Institution</dt>
+                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">{project.owner.institution}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Project Owner</dt>
+                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">
+                        {project.owner.firstName} {project.owner.lastName}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Owner Role</dt>
+                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1 capitalize">{project.owner.role.toLowerCase()}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">License Type</dt>
+                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">{project.licenseType || 'MIT'}</dd>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Created Date</dt>
+                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">
+                        {new Date(project.createdAt).toLocaleDateString('en-US', { 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Last Updated</dt>
+                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">
+                        {new Date(project.updatedAt).toLocaleDateString('en-US', { 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </dd>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Description */}
+                <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
+                  <dt className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-3">Description</dt>
+                  <dd className="text-sm text-slate-900 dark:text-slate-100 leading-relaxed">{project.description}</dd>
+                </div>
+                
+                {/* Technology Stack */}
+                {project.techStack && project.techStack.length > 0 && (
+                  <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
+                    <dt className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-3">Technology Stack</dt>
+                    <dd className="flex flex-wrap gap-2">
+                      {project.techStack.map((tech, index) => (
+                        <span key={index} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full text-sm">
+                          {tech}
+                        </span>
+                      ))}
+                    </dd>
+                  </div>
+                )}
+                
+                {/* Repository Links */}
+                {(project.githubUrl || project.demoUrl) && (
+                  <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
+                    <dt className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-3">Project Links</dt>
+                    <dd className="space-y-2">
+                      {project.githubUrl && (
+                        <div>
+                          <span className="text-xs text-slate-500 dark:text-slate-400 block">GitHub Repository</span>
+                          <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" 
+                             className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                            {project.githubUrl}
+                          </a>
+                        </div>
+                      )}
+                      {project.demoUrl && (
+                        <div>
+                          <span className="text-xs text-slate-500 dark:text-slate-400 block">Live Demo</span>
+                          <a href={project.demoUrl} target="_blank" rel="noopener noreferrer" 
+                             className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                            {project.demoUrl}
+                          </a>
+                        </div>
+                      )}
+                    </dd>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Documentation & Setup Instructions */}
+            {(project.readmeContent || project.installationInstructions || project.contributingGuidelines || project.apiDocumentation) && (
+              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                  <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                    Documentation & Setup
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                    Project documentation and setup instructions
+                  </p>
+                </div>
+                
+                <div className="p-6 space-y-6">
+                  {project.readmeContent && (
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-3">README</dt>
+                      <dd className="text-sm text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <pre className="whitespace-pre-wrap font-mono text-xs">{project.readmeContent}</pre>
+                      </dd>
+                    </div>
+                  )}
+                  
+                  {project.installationInstructions && (
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-3">Installation Instructions</dt>
+                      <dd className="text-sm text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <pre className="whitespace-pre-wrap">{project.installationInstructions}</pre>
+                      </dd>
+                    </div>
+                  )}
+                  
+                  {project.contributingGuidelines && (
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-3">Contributing Guidelines</dt>
+                      <dd className="text-sm text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <pre className="whitespace-pre-wrap">{project.contributingGuidelines}</pre>
+                      </dd>
+                    </div>
+                  )}
+                  
+                  {project.apiDocumentation && (
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-3">API Documentation</dt>
+                      <dd className="text-sm text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <pre className="whitespace-pre-wrap font-mono text-xs">{project.apiDocumentation}</pre>
+                      </dd>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Repository Structure */}
+            {project.repositoryStructure && (
+              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                  <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                    Repository Structure
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                    Project file organization and structure
+                  </p>
+                </div>
+                
+                <div className="p-6">
+                  <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <pre className="text-sm font-mono text-slate-900 dark:text-slate-100 whitespace-pre-wrap">{project.repositoryStructure}</pre>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Project Files by Category */}
+            {projectFiles && projectFiles.length > 0 && (
+              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                  <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                    Uploaded Files Overview
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                    All files uploaded during project creation
+                  </p>
+                </div>
+                
+                <div className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Images */}
+                    {projectFiles.filter(f => f.fileType.startsWith('image/')).length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-medium text-slate-900 dark:text-slate-100 mb-3">Images & Screenshots</h4>
+                        <div className="space-y-2">
+                          {projectFiles.filter(f => f.fileType.startsWith('image/')).map((file) => (
+                            <div key={file.id} className="flex items-center gap-2 p-2 bg-slate-50 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
+                              <Image className="w-4 h-4 text-pink-500 dark:text-pink-400" />
+                              <span className="text-xs text-slate-900 dark:text-slate-100 truncate">{file.fileName}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Documentation */}
+                    {projectFiles.filter(f => f.fileType.includes('pdf') || f.fileType.includes('doc') || f.fileName.includes('.md') || f.fileName.includes('.txt')).length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-medium text-slate-900 dark:text-slate-100 mb-3">Documentation</h4>
+                        <div className="space-y-2">
+                          {projectFiles.filter(f => f.fileType.includes('pdf') || f.fileType.includes('doc') || f.fileName.includes('.md') || f.fileName.includes('.txt')).map((file) => (
+                            <div key={file.id} className="flex items-center gap-2 p-2 bg-slate-50 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
+                              <File className="w-4 h-4 text-blue-500 dark:text-blue-400" />
+                              <span className="text-xs text-slate-900 dark:text-slate-100 truncate">{file.fileName}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Source Code */}
+                    {projectFiles.filter(f => f.isArchive || f.fileName.includes('.js') || f.fileName.includes('.py') || f.fileName.includes('.html') || f.fileName.includes('.css')).length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-medium text-slate-900 dark:text-slate-100 mb-3">Source Code & Archives</h4>
+                        <div className="space-y-2">
+                          {projectFiles.filter(f => f.isArchive || f.fileName.includes('.js') || f.fileName.includes('.py') || f.fileName.includes('.html') || f.fileName.includes('.css')).map((file) => (
+                            <div key={file.id} className="flex items-center gap-2 p-2 bg-slate-50 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
+                              {file.isArchive ? 
+                                <Archive className="w-4 h-4 text-amber-500 dark:text-amber-400" /> : 
+                                <FileCode className="w-4 h-4 text-green-500 dark:text-green-400" />
+                              }
+                              <span className="text-xs text-slate-900 dark:text-slate-100 truncate">{file.fileName}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}
