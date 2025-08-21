@@ -31,6 +31,13 @@ The application uses PostgreSQL with the following core tables:
 - ✅ Added missing `project_files` table for file upload system
 - ✅ Verified application startup and database connectivity
 
+### Fixed Project Form Field Mappings (August 21, 2025)
+- ✅ Fixed Department field mapping from `repositoryStructure` to `department`
+- ✅ Fixed Course/Subject field mapping from `readmeContent` to `courseSubject`
+- ✅ Fixed Project Methodology field mapping from `contributingGuidelines` to `projectMethodology`  
+- ✅ Added missing fields to TypeScript form schema
+- ✅ Confirmed project detail view displays these academic fields correctly
+
 ## User Preferences
 - Language: English
 - Communication: Clear, professional, technical when needed

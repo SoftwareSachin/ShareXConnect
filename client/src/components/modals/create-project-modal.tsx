@@ -23,6 +23,9 @@ const createProjectSchema = insertProjectSchema.extend({
   contributingGuidelines: z.string().optional(),
   installationInstructions: z.string().optional(),
   apiDocumentation: z.string().optional(),
+  department: z.string().optional(),
+  courseSubject: z.string().optional(),
+  projectMethodology: z.string().optional(),
 }).omit({ ownerId: true });
 
 type CreateProjectFormData = z.infer<typeof createProjectSchema>;
@@ -342,7 +345,7 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
                 </Label>
                 <Textarea
                   id="duration"
-                  {...register("contributingGuidelines")}
+                  {...register("projectMethodology")}
                   placeholder="Describe the development methodology, timeline, challenges faced, and approach taken to solve the problem."
                   data-testid="input-duration"
                   rows={3}
@@ -359,7 +362,7 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
                 </Label>
                 <Textarea
                   id="department"
-                  {...register("repositoryStructure")}
+                  {...register("department")}
                   placeholder="e.g., Computer Science, Engineering"
                   data-testid="input-department"
                   rows={2}
@@ -373,7 +376,7 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
                 </Label>
                 <Textarea
                   id="course"
-                  {...register("readmeContent")}
+                  {...register("courseSubject")}
                   placeholder="e.g., Software Engineering Course - Final Project. Describe the academic context, objectives, and requirements."
                   data-testid="input-course"
                   rows={3}
