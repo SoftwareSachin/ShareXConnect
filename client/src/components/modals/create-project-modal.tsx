@@ -95,6 +95,9 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
       contributingGuidelines: "",
       installationInstructions: "",
       apiDocumentation: "",
+      department: "",
+      courseSubject: "",
+      projectMethodology: "",
     },
   });
 
@@ -117,6 +120,10 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
         contributingGuidelines: data.contributingGuidelines || "",
         installationInstructions: data.installationInstructions || "",
         apiDocumentation: data.apiDocumentation || "",
+        // Academic fields
+        department: data.department || "",
+        courseSubject: data.courseSubject || "",
+        projectMethodology: data.projectMethodology || "",
       };
 
       console.log('🚀 Creating project:', enhancedProjectData.title);

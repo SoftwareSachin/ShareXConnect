@@ -286,6 +286,24 @@ export const insertProjectSchema = z.object({
   githubUrl: z.string().url("Invalid GitHub URL").optional().or(z.literal("")),
   demoUrl: z.string().url("Invalid demo URL").optional().or(z.literal("")),
   ownerId: z.string(),
+  // Academic fields
+  academicLevel: z.string().optional(),
+  department: z.string().optional(),
+  courseSubject: z.string().optional(),
+  projectMethodology: z.string().optional(),
+  setupInstructions: z.string().optional(),
+  repositoryUrl: z.string().url("Invalid repository URL").optional().or(z.literal("")),
+  liveDemoUrl: z.string().url("Invalid live demo URL").optional().or(z.literal("")),
+  sourceCodeRepository: z.string().optional(),
+  documentationReports: z.string().optional(),
+  imagesAssets: z.string().optional(),
+  // GitHub-like repository fields
+  repositoryStructure: z.string().optional(),
+  readmeContent: z.string().optional(),
+  licenseType: z.string().optional(),
+  contributingGuidelines: z.string().optional(),
+  installationInstructions: z.string().optional(),
+  apiDocumentation: z.string().optional(),
 });
 
 export const insertCommentSchema = z.object({
