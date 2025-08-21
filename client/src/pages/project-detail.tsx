@@ -181,25 +181,80 @@ function getFilesInFolder(folderName: string, files: ProjectFile[]): ProjectFile
 
 function handleFileClick(file: ProjectFile): void {
   console.log('File clicked:', file.fileName);
-  // Add file preview logic here
+  // For viewable files (text, code, images), open in new tab for viewing
+  if (isViewableFile(file)) {
+    window.open(`/api/projects/files/${file.id}/view`, '_blank');
+  } else {
+    // For non-viewable files, download directly
+    handleFileDownload(new MouseEvent('click') as any, file);
+  }
 }
 
 function handleFolderClick(folderName: string): void {
   console.log('Folder clicked:', folderName);
-  // Add folder navigation logic here
+  // Toggle folder expansion or navigate into folder
 }
 
 function handleFileDownload(e: React.MouseEvent, file: ProjectFile): void {
   e.stopPropagation();
-  console.log('Download file:', file.fileName);
-  // Add download logic here
-  window.open(`/api/projects/files/${file.id}/download`, '_blank');
+  console.log('🔽 Downloading file:', file.fileName, 'ID:', file.id);
+  
+  // Create a proper download link with authentication
+  const token = localStorage.getItem('auth-storage');
+  const authData = token ? JSON.parse(token) : null;
+  const authToken = authData?.state?.user?.token;
+  
+  if (!authToken) {
+    console.error('No auth token found');
+    return;
+  }
+
+  // Create a temporary link to trigger download
+  const link = document.createElement('a');
+  link.href = `/api/projects/files/${file.id}/download`;
+  link.download = file.fileName;
+  
+  // Add authorization header by using fetch and creating blob URL
+  fetch(`/api/projects/files/${file.id}/download`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${authToken}`
+    }
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.blob();
+  })
+  .then(blob => {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = file.fileName;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    console.log('✅ File download initiated:', file.fileName);
+  })
+  .catch(error => {
+    console.error('❌ Download failed:', error);
+    alert('Failed to download file. Please try again.');
+  });
 }
 
 function handleFolderDownload(e: React.MouseEvent, folderName: string): void {
   e.stopPropagation();
   console.log('Download folder:', folderName);
-  // Add folder download logic here
+  // In the future, implement zip download of folder contents
+  alert('Folder download will be implemented soon!');
+}
+
+function isViewableFile(file: ProjectFile): boolean {
+  const viewableExtensions = ['txt', 'md', 'js', 'jsx', 'ts', 'tsx', 'py', 'html', 'css', 'json', 'xml', 'yml', 'yaml'];
+  const extension = file.fileName.split('.').pop()?.toLowerCase() || '';
+  return viewableExtensions.includes(extension) || file.fileType.startsWith('text/');
 }
 
 export default function ProjectDetail() {
@@ -719,9 +774,21 @@ export default function ProjectDetail() {
                             </p>
                           </div>
                         </div>
-                        <button className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
-                          View
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button 
+                            onClick={() => handleFileClick(file)}
+                            className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                          >
+                            {isViewableFile(file) ? 'View' : 'Download'}
+                          </button>
+                          <button 
+                            onClick={(e) => handleFileDownload(e, file)}
+                            className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                            title="Download file"
+                          >
+                            <Download className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -761,7 +828,7 @@ export default function ProjectDetail() {
 
               {/* File Browser */}
               <div className="p-2">
-                {projectFiles && projectFiles.filter(f => f.isArchive || f.fileType.includes('text') || f.fileType.includes('javascript') || f.fileType.includes('python') || f.fileType.includes('code') || f.fileName.includes('.js') || f.fileName.includes('.html') || f.fileName.includes('.css') || f.fileName.includes('.zip')).length > 0 ? (
+                {projectFiles && projectFiles.length > 0 ? (
                   <div className="space-y-1">
                     {/* Folders First */}
                     {getRepositoryFolders(projectFiles).map((folder, index) => (
@@ -793,7 +860,6 @@ export default function ProjectDetail() {
                     
                     {/* Files */}
                     {projectFiles
-                      .filter(f => f.isArchive || f.fileType.includes('text') || f.fileType.includes('javascript') || f.fileType.includes('python') || f.fileType.includes('code') || f.fileName.includes('.js') || f.fileName.includes('.html') || f.fileName.includes('.css') || f.fileName.includes('.zip'))
                       .map((file) => (
                       <div 
                         key={file.id} 
@@ -868,9 +934,21 @@ export default function ProjectDetail() {
                             </p>
                           </div>
                         </div>
-                        <button className="px-3 py-1 text-sm bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors">
-                          View
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button 
+                            onClick={() => handleFileClick(file)}
+                            className="px-3 py-1 text-sm bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors"
+                          >
+                            {isViewableFile(file) ? 'View' : 'Download'}
+                          </button>
+                          <button 
+                            onClick={(e) => handleFileDownload(e, file)}
+                            className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                            title="Download file"
+                          >
+                            <Download className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>

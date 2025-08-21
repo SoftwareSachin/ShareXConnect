@@ -678,6 +678,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
+  // View file route (for text/code files)
+  app.get("/api/projects/files/:fileId/view", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      const file = await storage.getProjectFileById(req.params.fileId);
+      if (!file) {
+        return res.status(404).json({ message: "File not found" });
+      }
+
+      const project = await storage.getProject(file.projectId);
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+
+      // Check access permissions
+      if (project.visibility === 'PRIVATE' && project.ownerId !== req.user!.id) {
+        const collaborators = await storage.getProjectCollaborators(file.projectId);
+        const isCollaborator = collaborators.some(c => c.id === req.user!.id);
+        if (!isCollaborator) {
+          return res.status(403).json({ message: "Access denied" });
+        }
+      }
+
+      const fs = require('fs');
+      const path = require('path');
+      const filePath = path.join(process.cwd(), file.filePath);
+      
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ message: "File not found on disk" });
+      }
+
+      // For viewable files, set appropriate content type and return content
+      const extension = file.fileName.split('.').pop()?.toLowerCase() || '';
+      const viewableExtensions = ['txt', 'md', 'js', 'jsx', 'ts', 'tsx', 'py', 'html', 'css', 'json', 'xml', 'yml', 'yaml'];
+      
+      if (viewableExtensions.includes(extension) || file.fileType.startsWith('text/')) {
+        // Read file content for text files
+        const content = fs.readFileSync(filePath, 'utf8');
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+        res.send(content);
+      } else if (file.fileType.startsWith('image/')) {
+        // For images, serve directly
+        res.setHeader('Content-Type', file.fileType);
+        const fileStream = fs.createReadStream(filePath);
+        fileStream.pipe(res);
+      } else {
+        // For other files, redirect to download
+        res.redirect(`/api/projects/files/${file.id}/download`);
+      }
+
+      console.log('👁️ Viewing file:', file.fileName, 'Type:', file.fileType);
+    } catch (error) {
+      console.error('❌ Error viewing file:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }));
+
   // Get users (for collaboration invites)
   app.get("/api/users/search", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
