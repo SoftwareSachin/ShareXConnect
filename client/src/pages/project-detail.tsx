@@ -258,47 +258,34 @@ export default function ProjectDetail() {
             
             {/* Technology Stack */}
             {project.techStack && project.techStack.length > 0 && (
-              <div className="relative rounded-3xl bg-white dark:bg-slate-900 shadow-2xl shadow-slate-900/10 dark:shadow-black/30 border border-slate-200/60 dark:border-slate-800/60 overflow-hidden">
-                {/* Gradient Background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-50/80 via-indigo-50/40 to-purple-50/80 dark:from-blue-950/40 dark:via-indigo-950/20 dark:to-purple-950/40"></div>
-                
-                {/* Header */}
-                <div className="relative px-8 py-8 border-b border-slate-200/50 dark:border-slate-800/50">
-                  <div className="flex items-center gap-5">
-                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-blue-500/25">
-                      <Code2 className="w-8 h-8 text-white" />
+              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                      <Code2 className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">
+                      <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
                         Technology Stack
                       </h3>
-                      <p className="text-slate-600 dark:text-slate-400 font-medium text-lg">
-                        Modern tools and frameworks powering this project
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                        Tools and frameworks used in this project
                       </p>
                     </div>
                   </div>
                 </div>
                 
-                {/* Content */}
-                <div className="relative p-8">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="p-6">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                     {project.techStack.map((tech: string, index: number) => (
-                      <div key={tech} className="group relative">
-                        <div className="relative p-6 bg-white/70 dark:bg-slate-800/70 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 hover:border-blue-300/60 dark:hover:border-blue-600/60 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-2 hover:scale-105">
-                          {/* Gradient overlay on hover */}
-                          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                          
-                          <div className="relative flex items-center gap-4">
-                            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:shadow-blue-500/25 transition-all duration-300">
-                              <span className="text-white font-bold text-lg">{tech.charAt(0).toUpperCase()}</span>
-                            </div>
-                            <div>
-                              <span className="font-bold text-lg text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
-                                {tech}
-                              </span>
-                              <div className="w-0 group-hover:w-full h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300 mt-1 rounded-full"></div>
-                            </div>
+                      <div key={tech} className="group">
+                        <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
+                          <div className="w-8 h-8 bg-slate-600 rounded-md flex items-center justify-center">
+                            <span className="text-white font-semibold text-sm">{tech.charAt(0)}</span>
                           </div>
+                          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                            {tech}
+                          </span>
                         </div>
                       </div>
                     ))}
