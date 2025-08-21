@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { apiGet, apiRequest } from "@/lib/api";
 import { useAuthStore } from "@/store/auth-store";
@@ -31,7 +31,9 @@ import {
   ExternalLink,
   Heart,
   Bookmark,
-  Code2
+  Code2,
+  Trash2,
+  AlertTriangle
 } from 'lucide-react';
 
 interface ProjectDetailParams {
@@ -179,6 +181,8 @@ export default function ProjectDetail() {
   const [fileContent, setFileContent] = useState<string>('');
   const [currentFolder, setCurrentFolder] = useState<string>('');
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   // Get current user from auth store (must be called before any conditional returns)
   const { user } = useAuthStore();
@@ -226,6 +230,26 @@ export default function ProjectDetail() {
       alert(`Failed to download file: ${error}`);
     }
   }
+
+  const handleDeleteProject = async () => {
+    if (!user || !project || project.ownerId !== user.id) {
+      console.error('❌ Cannot delete: not owner or not authenticated');
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      await apiRequest('DELETE', `/api/projects/${project.id}`);
+      console.log('✅ Project deleted successfully');
+      setLocation('/dashboard'); // Redirect to dashboard
+    } catch (error) {
+      console.error('❌ Failed to delete project:', error);
+      alert(`Failed to delete project: ${error}`);
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+    }
+  };
 
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>): Promise<void> {
     const files = e.target.files;
@@ -1069,6 +1093,19 @@ export default function ProjectDetail() {
                 <button className="w-full p-3 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left">
                   <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Add comment</span>
                 </button>
+                
+                {/* Delete button - only show if user is the owner */}
+                {user && project.ownerId === user.id && (
+                  <button 
+                    onClick={() => setShowDeleteDialog(true)}
+                    className="w-full p-3 border border-red-200 dark:border-red-800 rounded-lg hover:border-red-300 dark:hover:border-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left group"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Trash2 className="w-4 h-4 text-red-500 group-hover:text-red-600 dark:text-red-400" />
+                      <span className="text-sm font-medium text-red-600 dark:text-red-400 group-hover:text-red-700 dark:group-hover:text-red-300">Delete Project</span>
+                    </div>
+                  </button>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -1184,6 +1221,53 @@ export default function ProjectDetail() {
               </div>
             )}
           </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                  Delete Project
+                </DialogTitle>
+                <DialogDescription className="text-sm text-slate-600 dark:text-slate-400">
+                  This action cannot be undone.
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-slate-700 dark:text-slate-300 mb-3">
+              Are you sure you want to delete <span className="font-semibold">"{project?.title}"</span>? 
+            </p>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              This will permanently delete the project and all associated files. This action cannot be reversed.
+            </p>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteDialog(false)}
+              disabled={isDeleting}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteProject}
+              disabled={isDeleting}
+              className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete Project'}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
