@@ -9,22 +9,7 @@ import { Button } from "@/components/ui/button";
 import { apiGet, apiRequest } from "@/lib/api";
 import { useAuthStore } from "@/store/auth-store";
 import type { ProjectWithDetails } from "@shared/schema";
-import { 
-  Folder, 
-  FileText, 
-  Archive, 
-  FileCode, 
-  Image, 
-  File, 
-  Clock, 
-  User, 
-  Download,
-  GitCommit,
-  Users,
-  X,
-  Eye,
-  Upload
-} from "lucide-react";
+// Removed lucid-react icons
 
 interface ProjectDetailParams {
   id: string;
@@ -66,7 +51,7 @@ function formatTimeAgo(dateString: string): string {
 
 function getFileIcon(file: ProjectFile) {
   if (file.isArchive) {
-    return <Archive className="w-4 h-4 text-[#7d8590] flex-shrink-0" />;
+    return <span className="w-4 text-[#7d8590] text-center text-xs font-mono">📦</span>;
   }
   
   const extension = file.fileName.split('.').pop()?.toLowerCase() || '';
@@ -74,29 +59,33 @@ function getFileIcon(file: ProjectFile) {
   switch (extension) {
     case 'js':
     case 'jsx':
+      return <span className="w-4 text-[#f1e05a] text-center text-xs font-mono">JS</span>;
     case 'ts':
     case 'tsx':
-      return <FileCode className="w-4 h-4 text-[#f1e05a] flex-shrink-0" />;
+      return <span className="w-4 text-[#3178c6] text-center text-xs font-mono">TS</span>;
     case 'py':
-      return <FileCode className="w-4 h-4 text-[#3572A5] flex-shrink-0" />;
+      return <span className="w-4 text-[#3572A5] text-center text-xs font-mono">PY</span>;
     case 'html':
     case 'htm':
-      return <FileCode className="w-4 h-4 text-[#e34c26] flex-shrink-0" />;
+      return <span className="w-4 text-[#e34c26] text-center text-xs font-mono">H</span>;
     case 'css':
     case 'scss':
     case 'sass':
-      return <FileCode className="w-4 h-4 text-[#563d7c] flex-shrink-0" />;
+      return <span className="w-4 text-[#563d7c] text-center text-xs font-mono">C</span>;
     case 'md':
+      return <span className="w-4 text-[#7d8590] text-center text-xs font-mono">M</span>;
     case 'txt':
-      return <FileText className="w-4 h-4 text-[#7d8590] flex-shrink-0" />;
+      return <span className="w-4 text-[#7d8590] text-center text-xs font-mono">T</span>;
     case 'png':
     case 'jpg':
     case 'jpeg':
     case 'gif':
     case 'svg':
-      return <Image className="w-4 h-4 text-[#7d8590] flex-shrink-0" />;
+      return <span className="w-4 text-[#7d8590] text-center text-xs">🖼️</span>;
+    case 'pdf':
+      return <span className="w-4 text-[#d73a49] text-center text-xs font-mono">P</span>;
     default:
-      return <File className="w-4 h-4 text-[#7d8590] flex-shrink-0" />;
+      return <span className="w-4 text-[#7d8590] text-center text-xs font-mono">•</span>;
   }
 }
 
@@ -822,7 +811,7 @@ export default function ProjectDetail() {
                             className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
                             title="Download file"
                           >
-                            <Download className="w-4 h-4" />
+                            ↓
                           </button>
                         </div>
                       </div>
@@ -845,7 +834,7 @@ export default function ProjectDetail() {
                           htmlFor="file-upload"
                           className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer transition-colors"
                         >
-                          <Upload className="w-4 h-4 mr-2" />
+                          <span className="mr-2">↑</span>
                           Upload Files
                         </label>
                         <p className="text-sm text-slate-400 dark:text-slate-500 mt-2">
@@ -860,106 +849,94 @@ export default function ProjectDetail() {
               </div>
             </div>
 
-            {/* Source Code Repository Section - Modern GitHub Style */}
-            <div className="bg-[#0d1117] border border-[#21262d] rounded-xl overflow-hidden shadow-2xl">
+            {/* Source Code Repository Section - Clean GitHub Style */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
               {/* Repository Header */}
-              <div className="px-6 py-4 bg-gradient-to-r from-[#161b22] to-[#1c2128] border-b border-[#21262d]">
+              <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#7c3aed] to-[#a855f7] flex items-center justify-center shadow-lg">
-                      <span className="text-white text-sm font-bold">
-                        {(project.owner?.username || 'owner').charAt(0).toUpperCase()}
+                  <div className="flex items-center gap-3">
+                    <div className="w-6 h-6 rounded bg-slate-600 dark:bg-slate-400 flex items-center justify-center">
+                      <span className="text-white dark:text-slate-900 text-xs font-bold">
+                        {project.owner?.firstName?.charAt(0) || 'P'}
                       </span>
                     </div>
                     <div>
-                      <h3 className="text-[#f0f6fc] font-bold text-lg">Source Code Repository</h3>
-                      <p className="text-[#7d8590] text-sm">Browse and download project files</p>
+                      <h3 className="text-slate-900 dark:text-slate-100 font-semibold text-lg">
+                        {project.title}
+                      </h3>
+                      <p className="text-slate-600 dark:text-slate-400 text-sm">
+                        {projectFiles?.length || 0} files
+                      </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <button className="px-4 py-2 bg-[#238636] hover:bg-[#2ea043] text-white text-sm font-medium rounded-lg transition-all duration-200 flex items-center gap-2 shadow-lg">
-                      <Download className="w-4 h-4" />
-                      Download All
+                  <div className="flex items-center gap-2">
+                    <button className="px-3 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-900 dark:text-slate-100 text-sm rounded-md transition-colors">
+                      Clone
+                    </button>
+                    <button className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-sm rounded-md transition-colors">
+                      ↓ Code
                     </button>
                   </div>
                 </div>
               </div>
 
               {/* File Browser */}
-              <div className="p-2">
+              <div className="divide-y divide-slate-200 dark:divide-slate-700">
                 {projectFiles && projectFiles.length > 0 ? (
-                  <div className="space-y-1">
-                    {/* Folders First */}
-                    {getRepositoryFolders(projectFiles).map((folder, index) => (
-                      <div 
-                        key={`folder-${index}`} 
-                        className="flex items-center justify-between px-4 py-3 rounded-lg hover:bg-[#21262d] transition-all duration-200 group cursor-pointer border border-transparent hover:border-[#30363d]"
-                        onClick={() => handleFolderClick(folder)}
-                      >
-                        <div className="flex items-center gap-3 flex-1">
-                          <Folder className="w-5 h-5 text-[#54aeff] flex-shrink-0" />
-                          <span className="text-[#f0f6fc] font-medium text-sm group-hover:text-[#58a6ff] transition-colors">
-                            {folder}
-                          </span>
-                          <span className="text-xs text-[#7d8590] bg-[#21262d] px-2 py-1 rounded-full">
-                            {getFilesInFolder(folder, projectFiles).length} files
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button 
-                            className="px-3 py-1.5 bg-[#21262d] hover:bg-[#30363d] text-[#f0f6fc] text-xs rounded-md transition-colors flex items-center gap-1"
-                            onClick={(e) => handleFolderDownload(e, folder)}
-                          >
-                            <Download className="w-3 h-3" />
-                            Download
-                          </button>
-                        </div>
+                  <>
+                    {/* Header Row */}
+                    <div className="px-6 py-2 bg-slate-50 dark:bg-slate-800 text-xs font-medium text-slate-600 dark:text-slate-400">
+                      <div className="flex items-center justify-between">
+                        <span>Name</span>
+                        <span>Size</span>
                       </div>
-                    ))}
+                    </div>
                     
-                    {/* Files */}
-                    {projectFiles
-                      .map((file) => (
+                    {/* Files List */}
+                    {projectFiles.map((file) => (
                       <div 
                         key={file.id} 
-                        className="flex items-center justify-between px-4 py-3 rounded-lg hover:bg-[#21262d] transition-all duration-200 group cursor-pointer border border-transparent hover:border-[#30363d]"
+                        className="px-6 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors"
                         onClick={() => handleFileClick(file)}
                       >
-                        <div className="flex items-center gap-3 flex-1">
-                          {getFileIcon(file)}
-                          <div className="flex flex-col">
-                            <span className="text-[#f0f6fc] font-medium text-sm group-hover:text-[#58a6ff] transition-colors">
-                              {file.fileName}
-                            </span>
-                            <div className="flex items-center gap-3 text-xs text-[#7d8590]">
-                              <span>{formatFileSize(file.fileSize)}</span>
-                              <span>•</span>
-                              <span>{getFileTypeLabel(file)}</span>
-                              <span>•</span>
-                              <span>{formatTimeAgo(file.uploadedAt)}</span>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            {getFileIcon(file)}
+                            <div className="min-w-0">
+                              <span className="text-slate-900 dark:text-slate-100 text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 hover:underline">
+                                {file.fileName}
+                              </span>
+                              <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                {getFileTypeLabel(file)} • {formatTimeAgo(file.uploadedAt)}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button 
-                            className="px-3 py-1.5 bg-[#238636] hover:bg-[#2ea043] text-white text-xs rounded-md transition-colors flex items-center gap-1 font-medium"
-                            onClick={(e) => handleFileDownload(e, file)}
-                          >
-                            <Download className="w-3 h-3" />
-                            Download
-                          </button>
+                          <div className="flex items-center gap-3">
+                            <span className="text-sm text-slate-600 dark:text-slate-400 font-mono">
+                              {formatFileSize(file.fileSize)}
+                            </span>
+                            <button 
+                              className="opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-all"
+                              onClick={(e) => handleFileDownload(e, file)}
+                              title="Download file"
+                            >
+                              <span className="text-slate-600 dark:text-slate-400 text-sm">↓</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
-                  </div>
+                  </>
                 ) : (
                   <div className="px-6 py-16 text-center">
-                    <div className="w-20 h-20 bg-gradient-to-br from-[#21262d] to-[#30363d] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                      <FileCode className="w-10 h-10 text-[#7d8590]" />
+                    <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center mx-auto mb-4">
+                      <span className="text-slate-400 dark:text-slate-500 text-2xl">📁</span>
                     </div>
-                    <h4 className="text-[#f0f6fc] font-semibold text-lg mb-2">No source code files</h4>
-                    <p className="text-[#7d8590] text-sm max-w-md mx-auto">
-                      Upload source code files, archives, or documentation to browse and download them here
+                    <h4 className="text-slate-900 dark:text-slate-100 font-medium text-lg mb-2">
+                      No files yet
+                    </h4>
+                    <p className="text-slate-600 dark:text-slate-400 text-sm max-w-md mx-auto">
+                      Upload source code, documentation, or other project files
                     </p>
                   </div>
                 )}
@@ -1005,7 +982,7 @@ export default function ProjectDetail() {
                             className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
                             title="Download file"
                           >
-                            <Download className="w-4 h-4" />
+                            ↓
                           </button>
                         </div>
                       </div>
@@ -1374,7 +1351,7 @@ export default function ProjectDetail() {
                     onClick={(e) => handleFileDownload(e, selectedFile)}
                     className="bg-[#238636] hover:bg-[#2ea043] text-white text-sm"
                   >
-                    <Download className="w-4 h-4 mr-2" />
+                    <span className="mr-2">↓</span>
                     Download
                   </Button>
                 )}
@@ -1383,7 +1360,7 @@ export default function ProjectDetail() {
                   variant="ghost"
                   className="text-[#7d8590] hover:text-[#f0f6fc] hover:bg-[#21262d]"
                 >
-                  <X className="w-4 h-4" />
+                  <span>×</span>
                 </Button>
               </div>
             </div>
@@ -1404,7 +1381,9 @@ export default function ProjectDetail() {
             ) : selectedFile?.fileType.startsWith('image/') ? (
               <div className="flex items-center justify-center p-8">
                 <div className="text-center">
-                  <Image className="w-16 h-16 text-[#7d8590] mx-auto mb-4" />
+                  <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <span className="text-slate-600 dark:text-slate-400 text-2xl">🖼️</span>
+                  </div>
                   <h3 className="text-[#f0f6fc] font-medium mb-2">Image Preview</h3>
                   <p className="text-[#7d8590] text-sm mb-4">
                     Image files can be downloaded and viewed externally
@@ -1413,7 +1392,7 @@ export default function ProjectDetail() {
                     onClick={(e) => selectedFile && handleFileDownload(e, selectedFile)}
                     className="bg-[#238636] hover:bg-[#2ea043] text-white"
                   >
-                    <Download className="w-4 h-4 mr-2" />
+                    <span className="mr-2">↓</span>
                     Download {selectedFile.fileName}
                   </Button>
                 </div>
@@ -1421,7 +1400,9 @@ export default function ProjectDetail() {
             ) : (
               <div className="flex items-center justify-center p-8">
                 <div className="text-center">
-                  <File className="w-16 h-16 text-[#7d8590] mx-auto mb-4" />
+                  <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <span className="text-slate-600 dark:text-slate-400 text-2xl">📄</span>
+                  </div>
                   <h3 className="text-[#f0f6fc] font-medium mb-2">Binary File</h3>
                   <p className="text-[#7d8590] text-sm mb-4">
                     This file cannot be previewed in the browser
@@ -1430,7 +1411,7 @@ export default function ProjectDetail() {
                     onClick={(e) => selectedFile && handleFileDownload(e, selectedFile)}
                     className="bg-[#238636] hover:bg-[#2ea043] text-white"
                   >
-                    <Download className="w-4 h-4 mr-2" />
+                    <span className="mr-2">↓</span>
                     Download {selectedFile?.fileName}
                   </Button>
                 </div>
