@@ -901,17 +901,6 @@ export default function ProjectDetail() {
                 </div>
               </div>
 
-              {/* Latest Commit Info */}
-              <div className="px-4 py-2 bg-[#161b22] border-b border-[#21262d] text-xs">
-                <div className="flex items-center gap-2 text-[#8b949e]">
-                  <div className="w-4 h-4 bg-[#238636] rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs">✓</span>
-                  </div>
-                  <span className="font-mono">{project.owner.firstName.toLowerCase()}</span>
-                  <span>{getLatestCommitMessage(projectFiles)}</span>
-                  <span className="ml-auto">{formatTimeAgo(project.updatedAt.toString())}</span>
-                </div>
-              </div>
 
               {/* File Browser Header */}
               <div className="px-4 py-3 bg-[#0d1117] border-b border-[#21262d]">
@@ -999,9 +988,6 @@ export default function ProjectDetail() {
                                           </span>
                                         </div>
                                         <div className="flex items-center gap-3">
-                                          <span className="text-xs text-[#656d76]">
-                                            {getCommitMessage(file).slice(0, 50)}...
-                                          </span>
                                           <span className="text-xs text-[#656d76] font-mono">
                                             {formatTimeAgo(file.uploadedAt)}
                                           </span>
@@ -1031,9 +1017,6 @@ export default function ProjectDetail() {
                                 </span>
                               </div>
                               <div className="flex items-center gap-3">
-                                <span className="text-xs text-[#656d76] max-w-[300px] truncate">
-                                  {getCommitMessage(file)}
-                                </span>
                                 <span className="text-xs text-[#656d76] font-mono">
                                   {formatTimeAgo(file.uploadedAt)}
                                 </span>
