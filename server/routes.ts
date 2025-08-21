@@ -368,9 +368,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Project not found" });
       }
 
-      // Check ownership
-      if (project.ownerId !== req.user!.id) {
-        return res.status(403).json({ message: "Access denied" });
+      // Check ownership or collaboration
+      const isOwner = project.ownerId === req.user!.id;
+      const isCollaborator = await storage.isProjectCollaborator(req.params.id, req.user!.id);
+      
+      if (!isOwner && !isCollaborator) {
+        return res.status(403).json({ message: "Access denied - only project owners and collaborators can edit" });
       }
 
       const updates = insertProjectSchema.partial().parse(req.body);

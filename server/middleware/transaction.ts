@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { db, pool } from '../db';
+import { db } from '../db';
+import { Pool } from '@neondatabase/serverless';
 
 // Transaction context interface
 interface TransactionContext {
