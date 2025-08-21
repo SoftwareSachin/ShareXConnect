@@ -147,36 +147,46 @@ export class DatabaseManager {
 
   private async runMigrations(): Promise<void> {
     try {
-      console.log('🔄 Checking database schema...');
+      console.log('🔄 Running automatic database synchronization...');
       
-      const client = await this.pool.connect();
-      try {
-        // Auto-create schema if tables are missing
-        await this.ensureSchemaExists(client);
-        
-        // Check if all tables exist
-        const tableCheck = await client.query(`
-          SELECT table_name 
-          FROM information_schema.tables 
-          WHERE table_schema = 'public' 
-          AND table_name IN ('users', 'projects', 'college_domains', 'project_collaborators', 'project_comments', 'project_stars', 'project_reviews')
-        `);
-        
-        const existingTables = tableCheck.rows.map(row => row.table_name);
-        console.log(`📋 Found tables: ${existingTables.length > 0 ? existingTables.join(', ') : 'none'}`);
-        
-        if (existingTables.length === 7) {
-          console.log('✅ All required tables exist');
-        } else {
-          console.log('🔄 Auto-creating missing tables...');
-          await this.createMissingTables(client);
-        }
-      } finally {
-        client.release();
-      }
+      // Import and run the automatic sync system
+      const { runAutoDatabaseSync } = await import('./auto-sync');
+      await runAutoDatabaseSync(this.pool);
+      
     } catch (error) {
-      console.error('❌ Migration check failed:', error);
-      throw error;
+      console.error('❌ Automatic database synchronization failed:', error);
+      
+      // Fallback to manual checks
+      console.log('🔄 Falling back to manual schema validation...');
+      await this.manualSchemaCheck();
+    }
+  }
+
+  private async manualSchemaCheck(): Promise<void> {
+    const client = await this.pool.connect();
+    try {
+      // Auto-create schema if tables are missing
+      await this.ensureSchemaExists(client);
+      
+      // Check if all tables exist
+      const tableCheck = await client.query(`
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name IN ('users', 'projects', 'college_domains', 'project_collaborators', 'project_comments', 'project_stars', 'project_reviews')
+      `);
+      
+      const existingTables = tableCheck.rows.map(row => row.table_name);
+      console.log(`📋 Found tables: ${existingTables.length > 0 ? existingTables.join(', ') : 'none'}`);
+      
+      if (existingTables.length >= 7) {
+        console.log('✅ All required tables exist');
+      } else {
+        console.log('🔄 Auto-creating missing tables...');
+        await this.createMissingTables(client);
+      }
+    } finally {
+      client.release();
     }
   }
 
