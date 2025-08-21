@@ -147,18 +147,14 @@ export class DatabaseManager {
 
   private async runMigrations(): Promise<void> {
     try {
-      console.log('🔄 Running automatic database synchronization...');
+      console.log('🔄 Running database migrations...');
       
-      // Import and run the automatic sync system
-      const { runAutoDatabaseSync } = await import('./auto-sync');
-      await runAutoDatabaseSync(this.pool);
+      // Use simplified approach - just validate what we have
+      await this.manualSchemaCheck();
       
     } catch (error) {
-      console.error('❌ Automatic database synchronization failed:', error);
-      
-      // Fallback to manual checks
-      console.log('🔄 Falling back to manual schema validation...');
-      await this.manualSchemaCheck();
+      console.error('❌ Database migrations failed:', error);
+      throw error;
     }
   }
 

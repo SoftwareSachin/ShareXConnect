@@ -46,43 +46,47 @@ export class AutoDatabaseSync {
   }
 
   /**
-   * Force push all schema changes using Drizzle
+   * Ensure schema exists using direct database operations
    */
   private async forcePushSchema(): Promise<void> {
-    console.log('📋 Force pushing schema changes...');
+    console.log('📋 Ensuring schema exists using direct operations...');
     
-    return new Promise((resolve, reject) => {
-      const process = spawn('npm', ['run', 'db:push', '--', '--force'], {
-        stdio: 'pipe',
-        shell: true
-      });
+    try {
+      // Skip the external command, use direct validation instead
+      await this.ensureDirectSchema();
+      console.log('✅ Schema validation completed successfully');
+    } catch (error: any) {
+      console.error('❌ Schema validation failed:', error.message);
+      throw error;
+    }
+  }
 
-      let output = '';
-      let errorOutput = '';
-
-      process.stdout.on('data', (data) => {
-        output += data.toString();
-      });
-
-      process.stderr.on('data', (data) => {
-        errorOutput += data.toString();
-      });
-
-      process.on('close', (code) => {
-        if (code === 0) {
-          console.log('✅ Schema push completed successfully');
-          resolve();
-        } else {
-          console.error('❌ Schema push failed:', errorOutput);
-          reject(new Error(`Schema push failed with code ${code}: ${errorOutput}`));
-        }
-      });
-
-      // Auto-confirm any prompts by sending 'y'
-      setTimeout(() => {
-        process.stdin.write('y\n');
-      }, 1000);
-    });
+  /**
+   * Direct schema operations without external commands
+   */
+  private async ensureDirectSchema(): Promise<void> {
+    const client = await this.pool.connect();
+    try {
+      // Check if key tables exist, if not this indicates a schema sync is needed
+      const result = await client.query(`
+        SELECT COUNT(*) as table_count
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name IN ('users', 'projects', 'project_files')
+      `);
+      
+      const tableCount = parseInt(result.rows[0].table_count);
+      
+      if (tableCount < 3) {
+        console.log('⚠️ Core tables missing, requiring external schema sync');
+        throw new Error('Schema sync required - please run: npm run db:push --force');
+      }
+      
+      console.log('✅ Core schema structure validated');
+      
+    } finally {
+      client.release();
+    }
   }
 
   /**
