@@ -495,18 +495,7 @@ export default function ProjectDetail() {
                       <dd className="text-slate-900 dark:text-slate-100 font-medium">{project.courseSubject}</dd>
                     </div>
                   )}
-                  <div>
-                    <dt className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Category</dt>
-                    <dd className="text-slate-900 dark:text-slate-100 font-medium">{project.category}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Status</dt>
-                    <dd className="text-slate-900 dark:text-slate-100 font-medium">{project.status.replace("_", " ")}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Visibility</dt>
-                    <dd className="text-slate-900 dark:text-slate-100 font-medium">{project.visibility}</dd>
-                  </div>
+
                 </div>
               </div>
             </div>
@@ -640,14 +629,14 @@ export default function ProjectDetail() {
                     </div>
                   </div>
                 )}
-                {project.liveDemoUrl && (
+                {(project.liveDemoUrl || project.demoUrl) && (
                   <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
                     <ExternalLink className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                     <div>
                       <dt className="text-sm font-medium text-slate-900 dark:text-slate-100">Live Demo URL</dt>
                       <dd className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
-                        <a href={project.liveDemoUrl} target="_blank" rel="noopener noreferrer">
-                          {project.liveDemoUrl}
+                        <a href={project.liveDemoUrl || project.demoUrl} target="_blank" rel="noopener noreferrer">
+                          {project.liveDemoUrl || project.demoUrl}
                         </a>
                       </dd>
                     </div>
@@ -661,19 +650,6 @@ export default function ProjectDetail() {
                       <dd className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
                         <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
                           {project.githubUrl}
-                        </a>
-                      </dd>
-                    </div>
-                  </div>
-                )}
-                {project.demoUrl && (
-                  <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                    <Globe className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-                    <div>
-                      <dt className="text-sm font-medium text-slate-900 dark:text-slate-100">Demo URL</dt>
-                      <dd className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
-                        <a href={project.demoUrl} target="_blank" rel="noopener noreferrer">
-                          {project.demoUrl}
                         </a>
                       </dd>
                     </div>
@@ -1116,32 +1092,7 @@ export default function ProjectDetail() {
                   </div>
                 )}
                 
-                {/* Repository Links */}
-                {(project.githubUrl || project.demoUrl) && (
-                  <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
-                    <dt className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-3">Project Links</dt>
-                    <dd className="space-y-2">
-                      {project.githubUrl && (
-                        <div>
-                          <span className="text-xs text-slate-500 dark:text-slate-400 block">GitHub Repository</span>
-                          <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" 
-                             className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
-                            {project.githubUrl}
-                          </a>
-                        </div>
-                      )}
-                      {project.demoUrl && (
-                        <div>
-                          <span className="text-xs text-slate-500 dark:text-slate-400 block">Live Demo</span>
-                          <a href={project.demoUrl} target="_blank" rel="noopener noreferrer" 
-                             className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
-                            {project.demoUrl}
-                          </a>
-                        </div>
-                      )}
-                    </dd>
-                  </div>
-                )}
+
               </div>
             </div>
 
@@ -1167,14 +1118,7 @@ export default function ProjectDetail() {
                     </div>
                   )}
                   
-                  {project.installationInstructions && (
-                    <div>
-                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-3">Installation Instructions</dt>
-                      <dd className="text-sm text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
-                        <pre className="whitespace-pre-wrap">{project.installationInstructions}</pre>
-                      </dd>
-                    </div>
-                  )}
+
                   
                   {project.contributingGuidelines && (
                     <div>
