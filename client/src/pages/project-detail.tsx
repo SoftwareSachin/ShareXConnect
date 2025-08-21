@@ -6,6 +6,18 @@ import { Separator } from "@/components/ui/separator";
 import { apiGet } from "@/lib/api";
 import type { ProjectWithDetails } from "@shared/schema";
 
+interface ProjectFile {
+  id: string;
+  fileName: string;
+  filePath: string;
+  fileType: string;
+  fileSize: number;
+  content?: string;
+  isArchive: boolean;
+  archiveContents?: string;
+  uploadedAt: string;
+}
+
 interface ProjectDetailParams {
   id: string;
 }
@@ -28,6 +40,21 @@ export default function ProjectDetail() {
         throw err;
       }
     }
+  });
+
+  const { data: projectFiles } = useQuery<ProjectFile[]>({
+    queryKey: [`/api/projects/${params.id}/files`],
+    queryFn: async (): Promise<ProjectFile[]> => {
+      try {
+        const result = await apiGet<ProjectFile[]>(`/api/projects/${params.id}/files`);
+        console.log('✅ Project files received:', result);
+        return result;
+      } catch (err) {
+        console.error('❌ Error fetching project files:', err);
+        return [];
+      }
+    },
+    enabled: !!params.id
   });
 
   if (isLoading) {

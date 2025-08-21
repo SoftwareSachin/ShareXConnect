@@ -554,6 +554,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get project files
+  app.get("/api/projects/:id/files", authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const project = await storage.getProject(req.params.id);
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+
+      // Check access permissions
+      if (project.visibility === 'PRIVATE' && project.ownerId !== req.user!.id) {
+        const collaborators = await storage.getProjectCollaborators(req.params.id);
+        const isCollaborator = collaborators.some(c => c.id === req.user!.id);
+        if (!isCollaborator) {
+          return res.status(403).json({ message: "Access denied" });
+        }
+      }
+
+      const files = await storage.getProjectFiles(req.params.id);
+      res.json(files);
+    } catch (error) {
+      console.error('Error fetching project files:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // File upload
   app.post("/api/projects/:id/files", authenticateToken, upload.single("file"), async (req: AuthRequest, res) => {
     try {
@@ -575,15 +600,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
+      // Save file info to database
+      const fileData = {
+        projectId: req.params.id,
+        fileName: req.file.originalname,
+        filePath: req.file.path,
+        fileType: req.file.mimetype,
+        fileSize: req.file.size,
+        content: null, // For binary files
+        isArchive: req.file.originalname.endsWith('.zip') || req.file.originalname.endsWith('.rar'),
+        archiveContents: null
+      };
+
+      const savedFile = await storage.uploadProjectFile(fileData);
+
       res.json({
         message: "File uploaded successfully",
-        file: {
-          name: req.file.originalname,
-          size: req.file.size,
-          path: req.file.path
-        }
+        file: savedFile
       });
     } catch (error) {
+      console.error('Error uploading file:', error);
       res.status(500).json({ message: "Internal server error" });
     }
   });

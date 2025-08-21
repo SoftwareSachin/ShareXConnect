@@ -294,14 +294,15 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
 
               <div className="space-y-2">
                 <Label htmlFor="duration" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Project Duration
+                  Project Methodology & Approach
                 </Label>
-                <Input
+                <Textarea
                   id="duration"
                   {...register("contributingGuidelines")}
-                  placeholder="e.g., 3 months, 1 semester"
+                  placeholder="Describe the development methodology, timeline, challenges faced, and approach taken to solve the problem."
                   data-testid="input-duration"
-                  className="h-12 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-base px-4 font-normal text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors duration-200"
+                  rows={3}
+                  className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-base p-4 font-normal text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors duration-200 resize-none"
                 />
               </div>
             </div>
@@ -312,38 +313,41 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
                 <Label htmlFor="department" className="text-sm font-medium text-slate-700 dark:text-slate-300">
                   Department
                 </Label>
-                <Input
+                <Textarea
                   id="department"
                   {...register("repositoryStructure")}
                   placeholder="e.g., Computer Science, Engineering"
                   data-testid="input-department"
-                  className="h-12 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-base px-4 font-normal text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors duration-200"
+                  rows={2}
+                  className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-base p-4 font-normal text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors duration-200 resize-none"
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="course" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Course/Subject
+                  Course/Subject & Project Details
                 </Label>
-                <Input
+                <Textarea
                   id="course"
                   {...register("readmeContent")}
-                  placeholder="e.g., Software Engineering, Data Structures"
+                  placeholder="e.g., Software Engineering Course - Final Project. Describe the academic context, objectives, and requirements."
                   data-testid="input-course"
-                  className="h-12 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-base px-4 font-normal text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors duration-200"
+                  rows={3}
+                  className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-base p-4 font-normal text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors duration-200 resize-none"
                 />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="advisor" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Faculty Advisor (Optional)
+                  Setup & Installation Instructions
                 </Label>
-                <Input
+                <Textarea
                   id="advisor"
                   {...register("installationInstructions")}
-                  placeholder="Prof. Name"
+                  placeholder="How to install and run the project. Include dependencies, setup steps, and configuration instructions."
                   data-testid="input-advisor"
-                  className="h-12 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-base px-4 font-normal text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors duration-200"
+                  rows={3}
+                  className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-base p-4 font-normal text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors duration-200 resize-none"
                 />
               </div>
             </div>

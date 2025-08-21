@@ -14,7 +14,8 @@ import {
   projectStars,
   comments,
   facultyAssignments,
-  collegeDomains
+  collegeDomains,
+  projectFiles
 } from "@shared/schema";
 import bcrypt from "bcryptjs";
 import { databaseManager, db } from "./database/connection";
@@ -1181,6 +1182,43 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error verifying college domain:', error);
       return false;
+    }
+  }
+
+  // Project files operations
+  async getProjectFiles(projectId: string): Promise<any[]> {
+    try {
+      const result = await db
+        .select()
+        .from(projectFiles)
+        .where(eq(projectFiles.projectId, projectId))
+        .orderBy(projectFiles.uploadedAt);
+      return result;
+    } catch (error) {
+      console.error('Error getting project files:', error);
+      return [];
+    }
+  }
+
+  async uploadProjectFile(fileData: any): Promise<any> {
+    try {
+      const result = await db
+        .insert(projectFiles)
+        .values({
+          projectId: fileData.projectId,
+          fileName: fileData.fileName,
+          filePath: fileData.filePath,
+          fileType: fileData.fileType,
+          fileSize: fileData.fileSize,
+          content: fileData.content,
+          isArchive: fileData.isArchive || false,
+          archiveContents: fileData.archiveContents
+        })
+        .returning();
+      return result[0];
+    } catch (error) {
+      console.error('Error uploading project file:', error);
+      throw error;
     }
   }
 }
