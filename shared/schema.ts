@@ -322,6 +322,27 @@ export type ProjectReview = typeof projectReviews.$inferSelect;
 export type InsertProjectReview = typeof projectReviews.$inferInsert;
 export type FacultyAssignment = ProjectReview; // Alias for storage layer compatibility
 export type ProjectFile = typeof projectFiles.$inferSelect;
+
+// Audit log table for tracking important actions
+export const auditActionEnum = pgEnum("audit_action", [
+  "CREATE", "UPDATE", "DELETE", "VIEW", "LOGIN", "LOGOUT", 
+  "UPLOAD", "DOWNLOAD", "COLLABORATE", "REVIEW", "COMMENT"
+]);
+
+export const auditLogs = pgTable("audit_logs", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid("user_id").references(() => users.id),
+  action: auditActionEnum("action").notNull(),
+  resource: varchar("resource", { length: 100 }).notNull(),
+  resourceId: uuid("resource_id"),
+  details: text("details"),
+  ipAddress: varchar("ip_address", { length: 45 }),
+  userAgent: varchar("user_agent", { length: 500 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type InsertAuditLog = typeof auditLogs.$inferInsert;
 export type InsertProjectFile = typeof projectFiles.$inferInsert;
 export type CollaborationRequest = typeof collaborationRequests.$inferSelect;
 export type InsertCollaborationRequest = typeof collaborationRequests.$inferInsert;

@@ -1525,7 +1525,7 @@ export class DatabaseStorage implements IStorage {
         .from(projectChangeRequests)
         .innerJoin(users, eq(projectChangeRequests.requesterId, users.id))
         .leftJoin(
-          { reviewer: users },
+          users as any,
           eq(projectChangeRequests.reviewedBy, users.id)
         )
         .where(eq(projectChangeRequests.projectId, projectId))
@@ -1534,7 +1534,7 @@ export class DatabaseStorage implements IStorage {
       return requests.map(result => ({
         ...result.project_change_requests,
         requester: result.users,
-        reviewer: result.reviewer || undefined
+        reviewer: undefined
       }));
     } catch (error) {
       console.error('Error getting change requests:', error);
