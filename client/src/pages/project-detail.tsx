@@ -183,6 +183,7 @@ export default function ProjectDetail() {
   // Get current user from auth store (must be called before any conditional returns)
   const { user } = useAuthStore();
 
+
   async function handleFileClick(file: ProjectFile): Promise<void> {
     console.log('File clicked:', file.fileName);
     setSelectedFile(file);
@@ -907,9 +908,19 @@ export default function ProjectDetail() {
                         <h4 className="text-sm font-medium text-slate-900 dark:text-slate-100 mb-3">Images & Screenshots</h4>
                         <div className="space-y-2">
                           {projectFiles.filter(f => f.fileType.startsWith('image/')).map((file) => (
-                            <div key={file.id} className="flex items-center gap-2 p-2 bg-slate-50 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
-                              <Image className="w-4 h-4 text-pink-500 dark:text-pink-400" />
-                              <span className="text-xs text-slate-900 dark:text-slate-100 truncate">{file.fileName}</span>
+                            <div key={file.id} className="flex items-center justify-between gap-2 p-2 bg-slate-50 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                              <div className="flex items-center gap-2 flex-1 min-w-0">
+                                <Image className="w-4 h-4 text-pink-500 dark:text-pink-400 flex-shrink-0" />
+                                <span className="text-xs text-slate-900 dark:text-slate-100 truncate">{file.fileName}</span>
+                              </div>
+                              <button
+                                onClick={(e) => handleFileDownload(e, file)}
+                                className="flex items-center gap-1 px-2 py-1 text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded hover:border-slate-300 dark:hover:border-slate-500 transition-all flex-shrink-0"
+                                title={`Download ${file.fileName}`}
+                              >
+                                <Download className="w-3 h-3" />
+                                <span className="hidden sm:inline">Download</span>
+                              </button>
                             </div>
                           ))}
                         </div>
@@ -922,9 +933,19 @@ export default function ProjectDetail() {
                         <h4 className="text-sm font-medium text-slate-900 dark:text-slate-100 mb-3">Documentation</h4>
                         <div className="space-y-2">
                           {projectFiles.filter(f => f.fileType.includes('pdf') || f.fileType.includes('doc') || f.fileName.includes('.md') || f.fileName.includes('.txt')).map((file) => (
-                            <div key={file.id} className="flex items-center gap-2 p-2 bg-slate-50 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
-                              <File className="w-4 h-4 text-blue-500 dark:text-blue-400" />
-                              <span className="text-xs text-slate-900 dark:text-slate-100 truncate">{file.fileName}</span>
+                            <div key={file.id} className="flex items-center justify-between gap-2 p-2 bg-slate-50 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                              <div className="flex items-center gap-2 flex-1 min-w-0">
+                                <File className="w-4 h-4 text-blue-500 dark:text-blue-400 flex-shrink-0" />
+                                <span className="text-xs text-slate-900 dark:text-slate-100 truncate">{file.fileName}</span>
+                              </div>
+                              <button
+                                onClick={(e) => handleFileDownload(e, file)}
+                                className="flex items-center gap-1 px-2 py-1 text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded hover:border-slate-300 dark:hover:border-slate-500 transition-all flex-shrink-0"
+                                title={`Download ${file.fileName}`}
+                              >
+                                <Download className="w-3 h-3" />
+                                <span className="hidden sm:inline">Download</span>
+                              </button>
                             </div>
                           ))}
                         </div>
@@ -937,12 +958,22 @@ export default function ProjectDetail() {
                         <h4 className="text-sm font-medium text-slate-900 dark:text-slate-100 mb-3">Source Code & Archives</h4>
                         <div className="space-y-2">
                           {projectFiles.filter(f => f.isArchive || f.fileName.includes('.js') || f.fileName.includes('.py') || f.fileName.includes('.html') || f.fileName.includes('.css')).map((file) => (
-                            <div key={file.id} className="flex items-center gap-2 p-2 bg-slate-50 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
-                              {file.isArchive ? 
-                                <Archive className="w-4 h-4 text-amber-500 dark:text-amber-400" /> : 
-                                <FileCode className="w-4 h-4 text-green-500 dark:text-green-400" />
-                              }
-                              <span className="text-xs text-slate-900 dark:text-slate-100 truncate">{file.fileName}</span>
+                            <div key={file.id} className="flex items-center justify-between gap-2 p-2 bg-slate-50 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                              <div className="flex items-center gap-2 flex-1 min-w-0">
+                                {file.isArchive ? 
+                                  <Archive className="w-4 h-4 text-amber-500 dark:text-amber-400 flex-shrink-0" /> : 
+                                  <FileCode className="w-4 h-4 text-green-500 dark:text-green-400 flex-shrink-0" />
+                                }
+                                <span className="text-xs text-slate-900 dark:text-slate-100 truncate">{file.fileName}</span>
+                              </div>
+                              <button
+                                onClick={(e) => handleFileDownload(e, file)}
+                                className="flex items-center gap-1 px-2 py-1 text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded hover:border-slate-300 dark:hover:border-slate-500 transition-all flex-shrink-0"
+                                title={`Download ${file.fileName}`}
+                              >
+                                <Download className="w-3 h-3" />
+                                <span className="hidden sm:inline">Download</span>
+                              </button>
                             </div>
                           ))}
                         </div>
