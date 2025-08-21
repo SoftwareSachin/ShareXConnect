@@ -1,8 +1,11 @@
 import { useParams, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { apiGet } from "@/lib/api";
 import type { ProjectWithDetails } from "@shared/schema";
 import { 
@@ -16,7 +19,9 @@ import {
   User, 
   Download,
   GitCommit,
-  Users
+  Users,
+  X,
+  Eye
 } from "lucide-react";
 
 interface ProjectFile {
@@ -179,14 +184,40 @@ function getFilesInFolder(folderName: string, files: ProjectFile[]): ProjectFile
   );
 }
 
-function handleFileClick(file: ProjectFile): void {
+async function handleFileClick(file: ProjectFile): Promise<void> {
   console.log('File clicked:', file.fileName);
-  // For viewable files (text, code, images), open in new tab for viewing
-  if (isViewableFile(file)) {
-    window.open(`/api/projects/files/${file.id}/view`, '_blank');
-  } else {
-    // For non-viewable files, download directly
-    handleFileDownload(new MouseEvent('click') as any, file);
+  setSelectedFile(file);
+  setIsFileViewerOpen(true);
+  setFileContent('Loading...');
+  
+  try {
+    const authStorage = localStorage.getItem('auth-storage');
+    const authData = authStorage ? JSON.parse(authStorage) : null;
+    const token = authData?.state?.user?.token;
+    
+    if (!token) {
+      setFileContent('Please login to view files');
+      return;
+    }
+
+    const response = await fetch(`/api/projects/files/${file.id}/view`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`${response.status}: ${errorText}`);
+    }
+    
+    const content = await response.text();
+    setFileContent(content);
+  } catch (error) {
+    console.error('❌ View failed:', error);
+    setFileContent(`Error loading file: ${error}`);
   }
 }
 
@@ -195,39 +226,34 @@ function handleFolderClick(folderName: string): void {
   // Toggle folder expansion or navigate into folder
 }
 
-function handleFileDownload(e: React.MouseEvent, file: ProjectFile): void {
+async function handleFileDownload(e: React.MouseEvent, file: ProjectFile): Promise<void> {
   e.stopPropagation();
   console.log('🔽 Downloading file:', file.fileName, 'ID:', file.id);
   
-  // Create a proper download link with authentication
-  const token = localStorage.getItem('auth-storage');
-  const authData = token ? JSON.parse(token) : null;
-  const authToken = authData?.state?.user?.token;
-  
-  if (!authToken) {
-    console.error('No auth token found');
-    return;
-  }
+  try {
+    const authStorage = localStorage.getItem('auth-storage');
+    const authData = authStorage ? JSON.parse(authStorage) : null;
+    const token = authData?.state?.user?.token;
+    
+    if (!token) {
+      alert('Please login to download files');
+      return;
+    }
 
-  // Create a temporary link to trigger download
-  const link = document.createElement('a');
-  link.href = `/api/projects/files/${file.id}/download`;
-  link.download = file.fileName;
-  
-  // Add authorization header by using fetch and creating blob URL
-  fetch(`/api/projects/files/${file.id}/download`, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${authToken}`
-    }
-  })
-  .then(response => {
+    const response = await fetch(`/api/projects/files/${file.id}/download`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text();
+      throw new Error(`${response.status}: ${errorText}`);
     }
-    return response.blob();
-  })
-  .then(blob => {
+    
+    const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -236,12 +262,11 @@ function handleFileDownload(e: React.MouseEvent, file: ProjectFile): void {
     a.click();
     window.URL.revokeObjectURL(url);
     document.body.removeChild(a);
-    console.log('✅ File download initiated:', file.fileName);
-  })
-  .catch(error => {
+    console.log('✅ File download completed:', file.fileName);
+  } catch (error) {
     console.error('❌ Download failed:', error);
-    alert('Failed to download file. Please try again.');
-  });
+    alert(`Failed to download file: ${error}`);
+  }
 }
 
 function handleFolderDownload(e: React.MouseEvent, folderName: string): void {
@@ -260,6 +285,9 @@ function isViewableFile(file: ProjectFile): boolean {
 export default function ProjectDetail() {
   const params = useParams<ProjectDetailParams>();
   const [, setLocation] = useLocation();
+  const [selectedFile, setSelectedFile] = useState<ProjectFile | null>(null);
+  const [isFileViewerOpen, setIsFileViewerOpen] = useState(false);
+  const [fileContent, setFileContent] = useState<string>('');
   
   const { data: project, isLoading, error } = useQuery<ProjectWithDetails>({
     queryKey: [`/api/projects/${params.id}`],
@@ -1292,6 +1320,94 @@ export default function ProjectDetail() {
           </div>
         </div>
       </div>
+      
+      {/* GitHub-style File Viewer Modal */}
+      <Dialog open={isFileViewerOpen} onOpenChange={setIsFileViewerOpen}>
+        <DialogContent className="max-w-6xl max-h-[90vh] bg-[#0d1117] border border-[#21262d]">
+          <DialogHeader className="bg-[#161b22] px-6 py-4 border-b border-[#21262d]">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {selectedFile && getFileIcon(selectedFile)}
+                <div>
+                  <DialogTitle className="text-[#f0f6fc] text-lg font-semibold">
+                    {selectedFile?.fileName || 'File Viewer'}
+                  </DialogTitle>
+                  <p className="text-[#7d8590] text-sm">
+                    {selectedFile && `${formatFileSize(selectedFile.fileSize)} • ${getFileTypeLabel(selectedFile)}`}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {selectedFile && (
+                  <Button
+                    onClick={(e) => handleFileDownload(e, selectedFile)}
+                    className="bg-[#238636] hover:bg-[#2ea043] text-white text-sm"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download
+                  </Button>
+                )}
+                <Button
+                  onClick={() => setIsFileViewerOpen(false)}
+                  variant="ghost"
+                  className="text-[#7d8590] hover:text-[#f0f6fc] hover:bg-[#21262d]"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-auto bg-[#0d1117] p-0 max-h-[70vh]">
+            {selectedFile && isViewableFile(selectedFile) ? (
+              <div className="relative">
+                <div className="bg-[#161b22] px-6 py-3 border-b border-[#21262d] text-xs text-[#7d8590] font-mono">
+                  Viewing {selectedFile.fileName}
+                </div>
+                <div className="p-0">
+                  <pre className="text-sm text-[#f0f6fc] font-mono leading-relaxed whitespace-pre-wrap p-6 m-0 overflow-auto">
+                    <code>{fileContent}</code>
+                  </pre>
+                </div>
+              </div>
+            ) : selectedFile?.fileType.startsWith('image/') ? (
+              <div className="flex items-center justify-center p-8">
+                <div className="text-center">
+                  <Image className="w-16 h-16 text-[#7d8590] mx-auto mb-4" />
+                  <h3 className="text-[#f0f6fc] font-medium mb-2">Image Preview</h3>
+                  <p className="text-[#7d8590] text-sm mb-4">
+                    Image files can be downloaded and viewed externally
+                  </p>
+                  <Button
+                    onClick={(e) => selectedFile && handleFileDownload(e, selectedFile)}
+                    className="bg-[#238636] hover:bg-[#2ea043] text-white"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download {selectedFile.fileName}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center p-8">
+                <div className="text-center">
+                  <File className="w-16 h-16 text-[#7d8590] mx-auto mb-4" />
+                  <h3 className="text-[#f0f6fc] font-medium mb-2">Binary File</h3>
+                  <p className="text-[#7d8590] text-sm mb-4">
+                    This file cannot be previewed in the browser
+                  </p>
+                  <Button
+                    onClick={(e) => selectedFile && handleFileDownload(e, selectedFile)}
+                    className="bg-[#238636] hover:bg-[#2ea043] text-white"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download {selectedFile?.fileName}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
