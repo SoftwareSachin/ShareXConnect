@@ -209,6 +209,8 @@ export default function ProjectDetail() {
   const [selectedFile, setSelectedFile] = useState<ProjectFile | null>(null);
   const [isFileViewerOpen, setIsFileViewerOpen] = useState(false);
   const [fileContent, setFileContent] = useState<string>('');
+  const [currentFolder, setCurrentFolder] = useState<string>('');
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   
   // Get current user from auth store (must be called before any conditional returns)
   const { user } = useAuthStore();
@@ -874,99 +876,207 @@ export default function ProjectDetail() {
               </div>
             </div>
 
-            {/* Source Code Repository Section - Material Design 3 */}
-            <div className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-3xl overflow-hidden shadow-xl shadow-slate-950/10">
+            {/* GitHub-Style Repository Section */}
+            <div className="bg-[#0d1117] border border-[#30363d] rounded-lg overflow-hidden">
               {/* Repository Header */}
-              <div className="px-8 py-6 bg-slate-800/60 border-b border-slate-700/50">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-2xl bg-slate-700/50 border border-slate-600/50 flex items-center justify-center shadow-lg">
-                      <Code2 className="w-5 h-5 text-slate-300" />
-                    </div>
-                    <div>
-                      <h3 className="text-slate-100 font-bold text-xl">
-                        {project.title}
-                      </h3>
-                      <p className="text-slate-400 text-sm flex items-center gap-2">
-                        <File className="w-4 h-4" />
-                        {projectFiles?.length || 0} files
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <button className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-700/50 hover:bg-slate-700 text-slate-300 hover:text-white text-sm rounded-xl transition-all duration-200 border border-slate-600/50">
-                      <GitFork className="w-4 h-4" />
-                      Clone
-                    </button>
-                    <button className="inline-flex items-center gap-2 px-4 py-2.5 bg-green-600/90 hover:bg-green-600 text-white text-sm rounded-xl transition-all duration-200 shadow-lg shadow-green-600/20">
-                      <Download className="w-4 h-4" />
-                      Download
-                    </button>
-                  </div>
+              <div className="flex items-center justify-between px-4 py-3 bg-[#161b22] border-b border-[#21262d]">
+                <div className="flex items-center gap-3">
+                  <Code2 className="w-5 h-5 text-[#7c3aed]" />
+                  <h3 className="text-[#f0f6fc] font-semibold text-base">
+                    {project.title.toLowerCase().replace(/\s+/g, '')}
+                  </h3>
+                  <span className="px-2 py-0.5 text-xs text-[#7d8590] bg-[#21262d] rounded-full border border-[#30363d]">
+                    {projectFiles?.length || 0} files
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button className="inline-flex items-center gap-2 px-3 py-1.5 text-sm text-[#c9d1d9] border border-[#30363d] rounded-md hover:bg-[#21262d] transition-colors">
+                    <GitFork className="w-4 h-4" />
+                    Clone
+                  </button>
+                  <button className="inline-flex items-center gap-2 px-3 py-1.5 text-sm text-white bg-[#238636] hover:bg-[#2ea043] rounded-md transition-colors">
+                    <Download className="w-4 h-4" />
+                    Download
+                  </button>
                 </div>
               </div>
 
-              {/* File Browser */}
-              <div className="divide-y divide-slate-700/30">
+              {/* Latest Commit Info */}
+              <div className="px-4 py-2 bg-[#161b22] border-b border-[#21262d] text-xs">
+                <div className="flex items-center gap-2 text-[#8b949e]">
+                  <div className="w-4 h-4 bg-[#238636] rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs">✓</span>
+                  </div>
+                  <span className="font-mono">{project.owner.firstName.toLowerCase()}</span>
+                  <span>{getLatestCommitMessage(projectFiles)}</span>
+                  <span className="ml-auto">{formatTimeAgo(project.updatedAt.toString())}</span>
+                </div>
+              </div>
+
+              {/* File Browser Header */}
+              <div className="px-4 py-3 bg-[#0d1117] border-b border-[#21262d]">
+                <div className="flex items-center justify-between text-xs font-medium">
+                  <span className="text-[#7d8590] uppercase tracking-wider">NAME</span>
+                  <span className="text-[#7d8590] uppercase tracking-wider">SIZE</span>
+                </div>
+              </div>
+
+              {/* File/Folder Browser */}
+              <div className="bg-[#0d1117]">
                 {projectFiles && projectFiles.length > 0 ? (
                   <>
-                    {/* Header Row */}
-                    <div className="px-8 py-4 bg-slate-800/30 text-xs font-semibold text-slate-400 uppercase tracking-wide">
-                      <div className="flex items-center justify-between">
-                        <span>Name</span>
-                        <span>Size</span>
-                      </div>
-                    </div>
-                    
-                    {/* Files List */}
-                    {projectFiles.map((file) => (
-                      <div 
-                        key={file.id} 
-                        className="px-8 py-4 hover:bg-slate-700/20 cursor-pointer transition-all duration-200 group border-l-2 border-transparent hover:border-l-blue-500/50"
-                        onClick={() => handleFileClick(file)}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            {getFileIcon(file)}
-                            <div className="min-w-0">
-                              <span className="text-slate-200 text-sm font-medium hover:text-blue-400 hover:underline transition-colors">
-                                {file.fileName}
-                              </span>
-                              <div className="text-xs text-slate-400 mt-1 flex items-center gap-2">
-                                <Clock className="w-3 h-3" />
-                                {formatTimeAgo(file.uploadedAt)}
-                                <span>•</span>
-                                {getFileTypeLabel(file)}
+                    {/* Organize files into folders */}
+                    {(() => {
+                      const folders = new Set<string>();
+                      const rootFiles: ProjectFile[] = [];
+                      const folderFiles: { [key: string]: ProjectFile[] } = {};
+
+                      projectFiles.forEach(file => {
+                        if (file.filePath && file.filePath.includes('/')) {
+                          const folderName = file.filePath.split('/')[0];
+                          folders.add(folderName);
+                          if (!folderFiles[folderName]) folderFiles[folderName] = [];
+                          folderFiles[folderName].push(file);
+                        } else {
+                          rootFiles.push(file);
+                        }
+                      });
+
+                      return (
+                        <>
+                          {/* Folders */}
+                          {Array.from(folders).sort().map(folderName => {
+                            const isExpanded = expandedFolders.has(folderName);
+                            const folderFileCount = folderFiles[folderName]?.length || 0;
+                            
+                            return (
+                              <div key={folderName}>
+                                <div 
+                                  className="flex items-center justify-between px-4 py-2 hover:bg-[#161b22] cursor-pointer border-b border-[#21262d]/50 group"
+                                  onClick={() => {
+                                    const newExpanded = new Set(expandedFolders);
+                                    if (isExpanded) {
+                                      newExpanded.delete(folderName);
+                                    } else {
+                                      newExpanded.add(folderName);
+                                    }
+                                    setExpandedFolders(newExpanded);
+                                  }}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-[#7d8590] text-sm">
+                                        {isExpanded ? '▼' : '▶'}
+                                      </span>
+                                      <Folder className="w-4 h-4 text-[#54aeff]" />
+                                    </div>
+                                    <span className="text-[#7d8590] text-sm font-medium group-hover:text-[#58a6ff]">
+                                      {folderName}
+                                    </span>
+                                    <span className="text-xs text-[#656d76] bg-[#21262d] px-2 py-0.5 rounded-full">
+                                      {folderFileCount} files
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    <span className="text-xs text-[#656d76] font-mono">-</span>
+                                  </div>
+                                </div>
+                                
+                                {/* Folder contents */}
+                                {isExpanded && folderFiles[folderName] && (
+                                  <div className="bg-[#010409]">
+                                    {folderFiles[folderName].map(file => (
+                                      <div 
+                                        key={file.id}
+                                        className="flex items-center justify-between px-8 py-2 hover:bg-[#161b22] cursor-pointer border-b border-[#21262d]/30 group"
+                                        onClick={() => handleFileClick(file)}
+                                      >
+                                        <div className="flex items-center gap-3">
+                                          <div className="w-4"></div> {/* Indent for folder items */}
+                                          {getFileIcon(file)}
+                                          <span className="text-[#7d8590] text-sm group-hover:text-[#58a6ff] group-hover:underline">
+                                            {file.fileName}
+                                          </span>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                          <span className="text-xs text-[#656d76]">
+                                            {getCommitMessage(file).slice(0, 50)}...
+                                          </span>
+                                          <span className="text-xs text-[#656d76] font-mono">
+                                            {formatTimeAgo(file.uploadedAt)}
+                                          </span>
+                                          <span className="text-xs text-[#656d76] font-mono min-w-[60px] text-right">
+                                            {formatFileSize(file.fileSize)}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                          
+                          {/* Root files */}
+                          {rootFiles.sort((a, b) => a.fileName.localeCompare(b.fileName)).map(file => (
+                            <div 
+                              key={file.id}
+                              className="flex items-center justify-between px-4 py-2 hover:bg-[#161b22] cursor-pointer border-b border-[#21262d]/50 group"
+                              onClick={() => handleFileClick(file)}
+                            >
+                              <div className="flex items-center gap-3">
+                                {getFileIcon(file)}
+                                <span className="text-[#7d8590] text-sm group-hover:text-[#58a6ff] group-hover:underline">
+                                  {file.fileName}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <span className="text-xs text-[#656d76] max-w-[300px] truncate">
+                                  {getCommitMessage(file)}
+                                </span>
+                                <span className="text-xs text-[#656d76] font-mono">
+                                  {formatTimeAgo(file.uploadedAt)}
+                                </span>
+                                <span className="text-xs text-[#656d76] font-mono min-w-[60px] text-right">
+                                  {formatFileSize(file.fileSize)}
+                                </span>
                               </div>
                             </div>
-                          </div>
-                          <div className="flex items-center gap-4">
-                            <span className="text-sm text-slate-400 font-mono">
-                              {formatFileSize(file.fileSize)}
-                            </span>
-                            <button 
-                              className="opacity-0 group-hover:opacity-100 p-2 hover:bg-slate-600/50 rounded-lg transition-all duration-200"
-                              onClick={(e) => handleFileDownload(e, file)}
-                              title="Download file"
-                            >
-                              <Download className="w-4 h-4 text-slate-400 hover:text-white" />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                          ))}
+                        </>
+                      );
+                    })()}
                   </>
                 ) : (
-                  <div className="px-8 py-20 text-center">
-                    <div className="w-20 h-20 bg-slate-700/30 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-slate-600/30">
-                      <Folder className="w-8 h-8 text-slate-500" />
+                  <div className="px-8 py-16 text-center">
+                    <div className="w-16 h-16 bg-[#21262d] rounded-lg flex items-center justify-center mx-auto mb-4">
+                      <Folder className="w-8 h-8 text-[#656d76]" />
                     </div>
-                    <h4 className="text-slate-200 font-semibold text-lg mb-3">
+                    <h4 className="text-[#f0f6fc] font-semibold text-lg mb-2">
                       No files uploaded yet
                     </h4>
-                    <p className="text-slate-400 text-sm max-w-md mx-auto leading-relaxed">
-                      Upload source code, documentation, or other project files to get started
+                    <p className="text-[#7d8590] text-sm max-w-md mx-auto">
+                      Upload source code, documentation, or other project files to get started with your repository.
                     </p>
+                    {(isOwner || isCollaborator) && (
+                      <div className="mt-6">
+                        <input
+                          type="file"
+                          multiple
+                          accept=".zip,.rar,.tar,.gz,.js,.ts,.jsx,.tsx,.py,.java,.cpp,.c,.html,.css,.md,.txt,.pdf,.doc,.docx,.png,.jpg,.jpeg,.gif,.svg"
+                          onChange={handleFileUpload}
+                          className="hidden"
+                          id="repo-file-upload"
+                        />
+                        <label
+                          htmlFor="repo-file-upload"
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-[#238636] hover:bg-[#2ea043] text-white text-sm rounded-md cursor-pointer transition-colors"
+                        >
+                          <Upload className="w-4 h-4" />
+                          Upload files
+                        </label>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -1358,60 +1468,80 @@ export default function ProjectDetail() {
         </div>
       </div>
       
-      {/* GitHub-style File Viewer Modal */}
+      {/* Enhanced GitHub-style File Viewer Modal */}
       <Dialog open={isFileViewerOpen} onOpenChange={setIsFileViewerOpen}>
-        <DialogContent className="max-w-6xl max-h-[90vh] bg-[#0d1117] border border-[#21262d]">
-          <DialogHeader className="bg-[#161b22] px-6 py-4 border-b border-[#21262d]">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                {selectedFile && getFileIcon(selectedFile)}
-                <div>
-                  <DialogTitle className="text-[#f0f6fc] text-lg font-semibold">
-                    {selectedFile?.fileName || 'File Viewer'}
-                  </DialogTitle>
-                  <p className="text-[#7d8590] text-sm">
-                    {selectedFile && `${formatFileSize(selectedFile.fileSize)} • ${getFileTypeLabel(selectedFile)}`}
-                  </p>
+        <DialogContent className="max-w-7xl max-h-[95vh] bg-[#0d1117] border border-[#30363d] p-0">
+          {/* File Viewer Header */}
+          <div className="flex items-center justify-between px-4 py-3 bg-[#161b22] border-b border-[#21262d]">
+            <div className="flex items-center gap-3">
+              {selectedFile && getFileIcon(selectedFile)}
+              <div>
+                <h3 className="text-[#f0f6fc] text-lg font-semibold">
+                  {selectedFile?.fileName || 'File Viewer'}
+                </h3>
+                <div className="flex items-center gap-2 text-xs text-[#7d8590]">
+                  <span>{selectedFile && formatFileSize(selectedFile.fileSize)}</span>
+                  <span>•</span>
+                  <span>{selectedFile && getFileTypeLabel(selectedFile)}</span>
+                  <span>•</span>
+                  <span>UTF-8</span>
                 </div>
-              </div>
-              <div className="flex items-center gap-2">
-                {selectedFile && (
-                  <Button
-                    onClick={(e) => handleFileDownload(e, selectedFile)}
-                    className="bg-[#238636] hover:bg-[#2ea043] text-white text-sm"
-                  >
-                    <span className="mr-2">↓</span>
-                    Download
-                  </Button>
-                )}
-                <Button
-                  onClick={() => setIsFileViewerOpen(false)}
-                  variant="ghost"
-                  className="text-[#7d8590] hover:text-[#f0f6fc] hover:bg-[#21262d]"
-                >
-                  <span>×</span>
-                </Button>
               </div>
             </div>
-          </DialogHeader>
-          
-          <div className="flex-1 overflow-auto bg-[#0d1117] p-0 max-h-[70vh]">
+            <div className="flex items-center gap-2">
+              <button
+                className="px-3 py-1.5 text-sm text-[#c9d1d9] border border-[#30363d] rounded-md hover:bg-[#21262d] transition-colors"
+                onClick={() => navigator.clipboard.writeText(selectedFile?.fileName || '')}
+              >
+                Copy path
+              </button>
+              {selectedFile && (
+                <button
+                  onClick={(e) => handleFileDownload(e, selectedFile)}
+                  className="px-3 py-1.5 text-sm text-white bg-[#238636] hover:bg-[#2ea043] rounded-md transition-colors flex items-center gap-2"
+                >
+                  <Download className="w-4 h-4" />
+                  Download
+                </button>
+              )}
+              <button
+                onClick={() => setIsFileViewerOpen(false)}
+                className="p-2 text-[#7d8590] hover:text-[#f0f6fc] hover:bg-[#21262d] rounded-md transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* File Content */}
+          <div className="flex-1 overflow-auto bg-[#0d1117] max-h-[80vh]">
             {selectedFile && isViewableFile(selectedFile) ? (
               <div className="relative">
-                <div className="bg-[#161b22] px-6 py-3 border-b border-[#21262d] text-xs text-[#7d8590] font-mono">
-                  Viewing {selectedFile.fileName}
-                </div>
-                <div className="p-0">
-                  <pre className="text-sm text-[#f0f6fc] font-mono leading-relaxed whitespace-pre-wrap p-6 m-0 overflow-auto">
-                    <code>{fileContent}</code>
-                  </pre>
+                {/* Line numbers and content */}
+                <div className="flex">
+                  {/* Line numbers column */}
+                  <div className="bg-[#0d1117] px-4 py-4 border-r border-[#21262d] select-none">
+                    <div className="text-xs font-mono text-[#656d76] leading-6">
+                      {fileContent.split('\n').map((_, index) => (
+                        <div key={index} className="text-right">
+                          {index + 1}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Content column */}
+                  <div className="flex-1 p-4">
+                    <pre className="text-sm font-mono text-[#e6edf3] leading-6 whitespace-pre-wrap overflow-auto">
+                      <code className="language-javascript">{fileContent}</code>
+                    </pre>
+                  </div>
                 </div>
               </div>
             ) : selectedFile?.fileType.startsWith('image/') ? (
-              <div className="flex items-center justify-center p-8">
+              <div className="flex items-center justify-center p-8 min-h-[400px]">
                 <div className="text-center">
-                  <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center mx-auto mb-4">
-                    <span className="text-slate-600 dark:text-slate-400 text-2xl">🖼️</span>
+                  <div className="w-16 h-16 bg-[#21262d] rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <Image className="w-8 h-8 text-[#7d8590]" />
                   </div>
                   <h3 className="text-[#f0f6fc] font-medium mb-2">Image Preview</h3>
                   <p className="text-[#7d8590] text-sm mb-4">
