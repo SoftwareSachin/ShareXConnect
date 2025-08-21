@@ -27,12 +27,8 @@ const pool = new Pool({
   min: 2,  // Minimum pool size to maintain active connections
   idleTimeoutMillis: 30000, // 30 seconds idle timeout
   connectionTimeoutMillis: 10000, // 10 seconds connection timeout
-  acquireTimeoutMillis: 60000, // 60 seconds to acquire connection from pool
-  createTimeoutMillis: 30000, // 30 seconds to create new connection
-  destroyTimeoutMillis: 5000, // 5 seconds to destroy connection
-  reapIntervalMillis: 1000, // Check for idle connections every second
-  createRetryIntervalMillis: 200, // Retry connection creation every 200ms
-  propagateCreateError: false, // Don't crash on connection creation errors
+  // acquireTimeoutMillis removed - not valid in node-postgres Pool config
+  // Simplified configuration - removing unsupported options for node-postgres
 });
 
 // Enhanced connection event handlers for monitoring

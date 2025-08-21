@@ -17,6 +17,10 @@ export const roleEnum = pgEnum("role", ["STUDENT", "FACULTY", "ADMIN", "GUEST"])
 export const visibilityEnum = pgEnum("visibility", ["PRIVATE", "INSTITUTION", "PUBLIC"]);
 export const projectStatusEnum = pgEnum("project_status", ["DRAFT", "SUBMITTED", "UNDER_REVIEW", "APPROVED"]);
 export const reviewStatusEnum = pgEnum("review_status", ["PENDING", "COMPLETED"]);
+export const requestStatusEnum = pgEnum("request_status", ["PENDING", "APPROVED", "REJECTED"]);
+export const repoItemTypeEnum = pgEnum("repo_item_type", ["FILE", "FOLDER"]);
+export const changeTypeEnum = pgEnum("change_type", ["ADD", "MODIFY", "DELETE", "SUGGEST"]);
+export const changeStatusEnum = pgEnum("change_status", ["OPEN", "APPROVED", "REJECTED", "MERGED"]);
 
 // College domains table - for verification
 export const collegeDomains = pgTable("college_domains", {
@@ -73,6 +77,11 @@ export const projects = pgTable("projects", {
   contributingGuidelines: text("contributing_guidelines"),
   installationInstructions: text("installation_instructions"),
   apiDocumentation: text("api_documentation"),
+  // Star system enhancement
+  starCount: integer("star_count").default(0).notNull(),
+  // Collaboration settings
+  allowsCollaboration: boolean("allows_collaboration").default(true).notNull(),
+  requiresApprovalForCollaboration: boolean("requires_approval_for_collaboration").default(true).notNull(),
   ownerId: uuid("owner_id").references(() => users.id).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -123,6 +132,9 @@ export const usersRelations = relations(users, ({ many }) => ({
   stars: many(projectStars),
   comments: many(projectComments),
   reviews: many(projectReviews),
+  collaborationRequests: many(collaborationRequests),
+  changeRequests: many(projectChangeRequests),
+  repositoryModifications: many(projectRepository),
 }));
 
 export const projectsRelations = relations(projects, ({ one, many }) => ({
@@ -134,6 +146,10 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   stars: many(projectStars),
   comments: many(projectComments),
   reviews: many(projectReviews),
+  files: many(projectFiles),
+  collaborationRequests: many(collaborationRequests),
+  repository: many(projectRepository),
+  changeRequests: many(projectChangeRequests),
 }));
 
 export const projectCollaboratorsRelations = relations(projectCollaborators, ({ one }) => ({
@@ -201,6 +217,96 @@ export const projectFilesRelations = relations(projectFiles, ({ one }) => ({
   }),
 }));
 
+// Collaboration requests table - for GitHub-like collaboration workflow
+export const collaborationRequests = pgTable("collaboration_requests", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: uuid("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
+  requesterId: uuid("requester_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  message: text("message"),
+  status: requestStatusEnum("status").default("PENDING").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  respondedAt: timestamp("responded_at"),
+});
+
+// Project repository structure for GitHub-like file management
+export const projectRepository = pgTable("project_repository", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: uuid("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
+  path: varchar("path", { length: 500 }).notNull(), // file/folder path
+  name: varchar("name", { length: 255 }).notNull(),
+  type: repoItemTypeEnum("type").notNull(),
+  content: text("content"), // file content for code files
+  parentId: uuid("parent_id").references(() => projectRepository.id, { onDelete: "cascade" }), // for nested structure
+  size: integer("size").default(0), // file size in bytes
+  language: varchar("language", { length: 50 }), // programming language for syntax highlighting
+  lastModifiedBy: uuid("last_modified_by").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Project change requests/suggestions for collaboration
+export const projectChangeRequests = pgTable("project_change_requests", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: uuid("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
+  requesterId: uuid("requester_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  title: varchar("title", { length: 200 }).notNull(),
+  description: text("description").notNull(),
+  fileId: uuid("file_id").references(() => projectRepository.id), // specific file being changed
+  changeType: changeTypeEnum("change_type").notNull(),
+  proposedChanges: text("proposed_changes"), // diff or new content
+  status: changeStatusEnum("status").default("OPEN").notNull(),
+  reviewedBy: uuid("reviewed_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Relations for new tables
+export const collaborationRequestsRelations = relations(collaborationRequests, ({ one }) => ({
+  project: one(projects, {
+    fields: [collaborationRequests.projectId],
+    references: [projects.id],
+  }),
+  requester: one(users, {
+    fields: [collaborationRequests.requesterId],
+    references: [users.id],
+  }),
+}));
+
+export const projectRepositoryRelations = relations(projectRepository, ({ one, many }) => ({
+  project: one(projects, {
+    fields: [projectRepository.projectId],
+    references: [projects.id],
+  }),
+  parent: one(projectRepository, {
+    fields: [projectRepository.parentId],
+    references: [projectRepository.id],
+  }),
+  children: many(projectRepository),
+  lastModifier: one(users, {
+    fields: [projectRepository.lastModifiedBy],
+    references: [users.id],
+  }),
+}));
+
+export const projectChangeRequestsRelations = relations(projectChangeRequests, ({ one }) => ({
+  project: one(projects, {
+    fields: [projectChangeRequests.projectId],
+    references: [projects.id],
+  }),
+  requester: one(users, {
+    fields: [projectChangeRequests.requesterId],
+    references: [users.id],
+  }),
+  reviewer: one(users, {
+    fields: [projectChangeRequests.reviewedBy],
+    references: [users.id],
+  }),
+  file: one(projectRepository, {
+    fields: [projectChangeRequests.fileId],
+    references: [projectRepository.id],
+  }),
+}));
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
@@ -217,6 +323,12 @@ export type InsertProjectReview = typeof projectReviews.$inferInsert;
 export type FacultyAssignment = ProjectReview; // Alias for storage layer compatibility
 export type ProjectFile = typeof projectFiles.$inferSelect;
 export type InsertProjectFile = typeof projectFiles.$inferInsert;
+export type CollaborationRequest = typeof collaborationRequests.$inferSelect;
+export type InsertCollaborationRequest = typeof collaborationRequests.$inferInsert;
+export type ProjectRepositoryItem = typeof projectRepository.$inferSelect;
+export type InsertProjectRepositoryItem = typeof projectRepository.$inferInsert;
+export type ProjectChangeRequest = typeof projectChangeRequests.$inferSelect;
+export type InsertProjectChangeRequest = typeof projectChangeRequests.$inferInsert;
 
 // Authentication schemas with robust validation for production use
 export const loginSchema = z.object({

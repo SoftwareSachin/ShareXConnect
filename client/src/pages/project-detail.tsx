@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { apiGet, apiRequest } from "@/lib/api";
 import { useAuthStore } from "@/store/auth-store";
+import CollaborationModal from "@/components/modals/collaboration-modal";
 import type { ProjectWithDetails, User, ProjectComment } from "@shared/schema";
 import { 
   FileCode, 
@@ -531,6 +532,18 @@ export default function ProjectDetail() {
                 <MessageCircle className="w-4 h-4" />
                 Comment
               </button>
+              <CollaborationModal 
+                projectId={params.id} 
+                isOwner={project?.owner.id === user?.id}
+              >
+                <button 
+                  data-testid="button-collaborate"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 hover:border-blue-300 transition-all duration-200 text-blue-700 hover:text-blue-900"
+                >
+                  <Users className="w-4 h-4" />
+                  {project?.owner.id === user?.id ? "Manage Team" : "Collaborate"}
+                </button>
+              </CollaborationModal>
             </div>
           </div>
         </div>

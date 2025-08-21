@@ -482,6 +482,164 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
+  // GitHub-like collaboration routes
+  app.post("/api/projects/:id/collaborate/request", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      const { message } = req.body;
+      const request = await storage.requestCollaboration(req.params.id, req.user!.id, message);
+      res.status(201).json(request);
+    } catch (error) {
+      console.error('Error requesting collaboration:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }));
+
+  app.get("/api/projects/:id/collaborate/requests", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      const requests = await storage.getCollaborationRequests(req.params.id);
+      res.json(requests);
+    } catch (error) {
+      console.error('Error fetching collaboration requests:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }));
+
+  app.post("/api/projects/collaborate/requests/:requestId/respond", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      const { status } = req.body;
+      if (!['APPROVED', 'REJECTED'].includes(status)) {
+        return res.status(400).json({ message: "Invalid status" });
+      }
+      
+      const request = await storage.respondToCollaborationRequest(req.params.requestId, status, req.user!.id);
+      res.json(request);
+    } catch (error) {
+      console.error('Error responding to collaboration request:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }));
+
+  app.post("/api/projects/:id/collaborators/email", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      const { email } = req.body;
+      if (!email || typeof email !== 'string') {
+        return res.status(400).json({ message: "Valid email is required" });
+      }
+      
+      await storage.addCollaboratorByEmail(req.params.id, email, req.user!.id);
+      res.status(200).json({ message: "Collaborator added successfully" });
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('not found')) {
+        return res.status(404).json({ message: error.message });
+      }
+      console.error('Error adding collaborator by email:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }));
+
+  // Repository management routes
+  app.get("/api/projects/:id/repository", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      const structure = await storage.getRepositoryStructure(req.params.id);
+      res.json(structure);
+    } catch (error) {
+      console.error('Error fetching repository structure:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }));
+
+  app.post("/api/projects/:id/repository/items", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      const itemData = {
+        ...req.body,
+        projectId: req.params.id,
+        lastModifiedBy: req.user!.id
+      };
+      
+      const item = await storage.createRepositoryItem(itemData);
+      res.status(201).json(item);
+    } catch (error) {
+      console.error('Error creating repository item:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }));
+
+  app.put("/api/repository/items/:itemId", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      const updates = {
+        ...req.body,
+        lastModifiedBy: req.user!.id
+      };
+      
+      const item = await storage.updateRepositoryItem(req.params.itemId, updates);
+      if (!item) {
+        return res.status(404).json({ message: "Repository item not found" });
+      }
+      res.json(item);
+    } catch (error) {
+      console.error('Error updating repository item:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }));
+
+  app.delete("/api/repository/items/:itemId", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      const success = await storage.deleteRepositoryItem(req.params.itemId);
+      if (!success) {
+        return res.status(404).json({ message: "Repository item not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      console.error('Error deleting repository item:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }));
+
+  // Change request routes for collaboration
+  app.get("/api/projects/:id/change-requests", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      const requests = await storage.getChangeRequests(req.params.id);
+      res.json(requests);
+    } catch (error) {
+      console.error('Error fetching change requests:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }));
+
+  app.post("/api/projects/:id/change-requests", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      const requestData = {
+        ...req.body,
+        projectId: req.params.id,
+        requesterId: req.user!.id
+      };
+      
+      const request = await storage.createChangeRequest(requestData);
+      res.status(201).json(request);
+    } catch (error) {
+      console.error('Error creating change request:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }));
+
+  app.post("/api/change-requests/:requestId/review", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      const { status } = req.body;
+      if (!['APPROVED', 'REJECTED', 'MERGED'].includes(status)) {
+        return res.status(400).json({ message: "Invalid status" });
+      }
+      
+      const request = await storage.reviewChangeRequest(req.params.requestId, status, req.user!.id);
+      if (!request) {
+        return res.status(404).json({ message: "Change request not found" });
+      }
+      res.json(request);
+    } catch (error) {
+      console.error('Error reviewing change request:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }));
+
   // Faculty assignment routes
   app.post("/api/projects/:id/assign", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {

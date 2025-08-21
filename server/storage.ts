@@ -13,6 +13,12 @@ import {
   type ProjectStar,
   type ProjectFile,
   type InsertProjectFile,
+  type CollaborationRequest,
+  type InsertCollaborationRequest,
+  type ProjectRepositoryItem,
+  type InsertProjectRepositoryItem,
+  type ProjectChangeRequest,
+  type InsertProjectChangeRequest,
   users,
   projects,
   projectCollaborators,
@@ -20,6 +26,9 @@ import {
   projectComments,
   projectReviews,
   projectFiles,
+  collaborationRequests,
+  projectRepository,
+  projectChangeRequests,
   collegeDomains
 } from "@shared/schema";
 import bcrypt from "bcryptjs";
@@ -114,6 +123,23 @@ export interface IStorage {
   getProjectFiles(projectId: string): Promise<any[]>;
   getProjectFileById(fileId: string): Promise<any | undefined>;
   uploadProjectFile(fileData: any): Promise<any>;
+
+  // GitHub-like collaboration operations
+  requestCollaboration(projectId: string, requesterId: string, message: string): Promise<CollaborationRequest>;
+  getCollaborationRequests(projectId: string): Promise<(CollaborationRequest & { requester: User })[]>;
+  respondToCollaborationRequest(requestId: string, status: 'APPROVED' | 'REJECTED', reviewerId: string): Promise<CollaborationRequest | undefined>;
+  addCollaboratorByEmail(projectId: string, email: string, ownerId: string): Promise<void>;
+  
+  // Repository file management
+  createRepositoryItem(item: InsertProjectRepositoryItem): Promise<ProjectRepositoryItem>;
+  updateRepositoryItem(id: string, updates: Partial<InsertProjectRepositoryItem>): Promise<ProjectRepositoryItem | undefined>;
+  deleteRepositoryItem(id: string): Promise<boolean>;
+  getRepositoryStructure(projectId: string): Promise<ProjectRepositoryItem[]>;
+  
+  // Change request system for collaboration
+  createChangeRequest(request: InsertProjectChangeRequest): Promise<ProjectChangeRequest>;
+  getChangeRequests(projectId: string): Promise<(ProjectChangeRequest & { requester: User; reviewer?: User })[]>;
+  reviewChangeRequest(requestId: string, status: 'APPROVED' | 'REJECTED' | 'MERGED', reviewerId: string): Promise<ProjectChangeRequest | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -662,10 +688,22 @@ export class DatabaseStorage implements IStorage {
         .limit(1);
       
       if (existing.length === 0) {
+        // Insert the star record
         await db.insert(projectStars).values({
           projectId,
           userId
         });
+
+        // Update the star count in the projects table
+        await db
+          .update(projects)
+          .set({ 
+            starCount: sql`${projects.starCount} + 1`,
+            updatedAt: new Date()
+          })
+          .where(eq(projects.id, projectId));
+
+        console.log(`⭐ User ${userId} starred project ${projectId}`);
       }
     } catch (error) {
       console.error('Error starring project:', error);
@@ -675,12 +713,36 @@ export class DatabaseStorage implements IStorage {
 
   async unstarProject(projectId: string, userId: string): Promise<void> {
     try {
-      await db
-        .delete(projectStars)
+      // Check if the star exists first
+      const existing = await db
+        .select()
+        .from(projectStars)
         .where(and(
           eq(projectStars.projectId, projectId),
           eq(projectStars.userId, userId)
-        ));
+        ))
+        .limit(1);
+
+      if (existing.length > 0) {
+        // Remove the star record
+        await db
+          .delete(projectStars)
+          .where(and(
+            eq(projectStars.projectId, projectId),
+            eq(projectStars.userId, userId)
+          ));
+
+        // Update the star count in the projects table
+        await db
+          .update(projects)
+          .set({ 
+            starCount: sql`GREATEST(${projects.starCount} - 1, 0)`, // Ensure it doesn't go below 0
+            updatedAt: new Date()
+          })
+          .where(eq(projects.id, projectId));
+
+        console.log(`🔄 User ${userId} unstarred project ${projectId}`);
+      }
     } catch (error) {
       console.error('Error unstarring project:', error);
       throw error;
@@ -1254,6 +1316,222 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error uploading project file:', error);
       throw error;
+    }
+  }
+
+  // GitHub-like collaboration operations
+  async requestCollaboration(projectId: string, requesterId: string, message: string): Promise<CollaborationRequest> {
+    try {
+      const [request] = await db
+        .insert(collaborationRequests)
+        .values({
+          projectId,
+          requesterId,
+          message,
+          status: "PENDING"
+        })
+        .returning();
+      
+      console.log(`🤝 Collaboration request submitted for project ${projectId} by user ${requesterId}`);
+      return request;
+    } catch (error) {
+      console.error('Error creating collaboration request:', error);
+      throw error;
+    }
+  }
+
+  async getCollaborationRequests(projectId: string): Promise<(CollaborationRequest & { requester: User })[]> {
+    try {
+      const requests = await db
+        .select()
+        .from(collaborationRequests)
+        .innerJoin(users, eq(collaborationRequests.requesterId, users.id))
+        .where(eq(collaborationRequests.projectId, projectId))
+        .orderBy(desc(collaborationRequests.createdAt));
+
+      return requests.map(result => ({
+        ...result.collaboration_requests,
+        requester: result.users
+      }));
+    } catch (error) {
+      console.error('Error getting collaboration requests:', error);
+      return [];
+    }
+  }
+
+  async respondToCollaborationRequest(requestId: string, status: 'APPROVED' | 'REJECTED', reviewerId: string): Promise<CollaborationRequest | undefined> {
+    try {
+      const [updatedRequest] = await db
+        .update(collaborationRequests)
+        .set({
+          status,
+          respondedAt: new Date()
+        })
+        .where(eq(collaborationRequests.id, requestId))
+        .returning();
+
+      // If approved, add as collaborator
+      if (status === 'APPROVED' && updatedRequest) {
+        await this.addCollaborator(updatedRequest.projectId, updatedRequest.requesterId);
+        console.log(`✅ Collaboration request ${requestId} approved - user added as collaborator`);
+      } else {
+        console.log(`❌ Collaboration request ${requestId} rejected`);
+      }
+
+      return updatedRequest;
+    } catch (error) {
+      console.error('Error responding to collaboration request:', error);
+      return undefined;
+    }
+  }
+
+  async addCollaboratorByEmail(projectId: string, email: string, ownerId: string): Promise<void> {
+    try {
+      // Find user by email
+      const user = await this.getUserByEmail(email);
+      if (!user) {
+        throw new Error('User with this email not found');
+      }
+
+      // Check if already a collaborator
+      const existing = await db
+        .select()
+        .from(projectCollaborators)
+        .where(and(
+          eq(projectCollaborators.projectId, projectId),
+          eq(projectCollaborators.userId, user.id)
+        ))
+        .limit(1);
+
+      if (existing.length === 0) {
+        await this.addCollaborator(projectId, user.id);
+        console.log(`👥 User ${user.email} added as collaborator to project ${projectId}`);
+      }
+    } catch (error) {
+      console.error('Error adding collaborator by email:', error);
+      throw error;
+    }
+  }
+
+  // Repository file management
+  async createRepositoryItem(item: InsertProjectRepositoryItem): Promise<ProjectRepositoryItem> {
+    try {
+      const [newItem] = await db
+        .insert(projectRepository)
+        .values(item)
+        .returning();
+      
+      console.log(`📁 Repository item created: ${newItem.path}/${newItem.name}`);
+      return newItem;
+    } catch (error) {
+      console.error('Error creating repository item:', error);
+      throw error;
+    }
+  }
+
+  async updateRepositoryItem(id: string, updates: Partial<InsertProjectRepositoryItem>): Promise<ProjectRepositoryItem | undefined> {
+    try {
+      const [updated] = await db
+        .update(projectRepository)
+        .set({ ...updates, updatedAt: new Date() })
+        .where(eq(projectRepository.id, id))
+        .returning();
+      
+      console.log(`📝 Repository item updated: ${id}`);
+      return updated;
+    } catch (error) {
+      console.error('Error updating repository item:', error);
+      return undefined;
+    }
+  }
+
+  async deleteRepositoryItem(id: string): Promise<boolean> {
+    try {
+      const result = await db
+        .delete(projectRepository)
+        .where(eq(projectRepository.id, id));
+      
+      console.log(`🗑️ Repository item deleted: ${id}`);
+      return true;
+    } catch (error) {
+      console.error('Error deleting repository item:', error);
+      return false;
+    }
+  }
+
+  async getRepositoryStructure(projectId: string): Promise<ProjectRepositoryItem[]> {
+    try {
+      const items = await db
+        .select()
+        .from(projectRepository)
+        .where(eq(projectRepository.projectId, projectId))
+        .orderBy(projectRepository.path, projectRepository.name);
+
+      console.log(`📂 Retrieved ${items.length} repository items for project ${projectId}`);
+      return items;
+    } catch (error) {
+      console.error('Error getting repository structure:', error);
+      return [];
+    }
+  }
+
+  // Change request system for collaboration
+  async createChangeRequest(request: InsertProjectChangeRequest): Promise<ProjectChangeRequest> {
+    try {
+      const [newRequest] = await db
+        .insert(projectChangeRequests)
+        .values(request)
+        .returning();
+      
+      console.log(`🔄 Change request created: ${newRequest.title} for project ${newRequest.projectId}`);
+      return newRequest;
+    } catch (error) {
+      console.error('Error creating change request:', error);
+      throw error;
+    }
+  }
+
+  async getChangeRequests(projectId: string): Promise<(ProjectChangeRequest & { requester: User; reviewer?: User })[]> {
+    try {
+      const requests = await db
+        .select()
+        .from(projectChangeRequests)
+        .innerJoin(users, eq(projectChangeRequests.requesterId, users.id))
+        .leftJoin(
+          { reviewer: users },
+          eq(projectChangeRequests.reviewedBy, users.id)
+        )
+        .where(eq(projectChangeRequests.projectId, projectId))
+        .orderBy(desc(projectChangeRequests.createdAt));
+
+      return requests.map(result => ({
+        ...result.project_change_requests,
+        requester: result.users,
+        reviewer: result.reviewer || undefined
+      }));
+    } catch (error) {
+      console.error('Error getting change requests:', error);
+      return [];
+    }
+  }
+
+  async reviewChangeRequest(requestId: string, status: 'APPROVED' | 'REJECTED' | 'MERGED', reviewerId: string): Promise<ProjectChangeRequest | undefined> {
+    try {
+      const [updatedRequest] = await db
+        .update(projectChangeRequests)
+        .set({
+          status,
+          reviewedBy: reviewerId,
+          updatedAt: new Date()
+        })
+        .where(eq(projectChangeRequests.id, requestId))
+        .returning();
+
+      console.log(`📋 Change request ${requestId} ${status} by reviewer ${reviewerId}`);
+      return updatedRequest;
+    } catch (error) {
+      console.error('Error reviewing change request:', error);
+      return undefined;
     }
   }
 }
