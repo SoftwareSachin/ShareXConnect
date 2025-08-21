@@ -368,19 +368,19 @@ export default function ProjectDetail() {
               </div>
             )}
 
-            {/* Installation Instructions */}
-            {project.installationInstructions && (
-              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-                  <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                    Installation Instructions
-                  </h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                    Step-by-step setup and installation guide
-                  </p>
-                </div>
-                
-                <div className="p-6">
+            {/* Setup & Installation Instructions */}
+            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                  Setup & Installation Instructions
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                  Step-by-step guide to set up this project locally
+                </p>
+              </div>
+              
+              <div className="p-6">
+                {project.installationInstructions ? (
                   <div className="bg-slate-900 dark:bg-black rounded-lg overflow-hidden border border-slate-700">
                     <div className="flex items-center justify-between px-4 py-3 bg-slate-800 border-b border-slate-700">
                       <div className="flex items-center gap-3">
@@ -391,18 +391,52 @@ export default function ProjectDetail() {
                         </div>
                         <span className="text-sm font-mono text-slate-300">INSTALL.md</span>
                       </div>
-                      <div className="text-xs text-slate-400">guide</div>
+                      <div className="text-xs text-slate-400">setup</div>
                     </div>
                     
                     <div className="p-6 max-h-96 overflow-y-auto">
-                      <pre className="text-sm font-mono text-yellow-400 leading-relaxed whitespace-pre-wrap">
+                      <pre className="text-sm font-mono text-green-400 leading-relaxed whitespace-pre-wrap">
                         <code>{project.installationInstructions}</code>
                       </pre>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="text-center py-8 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg">
+                    <p className="text-slate-500 dark:text-slate-400">No installation instructions provided</p>
+                    <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">Setup instructions can be added when creating or editing the project</p>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+
+            {/* Project Methodology & Approach */}
+            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                  Project Methodology & Approach
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                  Development methodology, design patterns, and technical approach
+                </p>
+              </div>
+              
+              <div className="p-6">
+                {project.contributingGuidelines ? (
+                  <div className="prose prose-slate dark:prose-invert max-w-none">
+                    <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+                      <pre className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap font-mono">
+                        {project.contributingGuidelines}
+                      </pre>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg">
+                    <p className="text-slate-500 dark:text-slate-400">No methodology information provided</p>
+                    <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">Project approach and methodology can be described in the contributing guidelines</p>
+                  </div>
+                )}
+              </div>
+            </div>
 
             {/* API Documentation */}
             {project.apiDocumentation && (
@@ -476,19 +510,19 @@ export default function ProjectDetail() {
               </div>
             )}
 
-            {/* Project Files Section - Only show if files exist */}
-            {projectFiles && projectFiles.length > 0 && (
-              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-                  <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                    Uploaded Files
-                  </h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                    Files uploaded by the project creator
-                  </p>
-                </div>
-                
-                <div className="p-6">
+            {/* Project Files Section */}
+            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                  Project Files
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                  Files uploaded by the project creator
+                </p>
+              </div>
+              
+              <div className="p-6">
+                {projectFiles && projectFiles.length > 0 ? (
                   <div className="space-y-3">
                     {projectFiles.map((file) => (
                       <div key={file.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
@@ -511,9 +545,188 @@ export default function ProjectDetail() {
                       </div>
                     ))}
                   </div>
+                ) : (
+                  <div className="text-center py-8 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg">
+                    <p className="text-slate-500 dark:text-slate-400">No files uploaded yet</p>
+                    <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">Files can be uploaded when creating or editing the project</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Source Code Repository Section */}
+            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                  Source Code Repository
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                  Zip files, folder structure, and source code files
+                </p>
+              </div>
+              
+              <div className="p-6">
+                {projectFiles && projectFiles.filter(f => f.isArchive || f.fileType.includes('text') || f.fileType.includes('javascript') || f.fileType.includes('python')).length > 0 ? (
+                  <div className="space-y-3">
+                    {projectFiles.filter(f => f.isArchive || f.fileType.includes('text') || f.fileType.includes('javascript') || f.fileType.includes('python')).map((file) => (
+                      <div key={file.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-green-600 rounded flex items-center justify-center">
+                            <span className="text-white text-xs font-mono">
+                              {file.isArchive ? 'ZIP' : 'CODE'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-sm font-medium text-slate-900 dark:text-slate-100">{file.fileName}</span>
+                            <p className="text-xs text-slate-600 dark:text-slate-400">
+                              {file.isArchive ? 'Archive file' : 'Source code'} • {(file.fileSize / 1024).toFixed(1)} KB
+                            </p>
+                          </div>
+                        </div>
+                        <button className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+                          Download
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg">
+                    <p className="text-slate-500 dark:text-slate-400">No source code uploaded yet</p>
+                    <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">Upload zip files or source code when creating the project</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Documentation & Reports Section */}
+            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                  Documentation & Reports
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                  Project documentation, reports, and written materials
+                </p>
+              </div>
+              
+              <div className="p-6">
+                {projectFiles && projectFiles.filter(f => f.fileType.includes('pdf') || f.fileType.includes('doc') || f.fileType.includes('text')).length > 0 ? (
+                  <div className="space-y-3">
+                    {projectFiles.filter(f => f.fileType.includes('pdf') || f.fileType.includes('doc') || f.fileType.includes('text')).map((file) => (
+                      <div key={file.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-purple-600 rounded flex items-center justify-center">
+                            <span className="text-white text-xs font-mono">DOC</span>
+                          </div>
+                          <div>
+                            <span className="text-sm font-medium text-slate-900 dark:text-slate-100">{file.fileName}</span>
+                            <p className="text-xs text-slate-600 dark:text-slate-400">
+                              Documentation • {(file.fileSize / 1024).toFixed(1)} KB
+                            </p>
+                          </div>
+                        </div>
+                        <button className="px-3 py-1 text-sm bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors">
+                          View
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg">
+                    <p className="text-slate-500 dark:text-slate-400">No documentation uploaded yet</p>
+                    <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">Upload PDF, Word docs, or text files when creating the project</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Images & Assets Section */}
+            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                  Images & Assets
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                  Screenshots, diagrams, logos, and visual assets
+                </p>
+              </div>
+              
+              <div className="p-6">
+                {projectFiles && projectFiles.filter(f => f.fileType.includes('image')).length > 0 ? (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {projectFiles.filter(f => f.fileType.includes('image')).map((file) => (
+                      <div key={file.id} className="relative group">
+                        <div className="aspect-square bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center">
+                          <div className="w-8 h-8 bg-orange-600 rounded flex items-center justify-center">
+                            <span className="text-white text-xs font-mono">IMG</span>
+                          </div>
+                        </div>
+                        <div className="mt-2">
+                          <span className="text-sm font-medium text-slate-900 dark:text-slate-100 block truncate">{file.fileName}</span>
+                          <p className="text-xs text-slate-600 dark:text-slate-400">
+                            {(file.fileSize / 1024).toFixed(1)} KB
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg">
+                    <p className="text-slate-500 dark:text-slate-400">No images uploaded yet</p>
+                    <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">Upload screenshots, diagrams, or other visual assets</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Department, Course/Subject & Project Details Section */}
+            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                  Department, Course/Subject & Project Details
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                  Academic context and project classification
+                </p>
+              </div>
+              
+              <div className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Institution</dt>
+                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">{project.owner.institution}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Project Category</dt>
+                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">{project.category}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Project Status</dt>
+                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">
+                        <Badge className={getStatusColor(project.status)}>
+                          {project.status.replace("_", " ")}
+                        </Badge>
+                      </dd>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Author Role</dt>
+                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1 capitalize">{project.owner.role.toLowerCase()}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Visibility</dt>
+                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">{project.visibility}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">License</dt>
+                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">{project.licenseType || 'MIT'}</dd>
+                    </div>
+                  </div>
                 </div>
               </div>
-            )}
+            </div>
 
             {/* Comprehensive Project Info */}
             <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
