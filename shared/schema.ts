@@ -206,10 +206,9 @@ export type InsertProjectFile = typeof projectFiles.$inferInsert;
 
 // Authentication schemas with robust validation for production use
 export const loginSchema = z.object({
-  email: z.string()
-    .email("Please enter a valid email address")
-    .min(1, "Email is required")
-    .max(320, "Email address is too long"),
+  usernameOrEmail: z.string()
+    .min(1, "Username or email is required")
+    .max(320, "Username or email is too long"),
   password: z.string()
     .min(1, "Password is required")
     .max(128, "Password is too long"),
