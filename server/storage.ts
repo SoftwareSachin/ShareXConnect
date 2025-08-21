@@ -91,7 +91,7 @@ export interface IStorage {
   getStarredProjects(userId: string): Promise<ProjectWithDetails[]>;
 
   // Comment operations
-  getComments(projectId: string): Promise<(ProjectComment & { user: User })[]>;
+  getComments(projectId: string, limit?: number, offset?: number): Promise<(ProjectComment & { author: User })[]>;
   createComment(comment: InsertProjectComment): Promise<ProjectComment>;
 
   // Faculty assignment operations
@@ -755,21 +755,28 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Comment operations
-  async getComments(projectId: string): Promise<(Comment & { user: User })[]> {
+  async getComments(projectId: string, limit: number = 50, offset: number = 0): Promise<(Comment & { author: User })[]> {
     try {
+      console.log(`📥 Fetching comments for project ${projectId} (limit: ${limit}, offset: ${offset})`);
+      
       const results = await db
         .select()
         .from(projectComments)
         .innerJoin(users, eq(projectComments.authorId, users.id))
         .where(eq(projectComments.projectId, projectId))
-        .orderBy(desc(projectComments.createdAt));
+        .orderBy(desc(projectComments.createdAt))
+        .limit(limit)
+        .offset(offset);
       
-      return results.map(result => ({
+      const comments = results.map(result => ({
         ...result.project_comments,
-        user: result.users
+        author: result.users
       }));
+      
+      console.log(`✅ Retrieved ${comments.length} comments for project ${projectId}`);
+      return comments;
     } catch (error) {
-      console.error('Error getting comments:', error);
+      console.error('❌ Error getting comments:', error);
       return [];
     }
   }

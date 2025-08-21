@@ -438,12 +438,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
-  // Comments
+  // Comments with optional pagination
   app.get("/api/projects/:id/comments", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
-      const comments = await storage.getComments(req.params.id);
-      res.json(comments);
+      const limit = parseInt(req.query.limit as string) || 50;
+      const offset = parseInt(req.query.offset as string) || 0;
+      
+      // Ensure reasonable limits for performance
+      const safeLimit = Math.min(Math.max(limit, 1), 100);
+      const safeOffset = Math.max(offset, 0);
+      
+      const comments = await storage.getComments(req.params.id, safeLimit, safeOffset);
+      
+      res.json({
+        comments,
+        pagination: {
+          limit: safeLimit,
+          offset: safeOffset,
+          hasMore: comments.length === safeLimit
+        }
+      });
     } catch (error) {
+      console.error('Error fetching comments:', error);
       res.status(500).json({ message: "Internal server error" });
     }
   }));

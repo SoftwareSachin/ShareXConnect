@@ -341,10 +341,16 @@ export default function ProjectDetail() {
   });
 
   // Social features queries and mutations
-  const { data: comments } = useQuery<(ProjectComment & { author: User })[]>({
+  const { data: commentsResponse } = useQuery<{
+    comments: (ProjectComment & { author: User })[];
+    pagination: { limit: number; offset: number; hasMore: boolean };
+  }>({
     queryKey: [`/api/projects/${params.id}/comments`],
     queryFn: () => apiGet(`/api/projects/${params.id}/comments`)
   });
+
+  // Extract comments for backward compatibility
+  const comments = commentsResponse?.comments || [];
 
   const { data: collaborators } = useQuery<User[]>({
     queryKey: [`/api/projects/${params.id}/collaborators`],
@@ -1693,30 +1699,38 @@ export default function ProjectDetail() {
 
               {comments && comments.length > 0 ? (
                 <div className="space-y-4">
-                  {comments.map((comment) => (
-                    <div key={comment.id} className="flex gap-3">
-                      <Avatar className="w-8 h-8">
-                        <AvatarFallback className="bg-slate-600 text-white text-sm">
-                          {getInitials(comment.author.firstName || '', comment.author.lastName || '')}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                              {comment.author.firstName} {comment.author.lastName}
-                            </span>
-                            <span className="text-xs text-slate-500">
-                              {new Date(comment.createdAt).toLocaleDateString()}
-                            </span>
+                  {comments.map((comment) => {
+                    // Robust null/undefined checking for author data
+                    const author = comment.author || {};
+                    const firstName = author.firstName || 'Unknown';
+                    const lastName = author.lastName || 'User';
+                    const initials = getInitials(firstName, lastName);
+                    
+                    return (
+                      <div key={comment.id} className="flex gap-3">
+                        <Avatar className="w-8 h-8">
+                          <AvatarFallback className="bg-slate-600 text-white text-sm">
+                            {initials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                                {firstName} {lastName}
+                              </span>
+                              <span className="text-xs text-slate-500">
+                                {comment.createdAt ? new Date(comment.createdAt).toLocaleDateString() : 'Unknown date'}
+                              </span>
+                            </div>
+                            <p className="text-sm text-slate-700 dark:text-slate-300">
+                              {comment.content || 'No content'}
+                            </p>
                           </div>
-                          <p className="text-sm text-slate-700 dark:text-slate-300">
-                            {comment.content}
-                          </p>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="text-center py-8">
