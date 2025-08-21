@@ -462,236 +462,6 @@ export default function ProjectDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-3 space-y-8">
-            {/* Technology Stack */}
-            {project.techStack && project.techStack.length > 0 && (
-              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-                  <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                    Technology Stack
-                  </h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                    Tools and frameworks used in this project
-                  </p>
-                </div>
-                
-                <div className="p-6">
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                    {project.techStack.map((tech: string, index: number) => (
-                      <div key={tech} className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
-                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                          {tech}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Project Links */}
-            {(project.githubUrl || project.demoUrl) && (
-              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-                  <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                    Project Links
-                  </h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                    External resources and live demonstrations
-                  </p>
-                </div>
-                
-                <div className="p-6">
-                  <div className="space-y-4">
-                    {project.githubUrl && (
-                      <a 
-                        href={project.githubUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-colors"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-semibold text-slate-900 dark:text-slate-100">
-                              View Repository
-                            </h4>
-                            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                              Browse source code and documentation
-                            </p>
-                          </div>
-                          <div className="text-sm text-slate-500 dark:text-slate-400">
-                            GitHub
-                          </div>
-                        </div>
-                      </a>
-                    )}
-                    {project.demoUrl && (
-                      <a 
-                        href={project.demoUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-colors"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-semibold text-slate-900 dark:text-slate-100">
-                              Live Demo
-                            </h4>
-                            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                              Try the application in your browser
-                            </p>
-                          </div>
-                          <div className="text-sm text-slate-500 dark:text-slate-400">
-                            Demo
-                          </div>
-                        </div>
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Repository Structure */}
-            {project.repositoryStructure && (
-              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-                  <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                    Folder Structure
-                  </h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                    Project directory structure and file organization
-                  </p>
-                </div>
-                
-                <div className="p-6">
-                  <div className="bg-slate-900 dark:bg-black rounded-lg overflow-hidden border border-slate-700">
-                    <div className="flex items-center justify-between px-4 py-3 bg-slate-800 border-b border-slate-700">
-                      <div className="flex items-center gap-3">
-                        <div className="flex gap-2">
-                          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                          <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                        </div>
-                        <span className="text-sm font-mono text-slate-300">file-tree</span>
-                      </div>
-                      <div className="text-xs text-slate-400">directory</div>
-                    </div>
-                    
-                    <div className="p-6 max-h-96 overflow-y-auto">
-                      <pre className="text-sm font-mono text-blue-400 leading-relaxed whitespace-pre-wrap">
-                        <code>{project.repositoryStructure}</code>
-                      </pre>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Documentation & README */}
-            {project.readmeContent && (
-              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-                  <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                    Documentation & README
-                  </h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                    Project guide, setup instructions, and detailed documentation
-                  </p>
-                </div>
-                
-                <div className="p-6">
-                  <div className="bg-slate-900 dark:bg-black rounded-lg overflow-hidden border border-slate-700">
-                    <div className="flex items-center justify-between px-4 py-3 bg-slate-800 border-b border-slate-700">
-                      <div className="flex items-center gap-3">
-                        <div className="flex gap-2">
-                          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                          <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                        </div>
-                        <span className="text-sm font-mono text-slate-300">README.md</span>
-                      </div>
-                      <div className="text-xs text-slate-400">markdown</div>
-                    </div>
-                    
-                    <div className="p-6 max-h-96 overflow-y-auto">
-                      <pre className="text-sm font-mono text-green-400 leading-relaxed whitespace-pre-wrap">
-                        <code>{project.readmeContent}</code>
-                      </pre>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Setup & Installation Instructions */}
-            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-                <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                  Setup & Installation Instructions
-                </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                  Step-by-step guide to set up this project locally
-                </p>
-              </div>
-              
-              <div className="p-6">
-                {project.installationInstructions ? (
-                  <div className="bg-slate-900 dark:bg-black rounded-lg overflow-hidden border border-slate-700">
-                    <div className="flex items-center justify-between px-4 py-3 bg-slate-800 border-b border-slate-700">
-                      <div className="flex items-center gap-3">
-                        <div className="flex gap-2">
-                          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                          <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                        </div>
-                        <span className="text-sm font-mono text-slate-300">INSTALL.md</span>
-                      </div>
-                      <div className="text-xs text-slate-400">setup</div>
-                    </div>
-                    
-                    <div className="p-6 max-h-96 overflow-y-auto">
-                      <pre className="text-sm font-mono text-green-400 leading-relaxed whitespace-pre-wrap">
-                        <code>{project.installationInstructions}</code>
-                      </pre>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-8 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg">
-                    <p className="text-slate-500 dark:text-slate-400">No installation instructions provided</p>
-                    <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">Setup instructions can be added when creating or editing the project</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Project Methodology & Approach */}
-            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-                <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                  Project Methodology & Approach
-                </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                  Development methodology, design patterns, and technical approach
-                </p>
-              </div>
-              
-              <div className="p-6">
-                {project.contributingGuidelines ? (
-                  <div className="prose prose-slate dark:prose-invert max-w-none">
-                    <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-                      <pre className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap font-mono">
-                        {project.contributingGuidelines}
-                      </pre>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-8 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg">
-                    <p className="text-slate-500 dark:text-slate-400">No methodology information provided</p>
-                    <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">Project approach and methodology can be described in the contributing guidelines</p>
-                  </div>
-                )}
-              </div>
-            </div>
 
             {/* API Documentation */}
             {project.apiDocumentation && (
@@ -965,69 +735,19 @@ export default function ProjectDetail() {
             <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
               <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
                 <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                  Project Information
+                  Additional Details
                 </h3>
                 <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                  Complete project details and metadata
+                  License information and project statistics
                 </p>
               </div>
               
               <div className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
-                    <div>
-                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Project Title</dt>
-                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1 font-medium">{project.title}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Category</dt>
-                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">{project.category}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Status</dt>
-                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">
-                        <Badge className={getStatusColor(project.status)}>
-                          {project.status.replace("_", " ")}
-                        </Badge>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Visibility</dt>
-                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">{project.visibility}</dd>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <div>
-                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Institution</dt>
-                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">{project.owner.institution}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Project Owner</dt>
-                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">
-                        {project.owner.firstName} {project.owner.lastName}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Owner Role</dt>
-                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1 capitalize">{project.owner.role.toLowerCase()}</dd>
-                    </div>
                     <div>
                       <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">License Type</dt>
                       <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">{project.licenseType || 'MIT'}</dd>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <div>
-                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Created Date</dt>
-                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">
-                        {new Date(project.createdAt).toLocaleDateString('en-US', { 
-                          year: 'numeric', 
-                          month: 'long', 
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </dd>
                     </div>
                     <div>
                       <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Last Updated</dt>
@@ -1042,12 +762,14 @@ export default function ProjectDetail() {
                       </dd>
                     </div>
                   </div>
-                </div>
-                
-                {/* Description */}
-                <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
-                  <dt className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-3">Description</dt>
-                  <dd className="text-sm text-slate-900 dark:text-slate-100 leading-relaxed">{project.description}</dd>
+                  <div className="space-y-4">
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400">Files Count</dt>
+                      <dd className="text-sm text-slate-900 dark:text-slate-100 mt-1">
+                        {projectFiles?.length || 0} files uploaded
+                      </dd>
+                    </div>
+                  </div>
                 </div>
                 
                 {/* Technology Stack */}
