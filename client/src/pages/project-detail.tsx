@@ -476,6 +476,45 @@ export default function ProjectDetail() {
               </div>
             )}
 
+            {/* Project Files Section - Only show if files exist */}
+            {projectFiles && projectFiles.length > 0 && (
+              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                  <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                    Uploaded Files
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                    Files uploaded by the project creator
+                  </p>
+                </div>
+                
+                <div className="p-6">
+                  <div className="space-y-3">
+                    {projectFiles.map((file) => (
+                      <div key={file.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
+                            <span className="text-white text-xs font-mono">
+                              {file.isArchive ? 'ZIP' : file.fileType.split('/')[1]?.toUpperCase().slice(0, 3) || 'FILE'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-sm font-medium text-slate-900 dark:text-slate-100">{file.fileName}</span>
+                            <p className="text-xs text-slate-600 dark:text-slate-400">
+                              {(file.fileSize / 1024).toFixed(1)} KB • Uploaded {new Date(file.uploadedAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                        <button className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                          View
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Comprehensive Project Info */}
             <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
               <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">

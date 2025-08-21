@@ -295,7 +295,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      const project = await storage.getProjectWithDetails(req.params.id, userId);
+      const project = await storage.getProjectWithDetails(req.params.id, userId || undefined);
       if (!project) {
         return res.status(404).json({ message: "Project not found" });
       }
@@ -461,7 +461,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   // Faculty assignment routes
-  app.post("/api/projects/:id/assign", authenticateToken, async (req: AuthRequest, res) => {
+  app.post("/api/projects/:id/assign", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
       const { facultyId } = req.body;
       
@@ -476,9 +476,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
     }
-  });
+  }));
 
-  app.get("/api/faculty/assignments", authenticateToken, async (req: AuthRequest, res) => {
+  app.get("/api/faculty/assignments", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
       if (req.user!.role !== "FACULTY") {
         return res.status(403).json({ message: "Access denied" });
@@ -489,9 +489,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
     }
-  });
+  }));
 
-  app.post("/api/assignments/:id/review", authenticateToken, async (req: AuthRequest, res) => {
+  app.post("/api/assignments/:id/review", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
       if (req.user!.role !== "FACULTY") {
         return res.status(403).json({ message: "Access denied" });
@@ -511,10 +511,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
     }
-  });
+  }));
 
   // Project collaborators
-  app.post("/api/projects/:id/collaborators", authenticateToken, async (req: AuthRequest, res) => {
+  app.post("/api/projects/:id/collaborators", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
       const { userId } = req.body;
       
@@ -533,9 +533,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
     }
-  });
+  }));
 
-  app.delete("/api/projects/:id/collaborators/:userId", authenticateToken, async (req: AuthRequest, res) => {
+  app.delete("/api/projects/:id/collaborators/:userId", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
       const project = await storage.getProject(req.params.id);
       if (!project) {
@@ -552,13 +552,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
     }
-  });
+  }));
 
   // Get project files
-  app.get("/api/projects/:id/files", authenticateToken, async (req: AuthRequest, res) => {
+  app.get("/api/projects/:id/files", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
+      console.log('🔍 Fetching files for project:', req.params.id);
       const project = await storage.getProject(req.params.id);
       if (!project) {
+        console.log('❌ Project not found:', req.params.id);
         return res.status(404).json({ message: "Project not found" });
       }
 
@@ -567,20 +569,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const collaborators = await storage.getProjectCollaborators(req.params.id);
         const isCollaborator = collaborators.some(c => c.id === req.user!.id);
         if (!isCollaborator) {
+          console.log('❌ Access denied for user:', req.user!.id, 'project:', req.params.id);
           return res.status(403).json({ message: "Access denied" });
         }
       }
 
       const files = await storage.getProjectFiles(req.params.id);
+      console.log('📁 Files found for project', req.params.id, ':', files.length, 'files');
+      console.log('📄 File details:', files.map(f => ({ id: f.id, fileName: f.fileName, fileSize: f.fileSize })));
       res.json(files);
     } catch (error) {
-      console.error('Error fetching project files:', error);
+      console.error('❌ Error fetching project files:', error);
       res.status(500).json({ message: "Internal server error" });
     }
-  });
+  }));
 
   // File upload
-  app.post("/api/projects/:id/files", authenticateToken, upload.single("file"), async (req: AuthRequest, res) => {
+  app.post("/api/projects/:id/files", authenticateToken, upload.single("file"), withAuth(async (req: AuthRequest, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
@@ -622,10 +627,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Error uploading file:', error);
       res.status(500).json({ message: "Internal server error" });
     }
-  });
+  }));
 
   // Get users (for collaboration invites)
-  app.get("/api/users/search", authenticateToken, async (req: AuthRequest, res) => {
+  app.get("/api/users/search", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
       const { q } = req.query;
       if (!q || typeof q !== "string" || q.length < 2) {
@@ -654,7 +659,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
     }
-  });
+  }));
 
   // Enhanced admin routes with comprehensive middleware and error handling
   app.get("/api/admin/faculty", 
