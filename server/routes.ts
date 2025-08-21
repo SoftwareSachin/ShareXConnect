@@ -719,6 +719,116 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Social Features Routes
+
+  // Comments endpoints
+  app.get("/api/projects/:id/comments", async (req, res) => {
+    try {
+      const comments = await storage.getComments(req.params.id);
+      res.json(comments);
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post("/api/projects/:id/comments", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      const { content } = insertCommentSchema.parse(req.body);
+      const comment = await storage.createComment({
+        projectId: req.params.id,
+        authorId: req.user.id,
+        content
+      });
+      res.status(201).json(comment);
+    } catch (error) {
+      console.error('Error creating comment:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid input", errors: error.errors });
+      }
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }));
+
+  // Collaboration endpoints
+  app.post("/api/projects/:id/collaborators", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      const { userId } = req.body;
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
+
+      // Check if user is project owner
+      const project = await storage.getProject(req.params.id);
+      if (!project || project.ownerId !== req.user.id) {
+        return res.status(403).json({ message: "Only project owner can add collaborators" });
+      }
+
+      await storage.addCollaborator(req.params.id, userId);
+      res.status(201).json({ message: "Collaborator added successfully" });
+    } catch (error) {
+      console.error('Error adding collaborator:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }));
+
+  app.delete("/api/projects/:id/collaborators/:userId", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      // Check if user is project owner
+      const project = await storage.getProject(req.params.id);
+      if (!project || project.ownerId !== req.user.id) {
+        return res.status(403).json({ message: "Only project owner can remove collaborators" });
+      }
+
+      await storage.removeCollaborator(req.params.id, req.params.userId);
+      res.json({ message: "Collaborator removed successfully" });
+    } catch (error) {
+      console.error('Error removing collaborator:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }));
+
+  app.get("/api/projects/:id/collaborators", async (req, res) => {
+    try {
+      const collaborators = await storage.getProjectCollaborators(req.params.id);
+      res.json(collaborators);
+    } catch (error) {
+      console.error('Error fetching collaborators:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Star/Like endpoints
+  app.post("/api/projects/:id/star", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      await storage.starProject(req.params.id, req.user.id);
+      res.json({ message: "Project starred successfully" });
+    } catch (error) {
+      console.error('Error starring project:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }));
+
+  app.delete("/api/projects/:id/star", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      await storage.unstarProject(req.params.id, req.user.id);
+      res.json({ message: "Project unstarred successfully" });
+    } catch (error) {
+      console.error('Error unstarring project:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }));
+
+  app.get("/api/starred-projects", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      const starredProjects = await storage.getStarredProjects(req.user.id);
+      res.json(starredProjects);
+    } catch (error) {
+      console.error('Error fetching starred projects:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }));
+
   // Get users (for collaboration invites)
   app.get("/api/users/search", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {

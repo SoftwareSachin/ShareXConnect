@@ -1,20 +1,25 @@
 import { useParams, useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 import { apiGet, apiRequest } from "@/lib/api";
 import { useAuthStore } from "@/store/auth-store";
-import type { ProjectWithDetails } from "@shared/schema";
+import type { ProjectWithDetails, User, ProjectComment } from "@shared/schema";
 import { 
   FileCode, 
   Download, 
   Upload, 
   Calendar, 
-  User, 
+  User as UserIcon, 
   Building, 
   BookOpen, 
   Eye, 
@@ -38,7 +43,10 @@ import {
   Globe,
   Github,
   Play,
-  Volume2
+  Volume2,
+  Users,
+  Send,
+  Plus
 } from 'lucide-react';
 
 interface ProjectDetailParams {
@@ -177,6 +185,10 @@ function getFilesInFolder(folderName: string, files: ProjectFile[]): ProjectFile
   );
 }
 
+function getInitials(firstName: string, lastName: string): string {
+  return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+}
+
 // Move these functions inside the component to access state setters
 export default function ProjectDetail() {
   const params = useParams<ProjectDetailParams>();
@@ -189,8 +201,16 @@ export default function ProjectDetail() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   
+  // Social features state
+  const [newComment, setNewComment] = useState('');
+  const [showCollaborateDialog, setShowCollaborateDialog] = useState(false);
+  const [collaboratorEmail, setCollaboratorEmail] = useState('');
+  const [searchResults, setSearchResults] = useState<User[]>([]);
+  
   // Get current user from auth store (must be called before any conditional returns)
   const { user } = useAuthStore();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
 
   async function handleFileClick(file: ProjectFile): Promise<void> {
@@ -319,6 +339,94 @@ export default function ProjectDetail() {
       }
     }
   });
+
+  // Social features queries and mutations
+  const { data: comments } = useQuery<(ProjectComment & { author: User })[]>({
+    queryKey: [`/api/projects/${params.id}/comments`],
+    queryFn: () => apiGet(`/api/projects/${params.id}/comments`)
+  });
+
+  const { data: collaborators } = useQuery<User[]>({
+    queryKey: [`/api/projects/${params.id}/collaborators`],
+    queryFn: () => apiGet(`/api/projects/${params.id}/collaborators`)
+  });
+
+  const addCommentMutation = useMutation({
+    mutationFn: async (content: string) => {
+      return apiRequest('POST', `/api/projects/${params.id}/comments`, { content });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/projects/${params.id}/comments`] });
+      setNewComment('');
+      toast({ title: "Success", description: "Comment added successfully" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to add comment", variant: "destructive" });
+    }
+  });
+
+  const starMutation = useMutation({
+    mutationFn: async () => {
+      if (project?.isStarred) {
+        return apiRequest('DELETE', `/api/projects/${params.id}/star`);
+      } else {
+        return apiRequest('POST', `/api/projects/${params.id}/star`);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/projects/${params.id}`] });
+      toast({ 
+        title: "Success", 
+        description: project?.isStarred ? "Project unstarred" : "Project starred" 
+      });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to update star", variant: "destructive" });
+    }
+  });
+
+  const addCollaboratorMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      return apiRequest('POST', `/api/projects/${params.id}/collaborators`, { userId });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/projects/${params.id}/collaborators`] });
+      setShowCollaborateDialog(false);
+      setCollaboratorEmail('');
+      setSearchResults([]);
+      toast({ title: "Success", description: "Collaborator added successfully" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to add collaborator", variant: "destructive" });
+    }
+  });
+
+  const removeCollaboratorMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      return apiRequest('DELETE', `/api/projects/${params.id}/collaborators/${userId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/projects/${params.id}/collaborators`] });
+      toast({ title: "Success", description: "Collaborator removed successfully" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to remove collaborator", variant: "destructive" });
+    }
+  });
+
+  // Search users for collaboration
+  const searchUsers = async (query: string) => {
+    if (query.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    try {
+      const results = await apiGet<User[]>(`/api/users/search?q=${encodeURIComponent(query)}`);
+      setSearchResults(results);
+    } catch (error) {
+      console.error('Error searching users:', error);
+    }
+  };
 
   const { data: projectFiles } = useQuery<ProjectFile[]>({
     queryKey: [`/api/projects/${params.id}/files`],
@@ -1439,24 +1547,51 @@ export default function ProjectDetail() {
               </CardContent>
             </Card>
 
-            {/* Quick Actions */}
-            <Card className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+            {/* Social Actions */}
+            <Card className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 mb-6">
               <CardHeader className="pb-4">
                 <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100">
-                  Quick Actions
+                  Social Actions
                 </h3>
               </CardHeader>
               <CardContent className="space-y-3">
-                <button className="w-full p-3 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left">
-                  <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Star this project</span>
-                </button>
+                {user && (
+                  <>
+                    <button 
+                      onClick={() => starMutation.mutate()}
+                      disabled={starMutation.isPending}
+                      className="w-full p-3 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-yellow-300 dark:hover:border-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 transition-colors text-left group"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Star className={`w-4 h-4 ${project.isStarred ? 'text-yellow-500 fill-yellow-500' : 'text-slate-500'} group-hover:text-yellow-600`} />
+                        <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                          {project.isStarred ? 'Unstar project' : 'Star project'}
+                        </span>
+                        {project.starCount > 0 && (
+                          <span className="ml-auto text-xs text-slate-500">{project.starCount}</span>
+                        )}
+                      </div>
+                    </button>
+                    
+                    {user.id === project.ownerId && (
+                      <button 
+                        onClick={() => setShowCollaborateDialog(true)}
+                        className="w-full p-3 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors text-left group"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Users className="w-4 h-4 text-blue-500 group-hover:text-blue-600" />
+                          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Add collaborator</span>
+                        </div>
+                      </button>
+                    )}
+                  </>
+                )}
                 
                 <button className="w-full p-3 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left">
-                  <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Download ZIP</span>
-                </button>
-                
-                <button className="w-full p-3 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left">
-                  <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Add comment</span>
+                  <div className="flex items-center gap-2">
+                    <Download className="w-4 h-4 text-slate-500" />
+                    <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Download ZIP</span>
+                  </div>
                 </button>
                 
                 {/* Delete button - only show if user is the owner */}
@@ -1473,7 +1608,125 @@ export default function ProjectDetail() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Collaborators */}
+            {collaborators && collaborators.length > 0 && (
+              <Card className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 mb-6">
+                <CardHeader className="pb-4">
+                  <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100">
+                    Collaborators ({collaborators.length})
+                  </h3>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {collaborators.map((collaborator) => (
+                    <div key={collaborator.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="w-8 h-8">
+                          <AvatarFallback className="bg-blue-600 text-white text-sm">
+                            {getInitials(collaborator.firstName || '', collaborator.lastName || '')}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                            {collaborator.firstName} {collaborator.lastName}
+                          </p>
+                          <p className="text-xs text-slate-500">{collaborator.role}</p>
+                        </div>
+                      </div>
+                      {user && user.id === project.ownerId && (
+                        <button
+                          onClick={() => removeCollaboratorMutation.mutate(collaborator.id)}
+                          disabled={removeCollaboratorMutation.isPending}
+                          className="text-xs text-red-500 hover:text-red-700 p-1"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
           </div>
+        </div>
+
+        {/* Comments Section */}
+        <div className="mt-8">
+          <Card className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+            <CardHeader className="pb-4">
+              <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <MessageCircle className="w-5 h-5" />
+                Comments ({comments?.length || 0})
+              </h3>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {user && (
+                <div className="border-b border-slate-200 dark:border-slate-800 pb-4">
+                  <div className="flex gap-3">
+                    <Avatar className="w-8 h-8">
+                      <AvatarFallback className="bg-blue-600 text-white text-sm">
+                        {getInitials(user.firstName || '', user.lastName || '')}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <Textarea
+                        placeholder="Add a comment..."
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        className="min-h-[80px] resize-none"
+                      />
+                      <div className="flex justify-end mt-2">
+                        <Button
+                          onClick={() => addCommentMutation.mutate(newComment)}
+                          disabled={!newComment.trim() || addCommentMutation.isPending}
+                          size="sm"
+                          className="bg-blue-600 hover:bg-blue-700"
+                        >
+                          <Send className="w-4 h-4 mr-1" />
+                          Comment
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {comments && comments.length > 0 ? (
+                <div className="space-y-4">
+                  {comments.map((comment) => (
+                    <div key={comment.id} className="flex gap-3">
+                      <Avatar className="w-8 h-8">
+                        <AvatarFallback className="bg-slate-600 text-white text-sm">
+                          {getInitials(comment.author.firstName || '', comment.author.lastName || '')}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                              {comment.author.firstName} {comment.author.lastName}
+                            </span>
+                            <span className="text-xs text-slate-500">
+                              {new Date(comment.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <p className="text-sm text-slate-700 dark:text-slate-300">
+                            {comment.content}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <MessageCircle className="w-12 h-12 text-slate-400 mx-auto mb-3" />
+                  <p className="text-slate-500 dark:text-slate-400">No comments yet</p>
+                  <p className="text-sm text-slate-400 dark:text-slate-500">Be the first to share your thoughts!</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
       
@@ -1631,6 +1884,85 @@ export default function ProjectDetail() {
               className="flex-1 bg-red-600 hover:bg-red-700 text-white"
             >
               {isDeleting ? 'Deleting...' : 'Delete Project'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Collaboration Dialog */}
+      <Dialog open={showCollaborateDialog} onOpenChange={setShowCollaborateDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Users className="w-5 h-5 text-blue-500" />
+              Add Collaborator
+            </DialogTitle>
+            <DialogDescription>
+              Search for users to add as collaborators to your project.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Input
+                placeholder="Search by name or email..."
+                value={collaboratorEmail}
+                onChange={(e) => {
+                  setCollaboratorEmail(e.target.value);
+                  searchUsers(e.target.value);
+                }}
+                className="w-full"
+              />
+            </div>
+            
+            {searchResults.length > 0 && (
+              <div className="max-h-48 overflow-y-auto border rounded-lg">
+                {searchResults.map((user) => (
+                  <div
+                    key={user.id}
+                    className="flex items-center justify-between p-3 hover:bg-slate-50 dark:hover:bg-slate-800 border-b last:border-b-0"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar className="w-8 h-8">
+                        <AvatarFallback className="bg-slate-600 text-white text-sm">
+                          {getInitials(user.firstName || '', user.lastName || '')}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                          {user.firstName} {user.lastName}
+                        </p>
+                        <p className="text-xs text-slate-500">{user.email}</p>
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => addCollaboratorMutation.mutate(user.id)}
+                      disabled={addCollaboratorMutation.isPending}
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      Add
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {collaboratorEmail.length >= 2 && searchResults.length === 0 && (
+              <div className="text-center py-4 text-slate-500">
+                No users found matching "{collaboratorEmail}"
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowCollaborateDialog(false);
+                setCollaboratorEmail('');
+                setSearchResults([]);
+              }}
+            >
+              Cancel
             </Button>
           </DialogFooter>
         </DialogContent>
