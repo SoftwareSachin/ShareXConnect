@@ -92,7 +92,7 @@ export interface IStorage {
   // Project collaboration
   addCollaborator(projectId: string, userId: string): Promise<void>;
   removeCollaborator(projectId: string, userId: string): Promise<void>;
-  getProjectCollaborators(projectId: string): Promise<User[]>;
+  getProjectCollaborators(projectId: string): Promise<(User & { addedAt: string; isOwner?: boolean })[]>;
 
   // Star operations
   starProject(projectId: string, userId: string): Promise<void>;
@@ -659,15 +659,42 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async getProjectCollaborators(projectId: string): Promise<User[]> {
+  async getProjectCollaborators(projectId: string): Promise<(User & { addedAt: string; isOwner?: boolean })[]> {
     try {
+      // Get the project owner first
+      const project = await this.getProject(projectId);
+      if (!project) {
+        return [];
+      }
+
+      // Get all collaborators
       const results = await db
-        .select()
+        .select({
+          user: users,
+          addedAt: projectCollaborators.createdAt,
+        })
         .from(projectCollaborators)
         .innerJoin(users, eq(projectCollaborators.userId, users.id))
         .where(eq(projectCollaborators.projectId, projectId));
       
-      return results.map(result => result.users);
+      // Include the project owner as well
+      const owner = await this.getUser(project.ownerId);
+      const collaborators = results.map(result => ({
+        ...result.user,
+        addedAt: result.addedAt.toISOString(),
+        isOwner: false
+      }));
+
+      // Add owner to the list
+      if (owner) {
+        collaborators.unshift({
+          ...owner,
+          addedAt: project.createdAt.toISOString(),
+          isOwner: true
+        });
+      }
+
+      return collaborators;
     } catch (error) {
       console.error('Error getting project collaborators:', error);
       return [];

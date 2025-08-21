@@ -715,6 +715,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
+  // Get project collaborators with detailed user information
+  app.get("/api/projects/:id/collaborators", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      const project = await storage.getProject(req.params.id);
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+
+      // Get project with owner details for permission check
+      const projectWithOwner = await storage.getProjectWithDetails(req.params.id);
+      if (!projectWithOwner) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+
+      // Check access permissions
+      const hasAccess = projectWithOwner.ownerId === req.user!.id || 
+                       projectWithOwner.visibility === "PUBLIC" ||
+                       (projectWithOwner.visibility === "INSTITUTION" && projectWithOwner.owner.institution === req.user!.institution);
+      
+      if (!hasAccess) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const collaborators = await storage.getProjectCollaborators(req.params.id);
+      res.json(collaborators);
+    } catch (error) {
+      console.error('Error fetching collaborators:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }));
+
   app.delete("/api/projects/:id/collaborators/:userId", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
       const project = await storage.getProject(req.params.id);
@@ -1006,31 +1037,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get users (for collaboration invites)
   app.get("/api/users/search", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
-      const { q } = req.query;
+      const { q, projectId } = req.query;
       if (!q || typeof q !== "string" || q.length < 2) {
         return res.json([]);
       }
 
       const users = await storage.getUsersByInstitution(req.user!.institution);
+      
+      // Get current collaborators to filter them out
+      let currentCollaboratorIds: string[] = [];
+      if (projectId && typeof projectId === "string") {
+        try {
+          const collaborators = await storage.getProjectCollaborators(projectId);
+          currentCollaboratorIds = collaborators.map(c => c.id);
+        } catch (error) {
+          console.log('Could not fetch current collaborators for filtering');
+        }
+      }
+
       const filteredUsers = users
         .filter(user => 
           user.id !== req.user!.id &&
+          !currentCollaboratorIds.includes(user.id) &&
           (user.username.toLowerCase().includes(q.toLowerCase()) ||
            user.email.toLowerCase().includes(q.toLowerCase()) ||
            `${user.firstName} ${user.lastName}`.toLowerCase().includes(q.toLowerCase()))
         )
-        .slice(0, 10)
+        .slice(0, 15)
         .map(user => ({
           id: user.id,
           username: user.username,
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
-          role: user.role
+          role: user.role,
+          institution: user.institution
         }));
 
       res.json(filteredUsers);
     } catch (error) {
+      console.error('Error searching users:', error);
       res.status(500).json({ message: "Internal server error" });
     }
   }));
