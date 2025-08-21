@@ -26,6 +26,10 @@ import {
   Upload
 } from "lucide-react";
 
+interface ProjectDetailParams {
+  id: string;
+}
+
 interface ProjectFile {
   id: string;
   fileName: string;
@@ -193,6 +197,9 @@ export default function ProjectDetail() {
   const [selectedFile, setSelectedFile] = useState<ProjectFile | null>(null);
   const [isFileViewerOpen, setIsFileViewerOpen] = useState(false);
   const [fileContent, setFileContent] = useState<string>('');
+  
+  // Get current user from auth store (must be called before any conditional returns)
+  const { user } = useAuthStore();
 
   async function handleFileClick(file: ProjectFile): Promise<void> {
     console.log('File clicked:', file.fileName);
@@ -370,9 +377,6 @@ export default function ProjectDetail() {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   };
 
-  // Get current user from auth store
-  const { user } = useAuthStore();
-  
   // Check ownership and collaboration status
   const isOwner = user && project ? user.id === project.ownerId : false;
   const isCollaborator = user && project?.collaborators ? 
