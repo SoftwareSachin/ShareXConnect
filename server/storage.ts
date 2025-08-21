@@ -439,7 +439,7 @@ export class DatabaseStorage implements IStorage {
         starCount,
         commentCount,
         isStarred,
-        assignment
+        review
       };
     } catch (error) {
       console.error('Error getting project with details:', error);
@@ -525,7 +525,7 @@ export class DatabaseStorage implements IStorage {
         
         const commentCount = commentResults[0]?.count || 0;
 
-        // Get faculty assignment
+        // Get faculty review
         const reviewResults = await db
           .select()
           .from(projectReviews)
@@ -541,7 +541,7 @@ export class DatabaseStorage implements IStorage {
           starCount,
           commentCount,
           isStarred: false, // Will be set per user context
-          assignment
+          review
         });
       }
 
@@ -721,7 +721,7 @@ export class DatabaseStorage implements IStorage {
         
         const commentCount = commentResults[0]?.count || 0;
 
-        // Get faculty assignment
+        // Get faculty review
         const reviewResults = await db
           .select()
           .from(projectReviews)
@@ -737,7 +737,7 @@ export class DatabaseStorage implements IStorage {
           starCount,
           commentCount,
           isStarred: true,
-          assignment
+          review
         });
       }
 
