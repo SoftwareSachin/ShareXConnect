@@ -114,7 +114,51 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
         apiDocumentation: data.apiDocumentation || "",
       };
 
-      return apiPost("/api/projects", enhancedProjectData);
+      console.log('🚀 Creating project:', enhancedProjectData.title);
+      const result = await apiPost("/api/projects", enhancedProjectData);
+      console.log('✅ Project created successfully:', result);
+
+      // Upload files if any were selected
+      const filesToUpload = [
+        ...(uploadedFiles.sourceCode ? [uploadedFiles.sourceCode] : []),
+        ...uploadedFiles.sourceFolder,
+        ...uploadedFiles.documentation,
+        ...uploadedFiles.images,
+      ];
+
+      if (filesToUpload.length > 0) {
+        console.log(`📁 Uploading ${filesToUpload.length} files for project ${result.id}`);
+        
+        for (const file of filesToUpload) {
+          try {
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            console.log('📤 Uploading file:', file.name, 'Size:', file.size, 'Type:', file.type);
+            
+            const response = await fetch(`/api/projects/${result.id}/files`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+              },
+              body: formData,
+            });
+
+            if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(`Failed to upload ${file.name}: ${errorText}`);
+            }
+
+            const uploadResult = await response.json();
+            console.log('✅ File uploaded successfully:', uploadResult);
+          } catch (error) {
+            console.error(`❌ Failed to upload ${file.name}:`, error);
+            // Continue with other files even if one fails
+          }
+        }
+      }
+
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
@@ -123,6 +167,7 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
         description: "Your project has been created successfully.",
       });
       reset();
+      setUploadedFiles({ sourceCode: null, sourceFolder: [], documentation: [], images: [] });
       onOpenChange(false);
     },
     onError: (error: any) => {
