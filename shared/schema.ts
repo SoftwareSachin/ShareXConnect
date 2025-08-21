@@ -55,7 +55,18 @@ export const projects = pgTable("projects", {
   techStack: text("tech_stack").array().default([]),
   githubUrl: varchar("github_url", { length: 500 }),
   demoUrl: varchar("demo_url", { length: 500 }),
-  // New GitHub-like repository fields
+  // Academic-specific fields
+  academicLevel: varchar("academic_level", { length: 100 }), // Undergraduate, Graduate, PhD, etc.
+  department: varchar("department", { length: 100 }),
+  courseSubject: varchar("course_subject", { length: 150 }),
+  projectMethodology: text("project_methodology"),
+  setupInstructions: text("setup_instructions"),
+  repositoryUrl: varchar("repository_url", { length: 500 }),
+  liveDemoUrl: varchar("live_demo_url", { length: 500 }),
+  sourceCodeRepository: text("source_code_repository"),
+  documentationReports: text("documentation_reports"),
+  imagesAssets: text("images_assets"), // JSON array of image URLs/paths
+  // GitHub-like repository fields
   repositoryStructure: text("repository_structure"),
   readmeContent: text("readme_content"),
   licenseType: varchar("license_type", { length: 50 }).default("MIT"),

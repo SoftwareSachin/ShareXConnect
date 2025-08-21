@@ -33,7 +33,10 @@ import {
   Bookmark,
   Code2,
   Trash2,
-  AlertTriangle
+  AlertTriangle,
+  GitBranch,
+  Globe,
+  Github
 } from 'lucide-react';
 
 interface ProjectDetailParams {
@@ -464,6 +467,50 @@ export default function ProjectDetail() {
               </p>
             </div>
 
+            {/* Academic Information Grid */}
+            <div className="mb-8 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                  Academic Information
+                </h3>
+              </div>
+              
+              <div className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {project.academicLevel && (
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Academic Level</dt>
+                      <dd className="text-slate-900 dark:text-slate-100 font-medium">{project.academicLevel}</dd>
+                    </div>
+                  )}
+                  {project.department && (
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Department</dt>
+                      <dd className="text-slate-900 dark:text-slate-100 font-medium">{project.department}</dd>
+                    </div>
+                  )}
+                  {project.courseSubject && (
+                    <div>
+                      <dt className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Course/Subject</dt>
+                      <dd className="text-slate-900 dark:text-slate-100 font-medium">{project.courseSubject}</dd>
+                    </div>
+                  )}
+                  <div>
+                    <dt className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Category</dt>
+                    <dd className="text-slate-900 dark:text-slate-100 font-medium">{project.category}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Status</dt>
+                    <dd className="text-slate-900 dark:text-slate-100 font-medium">{project.status.replace("_", " ")}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Visibility</dt>
+                    <dd className="text-slate-900 dark:text-slate-100 font-medium">{project.visibility}</dd>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Author Information */}
             <div className="flex items-center gap-4 p-4 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
               <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center border-2 border-slate-200 dark:border-slate-700">
@@ -487,6 +534,264 @@ export default function ProjectDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-3 space-y-8">
+
+            {/* Project Methodology & Approach */}
+            {project.projectMethodology && (
+              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                  <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                    Project Methodology & Approach
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                    Research methodology and implementation approach
+                  </p>
+                </div>
+                
+                <div className="p-6">
+                  <div className="prose prose-slate dark:prose-invert max-w-none">
+                    <p className="text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+                      {project.projectMethodology}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Setup & Installation Instructions */}
+            {project.setupInstructions && (
+              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                  <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                    Setup & Installation Instructions
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                    Step-by-step guide to set up and run this project
+                  </p>
+                </div>
+                
+                <div className="p-6">
+                  <div className="bg-slate-900 dark:bg-black rounded-lg overflow-hidden border border-slate-700">
+                    <div className="flex items-center justify-between px-4 py-3 bg-slate-800 border-b border-slate-700">
+                      <div className="flex items-center gap-3">
+                        <div className="flex gap-2">
+                          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                          <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        </div>
+                        <span className="text-sm font-mono text-slate-300">SETUP.md</span>
+                      </div>
+                      <div className="text-xs text-slate-400">installation guide</div>
+                    </div>
+                    
+                    <div className="p-6 max-h-96 overflow-y-auto">
+                      <pre className="text-sm font-mono text-green-400 leading-relaxed whitespace-pre-wrap">
+                        <code>{project.setupInstructions}</code>
+                      </pre>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Documentation & Reports */}
+            {project.documentationReports && (
+              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                  <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                    Documentation & Reports
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                    Project documentation, technical reports, and research findings
+                  </p>
+                </div>
+                
+                <div className="p-6">
+                  <div className="prose prose-slate dark:prose-invert max-w-none">
+                    <div className="text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+                      {project.documentationReports}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Repository URLs */}
+            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+              <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                  Project Links
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                  Source code repositories and live demonstrations
+                </p>
+              </div>
+              
+              <div className="p-6 space-y-4">
+                {project.repositoryUrl && (
+                  <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                    <GitBranch className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                    <div>
+                      <dt className="text-sm font-medium text-slate-900 dark:text-slate-100">Repository URL</dt>
+                      <dd className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                        <a href={project.repositoryUrl} target="_blank" rel="noopener noreferrer">
+                          {project.repositoryUrl}
+                        </a>
+                      </dd>
+                    </div>
+                  </div>
+                )}
+                {project.liveDemoUrl && (
+                  <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                    <ExternalLink className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                    <div>
+                      <dt className="text-sm font-medium text-slate-900 dark:text-slate-100">Live Demo URL</dt>
+                      <dd className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                        <a href={project.liveDemoUrl} target="_blank" rel="noopener noreferrer">
+                          {project.liveDemoUrl}
+                        </a>
+                      </dd>
+                    </div>
+                  </div>
+                )}
+                {project.githubUrl && (
+                  <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                    <Github className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                    <div>
+                      <dt className="text-sm font-medium text-slate-900 dark:text-slate-100">GitHub Repository</dt>
+                      <dd className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                        <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
+                          {project.githubUrl}
+                        </a>
+                      </dd>
+                    </div>
+                  </div>
+                )}
+                {project.demoUrl && (
+                  <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                    <Globe className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                    <div>
+                      <dt className="text-sm font-medium text-slate-900 dark:text-slate-100">Demo URL</dt>
+                      <dd className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                        <a href={project.demoUrl} target="_blank" rel="noopener noreferrer">
+                          {project.demoUrl}
+                        </a>
+                      </dd>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Images & Assets */}
+            {project.imagesAssets && (
+              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                  <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                    Images & Assets
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                    Project screenshots, diagrams, and visual assets
+                  </p>
+                </div>
+                
+                <div className="p-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {(() => {
+                      try {
+                        const assets = JSON.parse(project.imagesAssets);
+                        if (Array.isArray(assets)) {
+                          return assets.map((asset, index) => (
+                            <div key={index} className="relative group">
+                              <div className="aspect-video bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
+                                <img 
+                                  src={asset.url || asset} 
+                                  alt={asset.description || `Project asset ${index + 1}`}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                                  onError={(e) => {
+                                    e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDIwMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMTIwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik04NS41IDUwLjVMMTAwIDY1TDExNC41IDUwLjVMMTAwIDM2TDg1LjUgNTAuNVoiIGZpbGw9IiM5Q0EzQUYiLz4KPHN2Zz4=';
+                                  }}
+                                />
+                              </div>
+                              {asset.description && (
+                                <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 text-center">
+                                  {asset.description}
+                                </p>
+                              )}
+                            </div>
+                          ));
+                        }
+                      } catch (e) {
+                        // If it's just a string, display it as a single asset
+                        return (
+                          <div className="col-span-full">
+                            <div className="aspect-video bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
+                              <img 
+                                src={project.imagesAssets} 
+                                alt="Project asset"
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  if (e.currentTarget.parentElement) {
+                                    e.currentTarget.parentElement.innerHTML = `
+                                      <div class="w-full h-full flex items-center justify-center">
+                                        <div class="text-center">
+                                          <div class="w-12 h-12 bg-slate-300 dark:bg-slate-600 rounded-lg flex items-center justify-center mx-auto mb-2">
+                                            <svg class="w-6 h-6 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                          </div>
+                                          <p class="text-sm text-slate-600 dark:text-slate-400">Image not available</p>
+                                        </div>
+                                      </div>
+                                    `;
+                                  }
+                                }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Source Code Repository */}
+            {project.sourceCodeRepository && (
+              <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                  <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                    Source Code Repository
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                    Repository structure and main source code files
+                  </p>
+                </div>
+                
+                <div className="p-6">
+                  <div className="bg-slate-900 dark:bg-black rounded-lg overflow-hidden border border-slate-700">
+                    <div className="flex items-center justify-between px-4 py-3 bg-slate-800 border-b border-slate-700">
+                      <div className="flex items-center gap-3">
+                        <div className="flex gap-2">
+                          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                          <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        </div>
+                        <span className="text-sm font-mono text-slate-300">source-tree</span>
+                      </div>
+                      <div className="text-xs text-slate-400">repository</div>
+                    </div>
+                    
+                    <div className="p-6 max-h-96 overflow-y-auto">
+                      <pre className="text-sm font-mono text-blue-400 leading-relaxed whitespace-pre-wrap">
+                        <code>{project.sourceCodeRepository}</code>
+                      </pre>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* API Documentation */}
             {project.apiDocumentation && (
