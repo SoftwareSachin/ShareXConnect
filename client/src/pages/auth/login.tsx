@@ -99,7 +99,7 @@ export default function Login() {
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
+      usernameOrEmail: "",
       password: "",
     },
   });
@@ -287,12 +287,12 @@ export default function Login() {
                     <div className="space-y-6">
                       <FormField
                         control={loginForm.control}
-                        name="email"
+                        name="usernameOrEmail"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2.5">
                               <Mail className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                              Email Address
+                              Username or Email
                             </FormLabel>
                             <FormControl>
                               <div className="relative">
@@ -301,8 +301,8 @@ export default function Login() {
                                 </div>
                                 <Input
                                   {...field}
-                                  type="email"
-                                  placeholder="student@university.edu"
+                                  type="text"
+                                  placeholder="username or email@university.edu"
                                   className="pl-12 pr-4 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl h-12 text-base font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
                                   disabled={loginMutation.isPending}
                                 />
