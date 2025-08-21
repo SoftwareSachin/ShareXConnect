@@ -8,12 +8,15 @@ import {
   type ProjectReview, 
   type ProjectCollaborator, 
   type ProjectStar,
+  type ProjectFile,
+  type InsertProjectFile,
   users,
   projects,
   projectCollaborators,
   projectStars,
   projectComments,
   projectReviews,
+  projectFiles,
   collegeDomains
 } from "@shared/schema";
 import bcrypt from "bcryptjs";
@@ -85,8 +88,8 @@ export interface IStorage {
   getStarredProjects(userId: string): Promise<ProjectWithDetails[]>;
 
   // Comment operations
-  getComments(projectId: string): Promise<(Comment & { user: User })[]>;
-  createComment(comment: InsertComment): Promise<Comment>;
+  getComments(projectId: string): Promise<(ProjectComment & { user: User })[]>;
+  createComment(comment: InsertProjectComment): Promise<ProjectComment>;
 
   // Faculty assignment operations
   assignProjectToReviewer(projectId: string, reviewerId: string): Promise<ProjectReview>;
@@ -827,12 +830,12 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async submitReview(reviewId: string, grade: string, feedback: string): Promise<FacultyAssignment | undefined> {
+  async submitReview(reviewId: string, grade: string, feedback: string): Promise<ProjectReview | undefined> {
     try {
       const result = await db
         .update(projectReviews)
         .set({
-          grade,
+          grade: parseInt(grade) || 0,
           feedback,
           status: "COMPLETED",
           updatedAt: new Date()
