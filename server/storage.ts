@@ -804,8 +804,8 @@ export class DatabaseStorage implements IStorage {
 
       const reviewsWithDetails: (FacultyAssignment & { project: ProjectWithDetails })[] = [];
 
-      for (const result of assignments) {
-        const review = result.faculty_assignments;
+      for (const result of reviews) {
+        const review = result.project_reviews;
         const project = result.projects;
         const owner = result.users;
 
@@ -813,14 +813,14 @@ export class DatabaseStorage implements IStorage {
         const projectDetails = await this.getProjectWithDetails(project.id);
         
         if (projectDetails) {
-          assignmentsWithDetails.push({
-            ...assignment,
+          reviewsWithDetails.push({
+            ...review,
             project: projectDetails
           });
         }
       }
 
-      return assignmentsWithDetails;
+      return reviewsWithDetails;
     } catch (error) {
       console.error('Error getting faculty assignments:', error);
       return [];
@@ -1058,20 +1058,20 @@ export class DatabaseStorage implements IStorage {
           .limit(limit);
 
         for (const result of recentAssignments) {
-          const review = result.faculty_assignments;
+          const review = result.project_reviews;
           const project = result.projects;
           const student = result.users;
           
           activities.push({
-            id: assignment.id,
-            type: assignment.status === 'COMPLETED' ? 'review_completed' : 'project_updated',
-            title: assignment.status === 'COMPLETED' 
+            id: review.id,
+            type: review.status === 'COMPLETED' ? 'review_completed' : 'project_updated',
+            title: review.status === 'COMPLETED' 
               ? `Completed review for "${project.title}"`
               : `New assignment: "${project.title}"`,
             description: `Project by ${student.firstName} ${student.lastName}`,
-            timestamp: assignment.updatedAt || assignment.createdAt,
+            timestamp: review.updatedAt || review.createdAt,
             projectId: project.id,
-            userId: assignment.reviewerId
+            userId: review.reviewerId
           });
         }
         
