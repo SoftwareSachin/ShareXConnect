@@ -177,29 +177,24 @@ export default function ProjectDetail() {
       </div>
 
       <div className="container mx-auto px-6 py-8 max-w-7xl">
-        {/* Hero Section - Completely Redesigned */}
-        <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow-xl shadow-slate-900/5 dark:shadow-black/20 border border-slate-200/50 dark:border-slate-800/50 mb-8">
-          {/* Background Pattern */}
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-white to-purple-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-blue-950/30"></div>
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(120,119,198,0.1),rgba(255,255,255,0))] dark:bg-[radial-gradient(circle_at_50%_120%,rgba(120,119,198,0.05),rgba(255,255,255,0))]"></div>
-          
-          {/* Content */}
-          <div className="relative px-8 py-10">
+        {/* Hero Section - Clean Modern Design */}
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 mb-8">
+          <div className="px-8 py-8">
             {/* Status and Metadata Row */}
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-4">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
                 <Badge 
-                  className={`${getStatusColor(project.status)} font-semibold px-4 py-2 text-sm rounded-full shadow-sm`}
+                  className={`${getStatusColor(project.status)} font-medium px-3 py-1.5 text-sm`}
                 >
                   {project.status.replace("_", " ")}
                 </Badge>
                 <Badge 
                   variant="secondary" 
-                  className="font-semibold px-4 py-2 text-sm rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 shadow-sm"
+                  className="font-medium px-3 py-1.5 text-sm bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
                 >
                   {project.category}
                 </Badge>
-                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100/70 dark:bg-slate-800/70 backdrop-blur-sm">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-slate-100 dark:bg-slate-800">
                   {project.visibility === 'PUBLIC' ? (
                     <>
                       <Globe className="w-4 h-4 text-green-600 dark:text-green-400" />
@@ -228,24 +223,24 @@ export default function ProjectDetail() {
             
             {/* Project Title and Description */}
             <div className="mb-8">
-              <h1 className="text-5xl font-bold text-slate-900 dark:text-white mb-6 leading-tight tracking-tight">
+              <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-4 leading-tight">
                 {project.title}
               </h1>
               
-              <p className="text-xl text-slate-600 dark:text-slate-300 leading-relaxed max-w-4xl">
+              <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed max-w-4xl">
                 {project.description}
               </p>
             </div>
 
             {/* Author Information */}
-            <div className="flex items-center gap-4 p-4 rounded-xl bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50">
-              <Avatar className="w-14 h-14 ring-4 ring-white/50 dark:ring-slate-700/50 shadow-lg">
-                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-lg">
+            <div className="flex items-center gap-4 p-4 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+              <Avatar className="w-12 h-12 border-2 border-slate-200 dark:border-slate-700">
+                <AvatarFallback className="bg-blue-600 text-white font-semibold">
                   {getInitials(project.owner.firstName || '', project.owner.lastName || '')}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-semibold text-lg text-slate-900 dark:text-slate-100">
+                <p className="font-semibold text-slate-900 dark:text-slate-100">
                   {project.owner.firstName} {project.owner.lastName}
                 </p>
                 <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
