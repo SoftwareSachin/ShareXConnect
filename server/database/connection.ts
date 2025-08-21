@@ -190,22 +190,22 @@ export class DatabaseManager {
       
       const client = await this.pool.connect();
       try {
-        // Check if colleges exist
-        const collegeCheck = await client.query('SELECT COUNT(*) FROM colleges');
+        // Check if college domains exist
+        const collegeCheck = await client.query('SELECT COUNT(*) FROM college_domains');
         
         if (parseInt(collegeCheck.rows[0].count) === 0) {
-          console.log('🏫 Creating sample colleges...');
+          console.log('🏫 Creating sample college domains...');
           
-          // Insert sample colleges using proper schema
+          // Insert sample college domains using proper schema
           await client.query(`
-            INSERT INTO colleges (id, name, domain, address, established, created_at, updated_at) VALUES
-            ('college-mit', 'Massachusetts Institute of Technology', 'mit.edu', 'Cambridge, MA', '1861-01-01', NOW(), NOW()),
-            ('college-stanford', 'Stanford University', 'stanford.edu', 'Stanford, CA', '1885-01-01', NOW(), NOW()),
-            ('college-harvard', 'Harvard University', 'harvard.edu', 'Cambridge, MA', '1636-01-01', NOW(), NOW())
-            ON CONFLICT (id) DO NOTHING
+            INSERT INTO college_domains (college_name, domain, is_verified, created_at, updated_at) VALUES
+            ('Massachusetts Institute of Technology', 'mit.edu', true, NOW(), NOW()),
+            ('Stanford University', 'stanford.edu', true, NOW(), NOW()),
+            ('Harvard University', 'harvard.edu', true, NOW(), NOW())
+            ON CONFLICT (domain) DO NOTHING
           `);
           
-          console.log('✅ Sample colleges created');
+          console.log('✅ Sample college domains created');
         }
 
         // Check if admin users exist
