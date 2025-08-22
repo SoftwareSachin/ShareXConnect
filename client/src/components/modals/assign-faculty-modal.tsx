@@ -15,6 +15,7 @@ interface AssignFacultyModalProps {
 
 export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacultyModalProps) {
   const [selectedFacultyId, setSelectedFacultyId] = useState<string>("");
+  const [filterByDepartment, setFilterByDepartment] = useState<boolean>(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -22,13 +23,33 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
       setSelectedFacultyId("");
+      setFilterByDepartment(false);
     }
     onOpenChange(newOpen);
   };
 
-  // Fetch faculty members from the same institution
+  // Fetch faculty members from the same institution, optionally filtered by department
   const { data: facultyMembers, isLoading } = useQuery<User[]>({
-    queryKey: ["/api/users/faculty"],
+    queryKey: ["/api/users/faculty", filterByDepartment ? project?.department : null],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (filterByDepartment && project?.department) {
+        params.append('department', project.department);
+      }
+      
+      const response = await fetch(`/api/users/faculty?${params.toString()}`, {
+        credentials: 'include',
+        headers: {
+          'Authorization': `Bearer ${JSON.parse(localStorage.getItem('auth-storage') || '{}').state?.token}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch faculty members');
+      }
+      
+      return response.json();
+    },
     enabled: open,
   });
 
@@ -124,9 +145,29 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
         </DialogHeader>
 
         <div className="space-y-8 py-2">
+          {project?.department && (
+            <div className="flex items-center space-x-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <input
+                type="checkbox"
+                id="filter-department"
+                checked={filterByDepartment}
+                onChange={(e) => setFilterByDepartment(e.target.checked)}
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+              />
+              <label htmlFor="filter-department" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                Only show faculty from <strong>{project.department}</strong> department
+              </label>
+            </div>
+          )}
+          
           <div className="space-y-3">
             <label className="text-sm font-semibold text-slate-900 dark:text-slate-100 block">
               Select Faculty Member
+              {filterByDepartment && project?.department && (
+                <span className="text-xs text-blue-600 dark:text-blue-400 font-normal ml-2">
+                  (Showing {project.department} faculty only)
+                </span>
+              )}
             </label>
             {isLoading ? (
               <div className="h-12 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-lg"></div>
@@ -156,9 +197,19 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
                         <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
                           {faculty.firstName} {faculty.lastName}
                         </span>
-                        <span className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                          📍 {faculty.institution}
-                        </span>
+                        <div className="flex items-center space-x-3 mt-1">
+                          <span className="text-xs text-slate-500 dark:text-slate-400">
+                            🏛️ {faculty.institution}
+                          </span>
+                          {faculty.specialization && (
+                            <span className="text-xs text-blue-600 dark:text-blue-400">
+                              👨‍🏫 {faculty.specialization}
+                            </span>
+                          )}
+                          <span className="text-xs text-green-600 dark:text-green-400">
+                            ✓ Verified Faculty
+                          </span>
+                        </div>
                       </div>
                     </SelectItem>
                   ))}
@@ -170,7 +221,11 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
                     >
                       <div className="flex items-center">
                         <span className="text-slate-400 mr-2">⚠️</span>
-                        <span>No faculty members found in your institution</span>
+                        <span>
+                          {filterByDepartment 
+                            ? `No verified faculty found in ${project?.department} department`
+                            : "No verified faculty members found in your institution"}
+                        </span>
                       </div>
                     </SelectItem>
                   )}

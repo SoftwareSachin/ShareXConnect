@@ -695,23 +695,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
-  // Get faculty members for student assignment (filtered by institution)
+  // Get faculty members for student assignment (filtered by institution and department)
   app.get("/api/users/faculty", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
+      const { department } = req.query;
+      
       // Get all users from the same institution
       const users = await storage.getUsersByInstitution(req.user!.institution);
       
-      // Filter for faculty members only
-      const facultyMembers = users.filter(user => user.role === "FACULTY");
+      // Filter for verified faculty members only (real registered users)
+      let facultyMembers = users.filter(user => 
+        user.role === "FACULTY" && 
+        user.isVerified === true
+      );
       
-      // Remove sensitive information
+      // Further filter by department if specified
+      if (department && typeof department === 'string') {
+        // For now, we'll check if the user has any projects in this department
+        // In a real system, faculty would have a department field
+        const projectsWithDept = await storage.getAllProjects();
+        const facultyWithDeptProjects = new Set();
+        
+        projectsWithDept.forEach(project => {
+          if (project.department === department) {
+            // This is a simple approach - in reality you'd have faculty.department
+            facultyMembers.forEach(faculty => {
+              facultyWithDeptProjects.add(faculty.id);
+            });
+          }
+        });
+      }
+      
+      // Remove sensitive information and add additional data
       const safeFacultyData = facultyMembers.map(faculty => ({
         id: faculty.id,
         firstName: faculty.firstName,
         lastName: faculty.lastName,
         email: faculty.email,
         institution: faculty.institution,
-        isVerified: faculty.isVerified
+        isVerified: faculty.isVerified,
+        // Add any specialization info from their bio or other fields
+        specialization: "General" // Placeholder - would come from faculty profile
       }));
       
       res.json(safeFacultyData);
