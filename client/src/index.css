@@ -221,3 +221,27 @@
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--foreground));
 }
+
+/* Dialog styling fixes */
+[data-radix-dialog-overlay] {
+  background-color: rgba(0, 0, 0, 0.6) !important;
+  z-index: 9998 !important;
+  backdrop-filter: blur(2px);
+  position: fixed;
+  inset: 0;
+}
+
+[data-radix-dialog-content] {
+  z-index: 9999 !important;
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  max-width: 500px;
+  padding: 1.5rem;
+}
+
+[data-radix-select-content] {
+  z-index: 10000 !important;
+}

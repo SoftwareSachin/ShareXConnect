@@ -83,7 +83,7 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-lg">
         <DialogHeader>
           <DialogTitle>Assign Project to Faculty</DialogTitle>
           <DialogDescription>
