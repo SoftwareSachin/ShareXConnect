@@ -88,7 +88,7 @@ export default function EditProject() {
   });
 
   // Fetch project collaborators to check edit permissions
-  const { data: collaborators = [] } = useQuery({
+  const { data: collaborators = [] } = useQuery<Array<{id: string, email: string, isOwner?: boolean}>>({
     queryKey: ['/api/projects', id, 'collaborators'],
     queryFn: () => apiGet(`/api/projects/${id}/collaborators`),
     enabled: !!id
@@ -333,8 +333,18 @@ export default function EditProject() {
   // Check if user can edit (owner OR collaborator)
   const canEdit = user && project && (
     user.id === project.ownerId || 
-    collaborators.some((collab: any) => collab.userId === user.id)
+    collaborators.some((collab) => collab.id === user.id)
   );
+
+  // Debug logging
+  console.log('🔍 Edit Permission Debug:', {
+    userId: user?.id,
+    projectOwnerId: project?.ownerId,
+    isOwner: user?.id === project?.ownerId,
+    collaborators: collaborators,
+    isCollaborator: collaborators.some((collab) => collab.id === user?.id),
+    canEdit: canEdit
+  });
 
   const handleCancel = () => {
     setLocation(`/project/${id}`);
