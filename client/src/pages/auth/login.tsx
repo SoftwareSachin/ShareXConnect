@@ -58,8 +58,8 @@ function CollegeSelector({ value, onValueChange, disabled, control }: {
                   <SelectItem value="error" disabled className="text-red-500 dark:text-red-400 italic">
                     Error loading colleges
                   </SelectItem>
-                ) : colleges && colleges.length > 0 ? (
-                  colleges.map((college: any) => (
+                ) : colleges && (colleges as any[]).length > 0 ? (
+                  (colleges as any[]).map((college: any) => (
                     <SelectItem 
                       key={college.id} 
                       value={college.id}
@@ -147,6 +147,7 @@ export default function Login() {
 
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterFormData) => {
+      console.log("Sending registration data:", data);
       const response = await apiRequest("POST", "/api/auth/register", data);
       return await response.json();
     },
@@ -578,6 +579,7 @@ export default function Login() {
                           <Select 
                             onValueChange={(value) => {
                               field.onChange(value);
+                              console.log("Role selected:", value);
                               // Clear faculty-specific fields when role changes
                               if (value !== "FACULTY") {
                                 registerForm.setValue("department", "");
