@@ -1,0 +1,137 @@
+1. Frameworks & UI Foundations
+Component Frameworks:
+
+React, Vue, Angular, Svelte, SolidJS, Alpine.js
+
+Meta‑Frameworks (SSR, routing, full stacks):
+
+Next.js, Nuxt, SvelteKit, Remix, Astro
+
+2. Component Libraries & Design Systems
+Headless / Utility‑First:
+
+Tailwind CSS, shadcn/ui, Headless UI, Radix Primitives
+
+Fully‑Themed:
+
+Material‑UI (MUI), Ant Design, Chakra UI, Bootstrap, DaisyUI
+
+3. State Management & Data
+Client‑State:
+
+Redux, MobX, Zustand, Recoil, Jotai
+
+Server‑State / Data‑Fetching:
+
+TanStack Query (React Query), SWR, Apollo Client (GraphQL), Urql
+
+Realtime & Collaboration:
+
+Socket.io, Liveblocks, Pusher, Ably
+
+4. Styling & Theming
+CSS-in-JS:
+
+styled‑components, Emotion, Stitches
+
+Preprocessors & Utility CSS:
+
+Sass, Less, Stylus, PostCSS, Tailwind CSS
+
+5. Animation & Motion
+High‑Level:
+
+Framer Motion, GSAP, Motion One
+
+Vector/JSON Animations:
+
+Lottie (LottieFiles), Rive
+
+Page Transitions & Scroll:
+
+barba.js, Locomotive Scroll, Lenis
+
+6. 2D/3D Graphics & WebGL
+3D Engines:
+
+three.js, Babylon.js, PlayCanvas
+
+Helper Tools:
+
+Spline, A-Frame, PixiJS (2D WebGL), Regl (low‑level WebGL)
+
+7. Build Tools & Bundlers
+Bundlers:
+
+Webpack, Rollup, Parcel, Turbopack, esbuild
+
+Dev‑Servers & Task Runners:
+
+Vite, Snowpack, Gulp, Grunt
+
+8. Forms & Validation
+Form State:
+
+React Hook Form, Formik, Final Form
+
+Schema Validation:
+
+Yup, Zod, Joi
+
+9. Testing & QA
+Unit & Integration:
+
+Jest, Mocha, Jasmine
+
+E2E / Browser:
+
+Cypress, Playwright, Selenium, TestCafe
+
+10. Utilities & Helpers
+Data Manipulation:
+
+Lodash, Ramda, date‑fns, Moment.js (legacy)
+
+Fetch & HTTP:
+
+Axios, ky, Got, native fetch + polyfills
+
+11. Charts & Data Visualization
+Declarative:
+
+Recharts, Chart.js, Victory
+
+Low‑Level:
+
+D3.js, Vega-Lite
+
+12. Internationalization & Accessibility
+i18n:
+
+i18next, react-intl, LinguiJS
+
+A11y / ARIA Helpers:
+
+Downshift, React Aria, axe-core
+
+13. CLI & DevOps Helpers
+CLIs & Scaffolding:
+
+Yeoman, create‑react‑app, NX, Turborepo
+
+Linting & Formatting:
+
+ESLint, Prettier, Stylelint
+
+14. Miscellaneous
+Authentication & Security:
+
+Auth0 SDK, NextAuth.js, Passport.js
+
+Maps & Geo:
+
+Leaflet, Mapbox GL JS, OpenLayers
+
+Media & Audio/Video:
+
+Howler.js, hls.js, video.js

@@ -1,0 +1,17 @@
+1. Page & Route Progress Bars
+NProgress (vanilla JS + React)
+Tiny (~2 KB gzipped) top‑of‑page progress bar (“YouTube‑style”).
+
+npm install nprogress
+import NProgress from 'nprogress';
+import 'nprogress/nprogress.css';
+
+// start on route change start…
+NProgress.start();
+// …and finish on route complete
+NProgress.done();
+Pace.js (vanilla JS)
+Auto‑detects AJAX, document loading, event loops. Includes themes.
+
+<script src="https://unpkg.com/pace-js@latest/pace.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/pace-js@latest/themes/blue/pace-theme-minimal.css" />

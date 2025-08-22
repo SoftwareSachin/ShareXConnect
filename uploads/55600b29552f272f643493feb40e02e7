@@ -1,0 +1,7 @@
+Refactor the platform to utilize real data for various Azure services
+
+Replaces mock data with actual API data for dashboard, topology, and security policy pages, and adds screenshots and description files.
+
+Replit-Commit-Author: Agent
+Replit-Commit-Session-Id: 2643b528-e3e2-4b1c-884a-b24c124a2f51
+Replit-Commit-Screenshot-Url: https://storage.googleapis.com/screenshot-production-us-central1/d78392e8-5451-468b-8e12-0db8e3c84637/a5d4c5af-d768-4cd5-ada8-480a27d644c7.jpg

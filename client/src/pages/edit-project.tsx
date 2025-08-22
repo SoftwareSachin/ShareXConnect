@@ -87,6 +87,13 @@ export default function EditProject() {
     enabled: !!id
   });
 
+  // Fetch project collaborators to check edit permissions
+  const { data: collaborators = [] } = useQuery({
+    queryKey: ['/api/projects', id, 'collaborators'],
+    queryFn: () => apiGet(`/api/projects/${id}/collaborators`),
+    enabled: !!id
+  });
+
   // File upload handlers
   const handleFileUpload = async (type: keyof typeof uploadedFiles, files: FileList | null) => {
     if (!files) return;
@@ -323,8 +330,11 @@ export default function EditProject() {
     }
   });
 
-  // Check if user can edit
-  const canEdit = user && project && user.id === project.ownerId;
+  // Check if user can edit (owner OR collaborator)
+  const canEdit = user && project && (
+    user.id === project.ownerId || 
+    collaborators.some((collab: any) => collab.userId === user.id)
+  );
 
   const handleCancel = () => {
     setLocation(`/project/${id}`);
