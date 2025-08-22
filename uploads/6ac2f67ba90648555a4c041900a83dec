@@ -1,0 +1,78 @@
+# Linear.app Website Clone
+
+This project is an exact replication of the [Linear.app](https://linear.app) website, including all UI/UX elements, animations, and interactive features.
+
+## Overview
+
+This clone aims to recreate the Linear.app website with pixel-perfect accuracy, including:
+
+- The gradient animated background
+- Shimmer effects and animations
+- Responsive design
+- Interactive elements
+- Exact typography and color scheme
+
+## Features Replicated
+
+- **Header & Navigation**: Fixed header with blur effect, navigation links, and sign-up button
+- **Hero Section**: Main headline, subtext, call-to-action buttons, and app interface mockup
+- **Client Logos**: Showcase of companies using Linear
+- **Features Section**: Grid layout of key features with hover effects
+- **Roadmap & Cycles Sections**: Visual representations of Linear's product features
+- **Call-to-Action Section**: Final conversion section with gradient background
+- **Footer**: Multi-column footer with links and social media
+
+## Technical Implementation
+
+This clone is built using:
+
+- HTML5 for structure
+- CSS3 for styling, including:
+  - CSS Variables for consistent theming
+  - CSS Animations for shimmer effects
+  - CSS Gradients for background effects
+- Vanilla JavaScript for interactive elements and animations
+
+## Running the Project
+
+This is a static website that can be run without any build tools or server-side code. Simply open the `index.html` file in a web browser to view the site.
+
+For the best experience, use a modern browser like Chrome, Firefox, or Edge.
+
+## Project Structure
+
+```
+├── index.html          # Main HTML structure
+├── styles.css          # All styles and animations
+├── script.js           # JavaScript for interactive elements
+├── favicon.svg         # Site favicon
+└── README.md           # Project documentation
+```
+
+## Design Details
+
+### Color Scheme
+
+The site uses Linear's distinctive color palette:
+
+- Background: #000000 (Black)
+- Text: #FFFFFF (White)
+- Accent Blue: rgba(100, 100, 255, 0.15)
+- Accent Red: rgba(255, 100, 100, 0.1)
+- UI Elements: Various shades of white with transparency
+
+### Typography
+
+The site uses the Inter font family, with system fonts as fallbacks:
+
+```css
+font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+```
+
+## Disclaimer
+
+This project is created for educational purposes only. All design elements, branding, and content belong to Linear.app. This is not an official Linear product.
+
+## License
+
+This project is for demonstration purposes only and should not be used commercially.

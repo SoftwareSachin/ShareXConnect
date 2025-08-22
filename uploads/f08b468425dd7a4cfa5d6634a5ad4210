@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linear - A better way to build products</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+</head>
+<body class="bg-black text-white">
+    <div class="gradient-background"></div>
+    
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="100" height="100" rx="20" fill="white"/>
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M50 77.5C65.1878 77.5 77.5 65.1878 77.5 50C77.5 34.8122 65.1878 22.5 50 22.5C34.8122 22.5 22.5 34.8122 22.5 50C22.5 65.1878 34.8122 77.5 50 77.5ZM50 85C69.33 85 85 69.33 85 50C85 30.67 69.33 15 50 15C30.67 15 15 30.67 15 50C15 69.33 30.67 85 50 85Z" fill="black"/>
+                        <path d="M38.5 38.5H61.5V61.5H38.5V38.5Z" fill="black"/>
+                    </svg>
+                    <span>Linear</span>
+                </div>
+                <nav class="main-nav">
+                    <ul>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#method">Method</a></li>
+                        <li><a href="#customers">Customers</a></li>
+                        <li><a href="#changelog">Changelog</a></li>
+                        <li><a href="#integrations">Integrations</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </nav>
+                <div class="header-actions">
+                    <a href="#login" class="login-btn">Log in</a>
+                    <a href="#signup" class="signup-btn">Sign up</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <h1>Linear is a better way<br>to build products</h1>
+                    <p>Meet the new standard for modern software development.<br>Streamline issues, sprints, and product roadmaps.</p>
+                    <div class="hero-actions">
+                        <a href="#signup" class="primary-btn">Get started for free</a>
+                        <a href="#demo" class="secondary-btn">Book a demo</a>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <div class="app-interface">
+                        <img src="app-interface.svg" alt="Linear app interface" class="app-interface-svg" />
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="clients">
+            <div class="container">
+                <div class="clients-logos">
+                    <div class="client-logo">Vercel</div>
+                    <div class="client-logo">Loom</div>
+                    <div class="client-logo">OpenSea</div>
+                    <div class="client-logo">Ramp</div>
+                    <div class="client-logo">Mercury</div>
+                    <div class="client-logo">Retool</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="features" id="features">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Issue tracking you'll enjoy using</h2>
+                    <p>Linear helps streamline software projects, sprints, tasks, and bug tracking. It's built for high-performance teams.</p>
+                </div>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3>Built for speed</h3>
+                        <p>Enjoy a fast and responsive experience. Linear is built for speed with 50ms interactions and real-time sync.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⌨️</div>
+                        <h3>Keyboard first</h3>
+                        <p>Every action in Linear can be performed with keyboard shortcuts. Work faster and more efficiently.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔄</div>
+                        <h3>Streamlined workflow</h3>
+                        <p>Create custom workflows that match your team's needs. Visualize and optimize your process.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📱</div>
+                        <h3>Works offline</h3>
+                        <p>Linear works even when you're offline. Continue working from anywhere without disruptions.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="roadmap">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Build your roadmap</h2>
+                    <p>Plan, track, and visualize your team's work with multiple views that help bring roadmaps to life.</p>
+                </div>
+                <div class="roadmap-image">
+                    <!-- Roadmap image will be added here -->
+                </div>
+            </div>
+        </section>
+
+        <section class="cycles">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Set direction with Cycles</h2>
+                    <p>Cycles help teams build momentum and ship together. A healthy routine to maintain velocity.</p>
+                </div>
+                <div class="cycles-image">
+                    <!-- Cycles image will be added here -->
+                </div>
+            </div>
+        </section>
+
+        <section class="cta">
+            <div class="container">
+                <div class="cta-content">
+                    <h2>Move faster with Linear</h2>
+                    <p>Linear helps streamline software projects, sprints, tasks, and bug tracking. It's built for high-performance teams.</p>
+                    <a href="#signup" class="primary-btn">Get started for free</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="100" height="100" rx="20" fill="white"/>
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M50 77.5C65.1878 77.5 77.5 65.1878 77.5 50C77.5 34.8122 65.1878 22.5 50 22.5C34.8122 22.5 22.5 34.8122 22.5 50C22.5 65.1878 34.8122 77.5 50 77.5ZM50 85C69.33 85 85 69.33 85 50C85 30.67 69.33 15 50 15C30.67 15 15 30.67 15 50C15 69.33 30.67 85 50 85Z" fill="black"/>
+                        <path d="M38.5 38.5H61.5V61.5H38.5V38.5Z" fill="black"/>
+                    </svg>
+                    <span>Linear</span>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Product</h4>
+                        <ul>
+                            <li><a href="#features">Features</a></li>
+                            <li><a href="#integrations">Integrations</a></li>
+                            <li><a href="#pricing">Pricing</a></li>
+                            <li><a href="#changelog">Changelog</a></li>
+                            <li><a href="#docs">Docs</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Company</h4>
+                        <ul>
+                            <li><a href="#about">About us</a></li>
+                            <li><a href="#blog">Blog</a></li>
+                            <li><a href="#careers">Careers</a></li>
+                            <li><a href="#customers">Customers</a></li>
+                            <li><a href="#brand">Brand</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Resources</h4>
+                        <ul>
+                            <li><a href="#community">Community</a></li>
+                            <li><a href="#contact">Contact</a></li>
+                            <li><a href="#dpa">DPA</a></li>
+                            <li><a href="#privacy">Privacy</a></li>
+                            <li><a href="#terms">Terms</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div class="copyright">
+                    <p>&copy; 2023 Linear App Inc.</p>
+                </div>
+                <div class="social-links">
+                    <a href="#twitter" class="social-link">Twitter</a>
+                    <a href="#github" class="social-link">GitHub</a>
+                    <a href="#slack" class="social-link">Slack</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

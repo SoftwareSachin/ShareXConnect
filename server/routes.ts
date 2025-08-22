@@ -762,8 +762,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
-  // Get project files (simplified - no auth for testing)
-  app.get("/api/projects/:id/files", async (req: Request, res: Response) => {
+  // Get project files with authentication
+  app.get("/api/projects/:id/files", authenticateToken, async (req: Request, res: Response) => {
     try {
       console.log('🔍 Fetching files for project:', req.params.id);
       const project = await storage.getProject(req.params.id);
@@ -784,8 +784,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // File upload (simplified - no auth restrictions)
-  app.post("/api/projects/:id/files", upload.single("file"), async (req: any, res: any) => {
+  // File upload with authentication
+  app.post("/api/projects/:id/files", authenticateToken, upload.single("file"), async (req: any, res: any) => {
     try {
       console.log('📤 File upload request received for project:', req.params.id);
       console.log('📂 Request file object:', req.file);
@@ -836,8 +836,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete file route (simplified - no auth restrictions)
-  app.delete("/api/projects/files/:fileId", async (req: any, res: any) => {
+  // Delete file route with authentication
+  app.delete("/api/projects/files/:fileId", authenticateToken, async (req: any, res: any) => {
     try {
       console.log('🗑️ Delete file request for:', req.params.fileId);
       
@@ -873,7 +873,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Download file route (simplified - no auth for testing)
+  // Download file route (no auth for public access)
   app.get("/api/projects/files/:fileId/download", async (req: any, res: any) => {
     try {
       const file = await storage.getProjectFileById(req.params.fileId);

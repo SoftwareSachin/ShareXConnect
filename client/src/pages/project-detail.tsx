@@ -288,8 +288,24 @@ export default function ProjectDetail() {
         const formData = new FormData();
         formData.append('file', file);
         
+        // Get auth token from localStorage
+        const authData = localStorage.getItem('auth-storage');
+        const headers: Record<string, string> = {};
+        
+        if (authData) {
+          try {
+            const { state } = JSON.parse(authData);
+            if (state?.token) {
+              headers["Authorization"] = `Bearer ${state.token}`;
+            }
+          } catch (e) {
+            console.warn('Failed to parse auth data:', e);
+          }
+        }
+        
         const response = await fetch(`/api/projects/${params.id}/files`, {
           method: 'POST',
+          headers,
           body: formData,
           credentials: 'include'
         });
@@ -302,9 +318,12 @@ export default function ProjectDetail() {
         console.log('✅ File uploaded successfully:', result);
       }
       
-      // Reset the input and refresh the files list
+      // Reset the input and refresh the files list  
       e.target.value = '';
-      window.location.reload(); // Simple refresh to show new files
+      
+      // Invalidate queries to refresh data properly
+      queryClient.invalidateQueries({ queryKey: [`/api/projects/${params.id}/files`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/projects/${params.id}`] });
       
     } catch (error) {
       console.error('❌ Upload failed:', error);
