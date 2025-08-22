@@ -1,5 +1,5 @@
 import { useAuthStore } from "@/store/auth-store";
-import { Redirect, RouteComponentProps } from "wouter";
+import { Route, Redirect, RouteComponentProps } from "wouter";
 import { ComponentType } from "react";
 
 interface ProtectedRouteProps {
@@ -7,12 +7,12 @@ interface ProtectedRouteProps {
   component: ComponentType<RouteComponentProps>;
 }
 
-export default function ProtectedRoute({ component: Component, ...props }: ProtectedRouteProps) {
+export default function ProtectedRoute({ component: Component, path }: ProtectedRouteProps) {
   const { isAuthenticated } = useAuthStore();
 
   if (!isAuthenticated) {
     return <Redirect to="/auth/login" />;
   }
 
-  return <Component {...props} params={{}} />;
+  return <Route path={path} component={Component} />;
 }

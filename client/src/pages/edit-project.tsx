@@ -55,14 +55,17 @@ const editProjectSchema = z.object({
 type EditProjectFormData = z.infer<typeof editProjectSchema>;
 
 export default function EditProject() {
-  const { id } = useParams<EditProjectParams>();
+  const params = useParams<EditProjectParams>();
+  const id = params.id;
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
   
   // Debug logging
-  console.log('EditProject component loaded, id:', id);
+  console.log('EditProject component loaded');
+  console.log('params:', params);
+  console.log('id:', id);
   console.log('Current location:', window.location.pathname);
 
   // Fetch project data
