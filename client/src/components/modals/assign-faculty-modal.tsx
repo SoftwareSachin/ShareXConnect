@@ -18,6 +18,14 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Reset selection when modal closes or project changes
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      setSelectedFacultyId("");
+    }
+    onOpenChange(newOpen);
+  };
+
   // Fetch faculty members from the same institution
   const { data: facultyMembers, isLoading } = useQuery<User[]>({
     queryKey: ["/api/users/faculty"],
@@ -26,19 +34,21 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
 
   const assignMutation = useMutation({
     mutationFn: async ({ projectId, facultyId }: { projectId: string; facultyId: string }) => {
+      console.log('🎯 Assigning project:', projectId, 'to faculty:', facultyId);
       return apiRequest(`/api/projects/${projectId}/assign-faculty`, "POST", { facultyId });
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      console.log('✅ Assignment successful:', result);
       toast({
         title: "Project Assigned Successfully",
         description: "Your project has been assigned to the selected faculty member for review.",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
-      onOpenChange(false);
-      setSelectedFacultyId("");
+      handleOpenChange(false);
     },
     onError: (error: any) => {
+      console.error('❌ Assignment failed:', error);
       toast({
         variant: "destructive",
         title: "Assignment Failed",
@@ -63,8 +73,16 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
     });
   };
 
+  console.log('🔍 AssignFacultyModal state:', {
+    open,
+    project: project?.title,
+    facultyCount: facultyMembers?.length,
+    selectedFacultyId,
+    isLoading
+  });
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Assign Project to Faculty</DialogTitle>
@@ -88,14 +106,7 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
                 <SelectContent>
                   {facultyMembers?.map((faculty) => (
                     <SelectItem key={faculty.id} value={faculty.id}>
-                      <div className="flex flex-col">
-                        <span className="font-medium">
-                          {faculty.firstName} {faculty.lastName}
-                        </span>
-                        <span className="text-sm text-slate-500 dark:text-slate-400">
-                          {faculty.institution}
-                        </span>
-                      </div>
+                      {faculty.firstName} {faculty.lastName} - {faculty.institution}
                     </SelectItem>
                   ))}
                   {facultyMembers?.length === 0 && (
@@ -134,7 +145,7 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
         <div className="flex justify-end space-x-3">
           <Button 
             variant="outline" 
-            onClick={() => onOpenChange(false)}
+            onClick={() => handleOpenChange(false)}
             data-testid="button-cancel-assign"
           >
             Cancel

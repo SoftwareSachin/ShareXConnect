@@ -12,9 +12,11 @@ import type { DashboardStats, ProjectWithDetails } from "@shared/schema";
 import { useState } from "react";
 import { CreateProjectModal } from "@/components/modals/create-project-modal";
 import { AssignFacultyModal } from "@/components/modals/assign-faculty-modal";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Dashboard() {
   const { user } = useAuthStore();
+  const { toast } = useToast();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState<ProjectWithDetails | null>(null);
@@ -272,6 +274,20 @@ export default function Dashboard() {
                               </div>
                             </div>
                             <div className="flex items-center gap-3">
+                              {user?.role === "STUDENT" && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="bg-emerald-50/80 dark:bg-emerald-900/20 border-emerald-200/50 dark:border-emerald-700/50 hover:bg-emerald-100/80 dark:hover:bg-emerald-900/30"
+                                  onClick={() => {
+                                    setSelectedProject(project);
+                                    setShowAssignModal(true);
+                                  }}
+                                  data-testid={`button-assign-project-${project.id}`}
+                                >
+                                  <span className="text-emerald-600 dark:text-emerald-400 text-xs font-medium">Assign to Faculty</span>
+                                </Button>
+                              )}
                               <div className="w-10 h-10 bg-slate-100/80 dark:bg-slate-800/80 rounded-xl flex items-center justify-center backdrop-blur-sm">
                                 <div className="w-5 h-5 bg-slate-400 rounded"></div>
                               </div>
@@ -331,6 +347,12 @@ export default function Dashboard() {
                           if (recentProjects && recentProjects.length > 0) {
                             setSelectedProject(recentProjects[0]);
                             setShowAssignModal(true);
+                          } else {
+                            toast({
+                              variant: "destructive",
+                              title: "No Projects Found",
+                              description: "Please create a project first before assigning it to faculty.",
+                            });
                           }
                         }}
                         disabled={!recentProjects || recentProjects.length === 0}
