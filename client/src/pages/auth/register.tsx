@@ -190,7 +190,9 @@ export default function Register() {
                         <FormLabel className="text-slate-700">Role</FormLabel>
                         <Select 
                           onValueChange={(value) => {
+                            console.log("Role changing to:", value);
                             field.onChange(value);
+                            form.setValue("role", value);
                             // Clear faculty-specific fields when role changes
                             if (value !== "FACULTY") {
                               form.setValue("department", "");
@@ -245,8 +247,8 @@ export default function Register() {
                   <p>Is Faculty? {watchedRole === "FACULTY" ? "YES" : "NO"}</p>
                 </div>
                 
-                {/* Always show faculty fields for testing - Remove === "FACULTY" condition temporarily */}
-                {watchedRole === "FACULTY" && (
+                {/* Faculty fields - Show when role is FACULTY */}
+                {(watchedRole === "FACULTY" || form.getValues("role") === "FACULTY") && (
                   <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                     <h3 className="text-lg font-medium text-blue-900 mb-4">Faculty Information (Role: {watchedRole})</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
