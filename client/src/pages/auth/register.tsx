@@ -41,6 +41,9 @@ export default function Register() {
   });
 
   const watchedRole = form.watch("role");
+  
+  // Debug logging
+  console.log("Current role:", watchedRole);
 
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterFormData) => {
@@ -236,10 +239,16 @@ export default function Register() {
                   />
                 </div>
 
-                {/* Faculty-specific fields - Always show for debugging */}
+                {/* Faculty-specific fields - Debug section */}
+                <div className="p-2 bg-gray-100 rounded text-sm">
+                  <p>Debug: Current role = "{watchedRole}", type = {typeof watchedRole}</p>
+                  <p>Is Faculty? {watchedRole === "FACULTY" ? "YES" : "NO"}</p>
+                </div>
+                
+                {/* Always show faculty fields for testing - Remove === "FACULTY" condition temporarily */}
                 {watchedRole === "FACULTY" && (
                   <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                    <h3 className="text-lg font-medium text-blue-900 mb-4">Faculty Information</h3>
+                    <h3 className="text-lg font-medium text-blue-900 mb-4">Faculty Information (Role: {watchedRole})</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
