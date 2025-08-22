@@ -75,7 +75,7 @@ export default function EditProject() {
   });
 
   // Fetch project data
-  const { data: project, isLoading } = useQuery<ProjectWithDetails>({
+  const { data: project, isLoading, refetch } = useQuery<ProjectWithDetails>({
     queryKey: ['/api/projects', id],
     queryFn: () => apiGet(`/api/projects/${id}`)
   });
