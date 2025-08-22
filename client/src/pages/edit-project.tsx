@@ -200,12 +200,8 @@ export default function EditProject() {
             const formData = new FormData();
             formData.append('file', file);
             
-            const token = localStorage.getItem('auth-token');
             const response = await fetch(`/api/projects/${id}/files`, {
               method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${token}`,
-              },
               body: formData,
               credentials: 'include'
             });
@@ -247,11 +243,9 @@ export default function EditProject() {
   // Delete file mutation
   const deleteFileMutation = useMutation({
     mutationFn: async (fileId: string) => {
-      const token = localStorage.getItem('auth-token');
       const response = await fetch(`/api/projects/files/${fileId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         credentials: 'include'
