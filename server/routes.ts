@@ -713,7 +713,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (department && typeof department === 'string') {
         // For now, we'll check if the user has any projects in this department
         // In a real system, faculty would have a department field
-        const projectsWithDept = await storage.getAllProjects();
+        const projectsWithDept = await storage.getProjects();
         const facultyWithDeptProjects = new Set();
         
         projectsWithDept.forEach(project => {
