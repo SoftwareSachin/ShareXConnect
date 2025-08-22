@@ -655,6 +655,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
+  // Student route to assign their project to faculty
+  app.post("/api/projects/:id/assign-faculty", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      const { facultyId } = req.body;
+      const projectId = req.params.id;
+      
+      // Verify the project exists and belongs to the student
+      const project = await storage.getProject(projectId);
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+      
+      // Only project owner or students can assign faculty
+      if (project.ownerId !== req.user!.id && req.user!.role !== "STUDENT") {
+        return res.status(403).json({ message: "You can only assign faculty to your own projects" });
+      }
+
+      // Verify the faculty member exists and is faculty
+      const faculty = await storage.getUser(facultyId);
+      if (!faculty || faculty.role !== "FACULTY") {
+        return res.status(400).json({ message: "Invalid faculty member selected" });
+      }
+
+      // Check if faculty is from same institution
+      if (faculty.institution !== req.user!.institution) {
+        return res.status(400).json({ message: "You can only assign faculty from your institution" });
+      }
+
+      const assignment = await storage.assignProjectToReviewer(projectId, facultyId);
+      res.status(201).json({
+        message: "Project successfully assigned to faculty for review",
+        assignment,
+        facultyName: `${faculty.firstName} ${faculty.lastName}`
+      });
+    } catch (error) {
+      console.error('Error assigning project to faculty:', error);
+      res.status(500).json({ message: "Failed to assign project to faculty" });
+    }
+  }));
+
+  // Get faculty members for student assignment (filtered by institution)
+  app.get("/api/users/faculty", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      // Get all users from the same institution
+      const users = await storage.getUsersByInstitution(req.user!.institution);
+      
+      // Filter for faculty members only
+      const facultyMembers = users.filter(user => user.role === "FACULTY");
+      
+      // Remove sensitive information
+      const safeFacultyData = facultyMembers.map(faculty => ({
+        id: faculty.id,
+        firstName: faculty.firstName,
+        lastName: faculty.lastName,
+        email: faculty.email,
+        institution: faculty.institution,
+        isVerified: faculty.isVerified
+      }));
+      
+      res.json(safeFacultyData);
+    } catch (error) {
+      console.error('Error fetching faculty members:', error);
+      res.status(500).json({ message: "Failed to fetch faculty members" });
+    }
+  }));
+
   app.get("/api/faculty/assignments", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
       if (req.user!.role !== "FACULTY") {

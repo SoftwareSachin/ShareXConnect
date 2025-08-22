@@ -11,10 +11,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { DashboardStats, ProjectWithDetails } from "@shared/schema";
 import { useState } from "react";
 import { CreateProjectModal } from "@/components/modals/create-project-modal";
+import { AssignFacultyModal } from "@/components/modals/assign-faculty-modal";
 
 export default function Dashboard() {
   const { user } = useAuthStore();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<ProjectWithDetails | null>(null);
 
   const { data: stats, isLoading: statsLoading } = useQuery<DashboardStats>({
     queryKey: ["/api/dashboard/stats"],
@@ -321,6 +324,26 @@ export default function Dashboard() {
                   
                   {user?.role === "STUDENT" && (
                     <>
+                      <Button 
+                        variant="outline" 
+                        className="w-full justify-start h-12 bg-emerald-50/80 dark:bg-emerald-900/20 border border-emerald-200/50 dark:border-emerald-700/50 hover:bg-emerald-100/80 dark:hover:bg-emerald-900/30 rounded-xl transition-all duration-300"
+                        onClick={() => {
+                          if (recentProjects && recentProjects.length > 0) {
+                            setSelectedProject(recentProjects[0]);
+                            setShowAssignModal(true);
+                          }
+                        }}
+                        disabled={!recentProjects || recentProjects.length === 0}
+                        data-testid="button-assign-to-faculty"
+                      >
+                        <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-800/50 rounded-lg flex items-center justify-center mr-3">
+                          <div className="w-4 h-4 bg-emerald-600 dark:bg-emerald-400 rounded"></div>
+                        </div>
+                        <div className="text-left">
+                          <div className="font-medium text-slate-900 dark:text-slate-100">Assign to Faculty</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400">Get your project reviewed</div>
+                        </div>
+                      </Button>
                       <Button variant="outline" className="w-full justify-start h-12 bg-white/40 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/50 hover:bg-white/60 dark:hover:bg-slate-800/60 rounded-xl">
                         <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/50 rounded-lg flex items-center justify-center mr-3">
                           <div className="w-4 h-4 bg-purple-500 rounded"></div>
@@ -410,6 +433,11 @@ export default function Dashboard() {
       <CreateProjectModal 
         open={showCreateModal} 
         onOpenChange={setShowCreateModal} 
+      />
+      <AssignFacultyModal
+        open={showAssignModal}
+        onOpenChange={setShowAssignModal}
+        project={selectedProject}
       />
     </div>
   );
