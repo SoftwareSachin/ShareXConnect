@@ -577,7 +577,7 @@ export default function ProjectDetail() {
               <div className="flex items-center gap-3">
                 {(isOwner || isCollaborator) && (
                   <button 
-                    onClick={() => setLocation(`/projects/${project.id}/edit`)}
+                    onClick={() => setLocation(`/project/${project.id}/edit`)}
                     className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 font-medium shadow-sm"
                     data-testid="button-edit-project"
                   >

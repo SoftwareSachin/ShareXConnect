@@ -39,7 +39,7 @@ function Router() {
       <ProtectedRoute path="/dashboard" component={Dashboard} />
       <ProtectedRoute path="/projects" component={Projects} />
       <Route path="/project/:id" component={ProjectDetail} />
-      <ProtectedRoute path="/projects/:id/edit" component={EditProject} />
+      <ProtectedRoute path="/project/:id/edit" component={EditProject} />
       <ProtectedRoute path="/discover" component={Discover} />
       <ProtectedRoute path="/reviews" component={Reviews} />
       <ProtectedRoute path="/starred" component={Starred} />

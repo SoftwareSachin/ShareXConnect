@@ -60,6 +60,10 @@ export default function EditProject() {
   const { toast } = useToast();
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
+  
+  // Debug logging
+  console.log('EditProject component loaded, id:', id);
+  console.log('Current location:', window.location.pathname);
 
   // Fetch project data
   const { data: project, isLoading } = useQuery<ProjectWithDetails>({
