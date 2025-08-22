@@ -200,8 +200,12 @@ export default function EditProject() {
             const formData = new FormData();
             formData.append('file', file);
             
+            const token = localStorage.getItem('auth-token');
             const response = await fetch(`/api/projects/${id}/files`, {
               method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+              },
               body: formData,
               credentials: 'include'
             });
@@ -243,8 +247,13 @@ export default function EditProject() {
   // Delete file mutation
   const deleteFileMutation = useMutation({
     mutationFn: async (fileId: string) => {
+      const token = localStorage.getItem('auth-token');
       const response = await fetch(`/api/projects/files/${fileId}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
         credentials: 'include'
       });
       if (!response.ok) {
@@ -268,10 +277,7 @@ export default function EditProject() {
   });
 
   // Check if user can edit
-  const canEdit = user && project && (
-    user.id === project.ownerId || 
-    project.collaborators?.some(collaborator => collaborator.id === user.id)
-  );
+  const canEdit = user && project && user.id === project.ownerId;
 
   const handleCancel = () => {
     setLocation(`/project/${id}`);
@@ -683,7 +689,7 @@ export default function EditProject() {
                 <div className="relative">
                   <input
                     type="file"
-                    webkitdirectory="true"
+                    {...({ webkitdirectory: "" } as any)}
                     multiple
                     className="hidden"
                     id="sourceFolder"

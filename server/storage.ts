@@ -1364,6 +1364,20 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async deleteProjectFile(fileId: string): Promise<boolean> {
+    try {
+      const result = await db
+        .delete(projectFiles)
+        .where(eq(projectFiles.id, fileId));
+      
+      console.log(`🗑️ Project file deleted: ${fileId}`);
+      return true;
+    } catch (error) {
+      console.error('Error deleting project file:', error);
+      return false;
+    }
+  }
+
   // GitHub-like collaboration operations
   async requestCollaboration(projectId: string, requesterId: string, message: string): Promise<CollaborationRequest> {
     try {
