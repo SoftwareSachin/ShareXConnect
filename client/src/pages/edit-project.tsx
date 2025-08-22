@@ -110,8 +110,24 @@ export default function EditProject() {
         const formData = new FormData();
         formData.append('file', file);
         
+        // Get auth token from localStorage
+        const authData = localStorage.getItem('auth-storage');
+        const headers: Record<string, string> = {};
+        
+        if (authData) {
+          try {
+            const { state } = JSON.parse(authData);
+            if (state?.token) {
+              headers["Authorization"] = `Bearer ${state.token}`;
+            }
+          } catch (e) {
+            console.warn('Failed to parse auth data:', e);
+          }
+        }
+        
         const response = await fetch(`/api/projects/${id}/files`, {
           method: 'POST',
+          headers,
           body: formData,
           credentials: 'include'
         });

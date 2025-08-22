@@ -155,8 +155,24 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
             
             console.log('📤 Uploading file:', file.name, 'Size:', file.size, 'Type:', file.type);
             
+            // Get auth token from localStorage
+            const authData = localStorage.getItem('auth-storage');
+            const headers: Record<string, string> = {};
+            
+            if (authData) {
+              try {
+                const { state } = JSON.parse(authData);
+                if (state?.token) {
+                  headers["Authorization"] = `Bearer ${state.token}`;
+                }
+              } catch (e) {
+                console.warn('Failed to parse auth data:', e);
+              }
+            }
+            
             const response = await fetch(`/api/projects/${result.id}/files`, {
               method: 'POST',
+              headers,
               body: formData,
             });
 
