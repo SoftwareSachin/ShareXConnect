@@ -88,13 +88,61 @@ export default function EditProject() {
   });
 
   // File upload handlers
-  const handleFileUpload = (type: keyof typeof uploadedFiles, files: FileList | null) => {
+  const handleFileUpload = async (type: keyof typeof uploadedFiles, files: FileList | null) => {
     if (!files) return;
     
     setUploadedFiles(prev => ({
       ...prev,
       [type]: type === 'sourceCode' ? files[0] : Array.from(files)
     }));
+
+    // Upload files immediately and update project
+    const fileArray = Array.from(files);
+    
+    toast({
+      title: "Uploading...",
+      description: `Uploading ${fileArray.length} file(s)`,
+    });
+
+    let successCount = 0;
+    for (const file of fileArray) {
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const response = await fetch(`/api/projects/${id}/files`, {
+          method: 'POST',
+          body: formData,
+          credentials: 'include'
+        });
+
+        if (response.ok) {
+          successCount++;
+          console.log('✅ File uploaded immediately:', file.name);
+        } else {
+          console.error('❌ Failed to upload:', file.name);
+        }
+      } catch (error) {
+        console.error('❌ Upload error for', file.name, ':', error);
+      }
+    }
+
+    if (successCount > 0) {
+      // Refresh file list to show new files immediately
+      refetchFiles();
+      toast({
+        title: "Success!",
+        description: `${successCount} file(s) uploaded successfully`,
+      });
+    }
+
+    if (successCount < fileArray.length) {
+      toast({
+        title: "Warning",
+        description: `${fileArray.length - successCount} file(s) failed to upload`,
+        variant: "destructive",
+      });
+    }
   };
 
   const getFileDisplayText = (type: keyof typeof uploadedFiles) => {
@@ -184,47 +232,23 @@ export default function EditProject() {
 
       const result = await apiRequest(`/api/projects/${id}`, 'PATCH', enhancedProjectData);
 
-      // Upload new files if any were selected
-      const filesToUpload = [
-        ...(uploadedFiles.sourceCode ? [uploadedFiles.sourceCode] : []),
-        ...uploadedFiles.sourceFolder,
-        ...uploadedFiles.documentation,
-        ...uploadedFiles.images,
-      ];
-
-      if (filesToUpload.length > 0) {
-        console.log(`📁 Uploading ${filesToUpload.length} files for project ${id}`);
-        
-        for (const file of filesToUpload) {
-          try {
-            const formData = new FormData();
-            formData.append('file', file);
-            
-            const response = await fetch(`/api/projects/${id}/files`, {
-              method: 'POST',
-              body: formData,
-              credentials: 'include'
-            });
-
-            if (!response.ok) {
-              const errorText = await response.text();
-              throw new Error(`Failed to upload ${file.name}: ${errorText}`);
-            }
-
-            const uploadResult = await response.json();
-            console.log('✅ File uploaded successfully:', uploadResult);
-          } catch (error) {
-            console.error(`❌ Failed to upload ${file.name}:`, error);
-          }
-        }
-      }
+      // Files are already uploaded immediately when selected, 
+      // so we just need to update the project metadata here
 
       return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
       queryClient.invalidateQueries({ queryKey: ['/api/projects', id] });
-      refetchFiles();
+      refetch();  // Refresh project data
+      refetchFiles();  // Refresh file list
+      // Clear uploaded files after successful submission
+      setUploadedFiles({
+        sourceCode: null,
+        sourceFolder: [],
+        documentation: [],
+        images: [],
+      });
       toast({
         title: "Success!",
         description: "Project updated successfully",
