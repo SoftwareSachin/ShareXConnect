@@ -230,7 +230,20 @@ export default function EditProject() {
         techStack,
       };
 
-      const result = await apiRequest(`/api/projects/${id}`, 'PATCH', enhancedProjectData);
+      const response = await fetch(`/api/projects/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(enhancedProjectData),
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update project');
+      }
+
+      const result = await response.json();
 
       // Files are already uploaded immediately when selected, 
       // so we just need to update the project metadata here
