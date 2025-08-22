@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
   const [selectedFacultyId, setSelectedFacultyId] = useState<string>("");
   const [searchDepartment, setSearchDepartment] = useState<string>("");
   const [searchTechExpertise, setSearchTechExpertise] = useState<string>("");
+  const [useProjectFilters, setUseProjectFilters] = useState<boolean>(true);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -28,9 +29,20 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
       setSelectedFacultyId("");
       setSearchDepartment("");
       setSearchTechExpertise("");
+      setUseProjectFilters(true);
     }
     onOpenChange(newOpen);
   };
+
+  // Auto-populate filters based on project data when modal opens
+  React.useEffect(() => {
+    if (open && project && useProjectFilters) {
+      setSearchDepartment(project.department || "");
+      if (project.techStack && project.techStack.length > 0) {
+        setSearchTechExpertise(project.techStack.join(", "));
+      }
+    }
+  }, [open, project, useProjectFilters]);
 
   // Fetch faculty members from the same college domain, with search filters
   const { data: facultyMembers, isLoading } = useQuery<User[]>({
@@ -151,44 +163,68 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-8 py-2">
-          {/* Search Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
-            <div className="space-y-2">
-              <Label htmlFor="search-department" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                Filter by Department
-              </Label>
-              <Input
-                id="search-department"
-                placeholder="e.g., Computer Science, Electrical..."
-                value={searchDepartment}
-                onChange={(e) => setSearchDepartment(e.target.value)}
-                className="h-10 border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500"
+        <div className="space-y-6 py-2">
+          {/* Project-based Auto-filter Toggle */}
+          {project && (project.department || project.techStack?.length > 0) && (
+            <div className="flex items-center space-x-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <input
+                type="checkbox"
+                id="use-project-filters"
+                checked={useProjectFilters}
+                onChange={(e) => setUseProjectFilters(e.target.checked)}
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
               />
+              <label htmlFor="use-project-filters" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                Auto-filter faculty based on project requirements
+                <span className="text-xs text-blue-600 dark:text-blue-400 ml-2">
+                  ({project.department && `Dept: ${project.department}`}{project.department && project.techStack?.length > 0 ? ', ' : ''}{project.techStack?.length > 0 && `Tech: ${project.techStack.join(', ')}`})
+                </span>
+              </label>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="search-expertise" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                Filter by Tech Expertise
-              </Label>
-              <Input
-                id="search-expertise"
-                placeholder="e.g., React, Machine Learning..."
-                value={searchTechExpertise}
-                onChange={(e) => setSearchTechExpertise(e.target.value)}
-                className="h-10 border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500"
-              />
+          )}
+          
+          {/* Search Filters */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-medium text-slate-900 dark:text-slate-100 mb-3">Filter Faculty Members</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+              <div className="space-y-2">
+                <Label htmlFor="search-department" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Filter by Department
+                </Label>
+                <Input
+                  id="search-department"
+                  placeholder="e.g., Computer, Electrical..."
+                  value={searchDepartment}
+                  onChange={(e) => setSearchDepartment(e.target.value)}
+                  className="h-10 border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="search-expertise" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Filter by Tech Expertise
+                </Label>
+                <Input
+                  id="search-expertise"
+                  placeholder="e.g., React, Machine Learning..."
+                  value={searchTechExpertise}
+                  onChange={(e) => setSearchTechExpertise(e.target.value)}
+                  className="h-10 border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
             </div>
           </div>
           
-          <div className="space-y-3">
-            <label className="text-sm font-semibold text-slate-900 dark:text-slate-100 block">
-              Select Faculty Member
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                Select Faculty Member
+              </label>
               {(searchDepartment || searchTechExpertise) && (
-                <span className="text-xs text-blue-600 dark:text-blue-400 font-normal ml-2">
-                  (Filtered results)
+                <span className="text-xs text-blue-600 dark:text-blue-400 font-normal px-2 py-1 bg-blue-50 dark:bg-blue-900/30 rounded">
+                  Filtered results ({facultyMembers?.length || 0})
                 </span>
               )}
-            </label>
+            </div>
             {isLoading ? (
               <div className="h-12 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-lg"></div>
             ) : (
@@ -214,26 +250,28 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
                       className="py-4 px-4 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer rounded-md mx-1 my-0.5 focus:bg-slate-100 dark:focus:bg-slate-700"
                     >
                       <div className="flex flex-col w-full">
-                        <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
-                          {faculty.firstName} {faculty.lastName}
-                        </span>
-                        <div className="flex flex-col space-y-1 mt-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
+                            {faculty.firstName} {faculty.lastName}
+                          </span>
+                          <span className="text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2 py-1 rounded">
+                            Verified Faculty
+                          </span>
+                        </div>
+                        <div className="space-y-1">
                           <span className="text-xs text-slate-500 dark:text-slate-400">
                             {faculty.institution}
                           </span>
-                          {faculty.department && (
-                            <span className="text-xs text-blue-600 dark:text-blue-400">
-                              Department: {faculty.department}
-                            </span>
+                          {faculty.department && faculty.department !== "Not specified" && (
+                            <div className="text-xs text-blue-600 dark:text-blue-400">
+                              <span className="font-medium">Department:</span> {faculty.department}
+                            </div>
                           )}
-                          {faculty.techExpertise && (
-                            <span className="text-xs text-purple-600 dark:text-purple-400">
-                              Expertise: {faculty.techExpertise}
-                            </span>
+                          {faculty.techExpertise && faculty.techExpertise !== "Not specified" && (
+                            <div className="text-xs text-purple-600 dark:text-purple-400">
+                              <span className="font-medium">Expertise:</span> {faculty.techExpertise}
+                            </div>
                           )}
-                          <span className="text-xs text-green-600 dark:text-green-400">
-                            Verified Faculty
-                          </span>
                         </div>
                       </div>
                     </SelectItem>
@@ -244,12 +282,27 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
                       disabled 
                       className="text-slate-500 dark:text-slate-400 py-4 px-4 rounded-md mx-1 my-0.5"
                     >
-                      <div className="flex items-center">
-                        <span>
+                      <div className="text-center py-8">
+                        <div className="text-slate-400 text-sm">
                           {(searchDepartment || searchTechExpertise)
-                            ? "No faculty found matching your search criteria"
-                            : "No verified faculty members found in your institution"}
-                        </span>
+                            ? "No faculty found matching your search criteria. Try adjusting your filters."
+                            : "No verified faculty members found in your institution."}
+                        </div>
+                        {(searchDepartment || searchTechExpertise) && (
+                          <div className="mt-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => {
+                                setSearchDepartment("");
+                                setSearchTechExpertise("");
+                              }}
+                              className="text-xs"
+                            >
+                              Clear Filters
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </SelectItem>
                   )}

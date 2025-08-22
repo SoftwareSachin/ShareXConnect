@@ -721,12 +721,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         );
       }
       
-      // Filter by tech expertise if specified
+      // Filter by tech expertise if specified (supports multiple technologies)
       if (techExpertise && typeof techExpertise === 'string') {
-        facultyMembers = facultyMembers.filter(faculty => 
-          faculty.techExpertise && 
-          faculty.techExpertise.toLowerCase().includes(techExpertise.toLowerCase())
-        );
+        const searchTechnologies = techExpertise.split(',').map(tech => tech.trim().toLowerCase());
+        
+        facultyMembers = facultyMembers.filter(faculty => {
+          if (!faculty.techExpertise) return false;
+          
+          const facultyTechnologies = faculty.techExpertise.toLowerCase().split(',').map(tech => tech.trim());
+          
+          // Check if any of the search technologies match any of the faculty's technologies
+          return searchTechnologies.some(searchTech => 
+            facultyTechnologies.some(facultyTech => 
+              facultyTech.includes(searchTech) || searchTech.includes(facultyTech)
+            )
+          );
+        });
       }
       
       // Remove sensitive information and add additional data
