@@ -702,6 +702,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Get the current user's college domain
       const currentUser = req.user!;
+      console.log(`Searching faculty for user: ${currentUser.username}, college domain: ${currentUser.collegeDomain}`);
       
       // Get all users from the same college domain (not just institution)
       const users = await storage.getUsersByInstitution(currentUser.institution);
@@ -713,29 +714,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
         user.collegeDomain === currentUser.collegeDomain
       );
       
-      // Filter by department if specified
+      console.log(`Found ${facultyMembers.length} verified faculty from same college domain`);
+      
+      // Advanced department filtering with fuzzy matching
       if (department && typeof department === 'string') {
-        facultyMembers = facultyMembers.filter(faculty => 
-          faculty.department && 
-          faculty.department.toLowerCase().includes(department.toLowerCase())
-        );
+        const deptSearch = department.toLowerCase().trim();
+        facultyMembers = facultyMembers.filter(faculty => {
+          if (!faculty.department) return false;
+          
+          const facultyDept = faculty.department.toLowerCase().trim();
+          
+          // Exact match, partial match, or keyword matching
+          return facultyDept.includes(deptSearch) || 
+                 deptSearch.includes(facultyDept) ||
+                 // Check for common department abbreviations
+                 (deptSearch === 'cs' && facultyDept.includes('computer')) ||
+                 (deptSearch === 'ece' && (facultyDept.includes('electrical') || facultyDept.includes('electronics'))) ||
+                 (deptSearch === 'me' && facultyDept.includes('mechanical')) ||
+                 (deptSearch === 'ce' && facultyDept.includes('civil'));
+        });
+        console.log(`After department filter '${department}': ${facultyMembers.length} faculty`);
       }
       
-      // Filter by tech expertise if specified (supports multiple technologies)
+      // Enhanced tech expertise filtering with skill matching
       if (techExpertise && typeof techExpertise === 'string') {
         const searchTechnologies = techExpertise.split(',').map(tech => tech.trim().toLowerCase());
         
         facultyMembers = facultyMembers.filter(faculty => {
           if (!faculty.techExpertise) return false;
           
-          const facultyTechnologies = faculty.techExpertise.toLowerCase().split(',').map(tech => tech.trim());
+          const facultyTechnologies = faculty.techExpertise.toLowerCase()
+            .split(',')
+            .map(tech => tech.trim())
+            .filter(tech => tech.length > 0);
           
-          // Check if any of the search technologies match any of the faculty's technologies
+          // Enhanced matching: exact match, partial match, or related technology matching
           return searchTechnologies.some(searchTech => 
-            facultyTechnologies.some(facultyTech => 
-              facultyTech.includes(searchTech) || searchTech.includes(facultyTech)
-            )
+            facultyTechnologies.some(facultyTech => {
+              // Direct matches
+              if (facultyTech.includes(searchTech) || searchTech.includes(facultyTech)) {
+                return true;
+              }
+              
+              // Technology family matching
+              const techFamilies = {
+                'react': ['reactjs', 'next.js', 'nextjs', 'frontend', 'javascript', 'js'],
+                'node': ['nodejs', 'node.js', 'backend', 'javascript', 'js'],
+                'python': ['django', 'flask', 'fastapi', 'machine learning', 'ai', 'data science'],
+                'java': ['spring', 'hibernate', 'android', 'kotlin'],
+                'ml': ['machine learning', 'artificial intelligence', 'ai', 'data science', 'python'],
+                'ai': ['artificial intelligence', 'machine learning', 'ml', 'deep learning', 'python'],
+                'web': ['html', 'css', 'javascript', 'react', 'angular', 'vue', 'frontend']
+              };
+              
+              // Check if search term relates to faculty expertise through tech families
+              for (const [key, relatives] of Object.entries(techFamilies)) {
+                if ((searchTech.includes(key) || key.includes(searchTech)) && 
+                    relatives.some(rel => facultyTech.includes(rel))) {
+                  return true;
+                }
+                if ((facultyTech.includes(key) || key.includes(facultyTech)) && 
+                    relatives.some(rel => searchTech.includes(rel))) {
+                  return true;
+                }
+              }
+              
+              return false;
+            })
           );
+        });
+        console.log(`After tech expertise filter '${techExpertise}': ${facultyMembers.length} faculty`);
+      }
+      
+      // Sort faculty by relevance (those with more matching criteria first)
+      if (department || techExpertise) {
+        facultyMembers.sort((a, b) => {
+          let scoreA = 0, scoreB = 0;
+          
+          // Department relevance score
+          if (department && typeof department === 'string') {
+            const deptSearch = department.toLowerCase();
+            if (a.department?.toLowerCase().includes(deptSearch)) scoreA += 2;
+            if (b.department?.toLowerCase().includes(deptSearch)) scoreB += 2;
+          }
+          
+          // Tech expertise relevance score
+          if (techExpertise && typeof techExpertise === 'string') {
+            const searchTechs = techExpertise.split(',').map(t => t.trim().toLowerCase());
+            const aMatches = searchTechs.filter(tech => 
+              a.techExpertise?.toLowerCase().includes(tech)).length;
+            const bMatches = searchTechs.filter(tech => 
+              b.techExpertise?.toLowerCase().includes(tech)).length;
+            scoreA += aMatches;
+            scoreB += bMatches;
+          }
+          
+          return scoreB - scoreA; // Higher scores first
         });
       }
       
@@ -751,6 +825,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isVerified: faculty.isVerified,
       }));
       
+      console.log(`Returning ${safeFacultyData.length} faculty members`);
       res.json(safeFacultyData);
     } catch (error) {
       console.error('Error fetching faculty members:', error);

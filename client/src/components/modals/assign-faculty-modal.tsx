@@ -165,7 +165,7 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
 
         <div className="space-y-6 py-2">
           {/* Project-based Auto-filter Toggle */}
-          {project && (project.department || project.techStack?.length > 0) && (
+          {project && (project.department || (project.techStack && project.techStack.length > 0)) && (
             <div className="flex items-center space-x-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
               <input
                 type="checkbox"
@@ -177,7 +177,7 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
               <label htmlFor="use-project-filters" className="text-sm font-medium text-slate-700 dark:text-slate-300">
                 Auto-filter faculty based on project requirements
                 <span className="text-xs text-blue-600 dark:text-blue-400 ml-2">
-                  ({project.department && `Dept: ${project.department}`}{project.department && project.techStack?.length > 0 ? ', ' : ''}{project.techStack?.length > 0 && `Tech: ${project.techStack.join(', ')}`})
+                  ({project.department && `Dept: ${project.department}`}{project.department && project.techStack && project.techStack.length > 0 ? ', ' : ''}{project.techStack && project.techStack.length > 0 && `Tech: ${project.techStack.join(', ')}`})
                 </span>
               </label>
             </div>
@@ -247,29 +247,31 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
                     <SelectItem 
                       key={faculty.id} 
                       value={faculty.id}
-                      className="py-4 px-4 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer rounded-md mx-1 my-0.5 focus:bg-slate-100 dark:focus:bg-slate-700"
+                      className="p-0 border-0 focus:bg-transparent"
                     >
-                      <div className="flex flex-col w-full">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
-                            {faculty.firstName} {faculty.lastName}
-                          </span>
-                          <span className="text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2 py-1 rounded">
-                            Verified Faculty
+                      <div className="w-full p-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md border border-slate-100 dark:border-slate-700 m-1">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm mb-1">
+                              {faculty.firstName} {faculty.lastName}
+                            </h4>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                              {faculty.institution}
+                            </p>
+                          </div>
+                          <span className="text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2 py-1 rounded ml-2">
+                            Verified
                           </span>
                         </div>
                         <div className="space-y-1">
-                          <span className="text-xs text-slate-500 dark:text-slate-400">
-                            {faculty.institution}
-                          </span>
                           {faculty.department && faculty.department !== "Not specified" && (
                             <div className="text-xs text-blue-600 dark:text-blue-400">
-                              <span className="font-medium">Department:</span> {faculty.department}
+                              <span className="font-medium">Dept:</span> {faculty.department}
                             </div>
                           )}
                           {faculty.techExpertise && faculty.techExpertise !== "Not specified" && (
                             <div className="text-xs text-purple-600 dark:text-purple-400">
-                              <span className="font-medium">Expertise:</span> {faculty.techExpertise}
+                              <span className="font-medium">Tech:</span> {faculty.techExpertise}
                             </div>
                           )}
                         </div>
