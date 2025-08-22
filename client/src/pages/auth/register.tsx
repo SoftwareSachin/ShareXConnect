@@ -244,11 +244,12 @@ export default function Register() {
                 {/* Faculty-specific fields - Debug section */}
                 <div className="p-2 bg-gray-100 rounded text-sm">
                   <p>Debug: Current role = "{watchedRole}", type = {typeof watchedRole}</p>
+                  <p>Form role = "{form.getValues("role")}"</p>
                   <p>Is Faculty? {watchedRole === "FACULTY" ? "YES" : "NO"}</p>
                 </div>
                 
-                {/* Faculty fields - Show when role is FACULTY */}
-                {(watchedRole === "FACULTY" || form.getValues("role") === "FACULTY") && (
+                {/* Faculty fields - Temporarily always show for testing */}
+                {true && (
                   <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                     <h3 className="text-lg font-medium text-blue-900 mb-4">Faculty Information (Role: {watchedRole})</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
