@@ -141,26 +141,37 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
                     className="text-slate-600 dark:text-slate-400"
                   />
                 </SelectTrigger>
-                <SelectContent className="max-h-60 border-slate-200 dark:border-slate-700 rounded-lg shadow-lg">
+                <SelectContent 
+                  className="max-h-80 border-slate-200 dark:border-slate-700 rounded-lg shadow-xl bg-white dark:bg-slate-900"
+                  position="popper"
+                  sideOffset={8}
+                >
                   {facultyMembers?.map((faculty) => (
                     <SelectItem 
                       key={faculty.id} 
                       value={faculty.id}
-                      className="py-3 px-4 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+                      className="py-4 px-4 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer rounded-md mx-1 my-0.5 focus:bg-slate-100 dark:focus:bg-slate-700"
                     >
-                      <div className="flex flex-col">
-                        <span className="font-medium text-slate-900 dark:text-slate-100">
+                      <div className="flex flex-col w-full">
+                        <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
                           {faculty.firstName} {faculty.lastName}
                         </span>
-                        <span className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                          {faculty.institution}
+                        <span className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                          📍 {faculty.institution}
                         </span>
                       </div>
                     </SelectItem>
                   ))}
                   {facultyMembers?.length === 0 && (
-                    <SelectItem value="no-faculty" disabled className="text-slate-500 dark:text-slate-400">
-                      No faculty members found in your institution
+                    <SelectItem 
+                      value="no-faculty" 
+                      disabled 
+                      className="text-slate-500 dark:text-slate-400 py-4 px-4 rounded-md mx-1 my-0.5"
+                    >
+                      <div className="flex items-center">
+                        <span className="text-slate-400 mr-2">⚠️</span>
+                        <span>No faculty members found in your institution</span>
+                      </div>
                     </SelectItem>
                   )}
                 </SelectContent>
