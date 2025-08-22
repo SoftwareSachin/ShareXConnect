@@ -232,6 +232,9 @@ export default function Register() {
                 {/* Faculty-specific fields */}
                 {watchedRole === "FACULTY" && (
                   <>
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-medium text-slate-900">Faculty Information</h3>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
