@@ -186,8 +186,15 @@ export default function Register() {
                       <FormItem>
                         <FormLabel className="text-slate-700">Role</FormLabel>
                         <Select 
-                          onValueChange={field.onChange} 
-                          defaultValue={field.value}
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            // Clear faculty-specific fields when role changes
+                            if (value !== "FACULTY") {
+                              form.setValue("department", "");
+                              form.setValue("techExpertise", "");
+                            }
+                          }} 
+                          value={field.value}
                           disabled={registerMutation.isPending}
                         >
                           <FormControl>
@@ -229,19 +236,17 @@ export default function Register() {
                   />
                 </div>
 
-                {/* Faculty-specific fields */}
+                {/* Faculty-specific fields - Always show for debugging */}
                 {watchedRole === "FACULTY" && (
-                  <>
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-medium text-slate-900">Faculty Information</h3>
-                    </div>
+                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <h3 className="text-lg font-medium text-blue-900 mb-4">Faculty Information</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="department"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-700">Department</FormLabel>
+                            <FormLabel className="text-slate-700">Department *</FormLabel>
                             <FormControl>
                               <div className="relative">
                                 <GraduationCap className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
@@ -263,7 +268,7 @@ export default function Register() {
                         name="techExpertise"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-700">Tech Expertise</FormLabel>
+                            <FormLabel className="text-slate-700">Tech Expertise *</FormLabel>
                             <FormControl>
                               <div className="relative">
                                 <Code className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
@@ -280,7 +285,7 @@ export default function Register() {
                         )}
                       />
                     </div>
-                  </>
+                  </div>
                 )}
 
                 <FormField
