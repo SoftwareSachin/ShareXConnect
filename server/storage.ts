@@ -93,6 +93,7 @@ export interface IStorage {
   addCollaborator(projectId: string, userId: string): Promise<void>;
   removeCollaborator(projectId: string, userId: string): Promise<void>;
   getProjectCollaborators(projectId: string): Promise<(User & { addedAt: string; isOwner?: boolean })[]>;
+  isProjectCollaborator(projectId: string, userId: string): Promise<boolean>;
 
   // Star operations
   starProject(projectId: string, userId: string): Promise<void>;
@@ -698,6 +699,23 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error getting project collaborators:', error);
       return [];
+    }
+  }
+
+  async isProjectCollaborator(projectId: string, userId: string): Promise<boolean> {
+    try {
+      const result = await db.select()
+        .from(projectCollaborators)
+        .where(and(
+          eq(projectCollaborators.projectId, projectId),
+          eq(projectCollaborators.userId, userId)
+        ))
+        .limit(1);
+      
+      return result.length > 0;
+    } catch (error) {
+      console.error('Error checking project collaboration:', error);
+      return false;
     }
   }
 
