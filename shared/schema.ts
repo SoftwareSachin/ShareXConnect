@@ -43,6 +43,8 @@ export const users = pgTable("users", {
   role: roleEnum("role").notNull(),
   institution: varchar("institution", { length: 100 }).notNull(),
   collegeDomain: varchar("college_domain", { length: 100 }), // for students/faculty verification
+  department: varchar("department", { length: 100 }), // for faculty
+  techExpertise: text("tech_expertise"), // for faculty - comma separated or JSON array of technologies
   isVerified: boolean("is_verified").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -392,6 +394,9 @@ export const registerSchema = z.object({
     .max(100, "Institution name must be less than 100 characters"),
   collegeDomain: z.string().optional(), // Required for College Admin role
   selectedCollege: z.string().optional(), // Required for Student/Faculty roles
+  // Faculty-specific fields
+  department: z.string().optional(), // Required for Faculty role
+  techExpertise: z.string().optional(), // Required for Faculty role
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -400,6 +405,9 @@ export const registerSchema = z.object({
     return false;
   }
   if ((data.role === "STUDENT" || data.role === "FACULTY") && !data.selectedCollege) {
+    return false;
+  }
+  if (data.role === "FACULTY" && (!data.department || !data.techExpertise)) {
     return false;
   }
   return true;

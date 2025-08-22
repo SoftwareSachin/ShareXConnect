@@ -8,9 +8,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Eye, EyeOff, User, Mail, Lock, Building2, UserCheck, Shield } from "lucide-react";
+import { Eye, EyeOff, User, Mail, Lock, Building2, UserCheck, Shield, GraduationCap, Code } from "lucide-react";
 import { registerSchema } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuthStore } from "@/store/auth-store";
@@ -34,8 +35,12 @@ export default function Register() {
       lastName: "",
       role: "STUDENT" as const,
       institution: "",
+      department: "",
+      techExpertise: "",
     },
   });
+
+  const watchedRole = form.watch("role");
 
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterFormData) => {
@@ -223,6 +228,57 @@ export default function Register() {
                     )}
                   />
                 </div>
+
+                {/* Faculty-specific fields */}
+                {watchedRole === "FACULTY" && (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="department"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-700">Department</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <GraduationCap className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                                <Input
+                                  {...field}
+                                  placeholder="e.g., Computer Science"
+                                  className="pl-10 h-12 border-slate-200 focus:border-blue-500 focus:ring-blue-500"
+                                  disabled={registerMutation.isPending}
+                                />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="techExpertise"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-700">Tech Expertise</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Code className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                                <Input
+                                  {...field}
+                                  placeholder="e.g., JavaScript, Python, AI/ML"
+                                  className="pl-10 h-12 border-slate-200 focus:border-blue-500 focus:ring-blue-500"
+                                  disabled={registerMutation.isPending}
+                                />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </>
+                )}
 
                 <FormField
                   control={form.control}
