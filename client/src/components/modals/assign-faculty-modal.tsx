@@ -3,6 +3,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { User, ProjectWithDetails } from "@shared/schema";
@@ -15,7 +17,8 @@ interface AssignFacultyModalProps {
 
 export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacultyModalProps) {
   const [selectedFacultyId, setSelectedFacultyId] = useState<string>("");
-  const [filterByDepartment, setFilterByDepartment] = useState<boolean>(false);
+  const [searchDepartment, setSearchDepartment] = useState<string>("");
+  const [searchTechExpertise, setSearchTechExpertise] = useState<string>("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -23,18 +26,22 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
       setSelectedFacultyId("");
-      setFilterByDepartment(false);
+      setSearchDepartment("");
+      setSearchTechExpertise("");
     }
     onOpenChange(newOpen);
   };
 
-  // Fetch faculty members from the same institution, optionally filtered by department
+  // Fetch faculty members from the same college domain, with search filters
   const { data: facultyMembers, isLoading } = useQuery<User[]>({
-    queryKey: ["/api/users/faculty", filterByDepartment ? project?.department : null],
+    queryKey: ["/api/users/faculty", searchDepartment, searchTechExpertise],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (filterByDepartment && project?.department) {
-        params.append('department', project.department);
+      if (searchDepartment) {
+        params.append('department', searchDepartment);
+      }
+      if (searchTechExpertise) {
+        params.append('techExpertise', searchTechExpertise);
       }
       
       const response = await fetch(`/api/users/faculty?${params.toString()}`, {
@@ -145,27 +152,40 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
         </DialogHeader>
 
         <div className="space-y-8 py-2">
-          {project?.department && (
-            <div className="flex items-center space-x-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-              <input
-                type="checkbox"
-                id="filter-department"
-                checked={filterByDepartment}
-                onChange={(e) => setFilterByDepartment(e.target.checked)}
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+          {/* Search Filters */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+            <div className="space-y-2">
+              <Label htmlFor="search-department" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                Filter by Department
+              </Label>
+              <Input
+                id="search-department"
+                placeholder="e.g., Computer Science, Electrical..."
+                value={searchDepartment}
+                onChange={(e) => setSearchDepartment(e.target.value)}
+                className="h-10 border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500"
               />
-              <label htmlFor="filter-department" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                Only show faculty from <strong>{project.department}</strong> department
-              </label>
             </div>
-          )}
+            <div className="space-y-2">
+              <Label htmlFor="search-expertise" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                Filter by Tech Expertise
+              </Label>
+              <Input
+                id="search-expertise"
+                placeholder="e.g., React, Machine Learning..."
+                value={searchTechExpertise}
+                onChange={(e) => setSearchTechExpertise(e.target.value)}
+                className="h-10 border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
           
           <div className="space-y-3">
             <label className="text-sm font-semibold text-slate-900 dark:text-slate-100 block">
               Select Faculty Member
-              {filterByDepartment && project?.department && (
+              {(searchDepartment || searchTechExpertise) && (
                 <span className="text-xs text-blue-600 dark:text-blue-400 font-normal ml-2">
-                  (Showing {project.department} faculty only)
+                  (Filtered results)
                 </span>
               )}
             </label>
@@ -197,17 +217,22 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
                         <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
                           {faculty.firstName} {faculty.lastName}
                         </span>
-                        <div className="flex items-center space-x-3 mt-1">
+                        <div className="flex flex-col space-y-1 mt-1">
                           <span className="text-xs text-slate-500 dark:text-slate-400">
-                            🏛️ {faculty.institution}
+                            {faculty.institution}
                           </span>
-                          {faculty.specialization && (
+                          {faculty.department && (
                             <span className="text-xs text-blue-600 dark:text-blue-400">
-                              👨‍🏫 {faculty.specialization}
+                              Department: {faculty.department}
+                            </span>
+                          )}
+                          {faculty.techExpertise && (
+                            <span className="text-xs text-purple-600 dark:text-purple-400">
+                              Expertise: {faculty.techExpertise}
                             </span>
                           )}
                           <span className="text-xs text-green-600 dark:text-green-400">
-                            ✓ Verified Faculty
+                            Verified Faculty
                           </span>
                         </div>
                       </div>
@@ -220,10 +245,9 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
                       className="text-slate-500 dark:text-slate-400 py-4 px-4 rounded-md mx-1 my-0.5"
                     >
                       <div className="flex items-center">
-                        <span className="text-slate-400 mr-2">⚠️</span>
                         <span>
-                          {filterByDepartment 
-                            ? `No verified faculty found in ${project?.department} department`
+                          {(searchDepartment || searchTechExpertise)
+                            ? "No faculty found matching your search criteria"
                             : "No verified faculty members found in your institution"}
                         </span>
                       </div>

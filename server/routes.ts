@@ -695,35 +695,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
-  // Get faculty members for student assignment (filtered by institution and department)
+  // Get faculty members for student assignment (filtered by college domain, department, and tech expertise)
   app.get("/api/users/faculty", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
-      const { department } = req.query;
+      const { department, techExpertise } = req.query;
       
-      // Get all users from the same institution
-      const users = await storage.getUsersByInstitution(req.user!.institution);
+      // Get the current user's college domain
+      const currentUser = req.user!;
       
-      // Filter for verified faculty members only (real registered users)
+      // Get all users from the same college domain (not just institution)
+      const users = await storage.getUsersByInstitution(currentUser.institution);
+      
+      // Filter for verified faculty members with the same college domain
       let facultyMembers = users.filter(user => 
         user.role === "FACULTY" && 
-        user.isVerified === true
+        user.isVerified === true &&
+        user.collegeDomain === currentUser.collegeDomain
       );
       
-      // Further filter by department if specified
+      // Filter by department if specified
       if (department && typeof department === 'string') {
-        // For now, we'll check if the user has any projects in this department
-        // In a real system, faculty would have a department field
-        const projectsWithDept = await storage.getProjects();
-        const facultyWithDeptProjects = new Set();
-        
-        projectsWithDept.forEach(project => {
-          if (project.department === department) {
-            // This is a simple approach - in reality you'd have faculty.department
-            facultyMembers.forEach(faculty => {
-              facultyWithDeptProjects.add(faculty.id);
-            });
-          }
-        });
+        facultyMembers = facultyMembers.filter(faculty => 
+          faculty.department && 
+          faculty.department.toLowerCase().includes(department.toLowerCase())
+        );
+      }
+      
+      // Filter by tech expertise if specified
+      if (techExpertise && typeof techExpertise === 'string') {
+        facultyMembers = facultyMembers.filter(faculty => 
+          faculty.techExpertise && 
+          faculty.techExpertise.toLowerCase().includes(techExpertise.toLowerCase())
+        );
       }
       
       // Remove sensitive information and add additional data
