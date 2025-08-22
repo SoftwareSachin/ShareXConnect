@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
-import { GraduationCap, BookOpen, Users, Shield, Mail, Lock, Eye, EyeOff, User, Building2, UserCheck, AtSign, KeyRound } from "lucide-react";
+import { GraduationCap, BookOpen, Users, Shield, Mail, Lock, Eye, EyeOff, User, Building2, UserCheck, AtSign, KeyRound, Code } from "lucide-react";
 import { loginSchema, registerSchema } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuthStore } from "@/store/auth-store";
@@ -117,8 +117,12 @@ export default function Login() {
       institution: "",
       collegeDomain: "",
       selectedCollege: "",
+      department: "",
+      techExpertise: "",
     },
   });
+
+  const watchedRole = registerForm.watch("role");
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginFormData) => {
@@ -571,7 +575,18 @@ export default function Login() {
                             <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                             Academic Role
                           </FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value} disabled={registerMutation.isPending}>
+                          <Select 
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              // Clear faculty-specific fields when role changes
+                              if (value !== "FACULTY") {
+                                registerForm.setValue("department", "");
+                                registerForm.setValue("techExpertise", "");
+                              }
+                            }} 
+                            defaultValue={field.value} 
+                            disabled={registerMutation.isPending}
+                          >
                             <FormControl>
                               <SelectTrigger className="bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white rounded-xl h-12 text-base font-medium transition-all duration-300 shadow-sm hover:shadow-md">
                                 <SelectValue placeholder="Select your role" />
@@ -648,6 +663,71 @@ export default function Login() {
                         disabled={registerMutation.isPending}
                         control={registerForm.control}
                       />
+                    )}
+
+                    {/* Faculty-specific fields */}
+                    {watchedRole === "FACULTY" && (
+                      <div className="bg-blue-50/50 dark:bg-blue-900/20 backdrop-blur-sm p-6 rounded-xl border border-blue-200/50 dark:border-blue-700/50">
+                        <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-4 flex items-center gap-2">
+                          <GraduationCap className="w-5 h-5" />
+                          Faculty Information
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={registerForm.control}
+                            name="department"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2.5">
+                                  <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                  Department *
+                                </FormLabel>
+                                <FormControl>
+                                  <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                                      <GraduationCap className="h-4 w-4 text-slate-400 dark:text-slate-500" />
+                                    </div>
+                                    <Input
+                                      {...field}
+                                      placeholder="e.g., Computer Science"
+                                      className="pl-11 pr-4 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl h-12 text-base font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
+                                      disabled={registerMutation.isPending}
+                                    />
+                                  </div>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={registerForm.control}
+                            name="techExpertise"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-800 dark:text-slate-200 font-semibold text-sm flex items-center gap-2.5">
+                                  <Code className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                  Tech Expertise *
+                                </FormLabel>
+                                <FormControl>
+                                  <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                                      <Code className="h-4 w-4 text-slate-400 dark:text-slate-500" />
+                                    </div>
+                                    <Input
+                                      {...field}
+                                      placeholder="e.g., JavaScript, Python, AI/ML"
+                                      className="pl-11 pr-4 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300/60 dark:border-slate-600/60 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl h-12 text-base font-medium transition-all duration-300 shadow-sm hover:shadow-md focus:shadow-lg"
+                                      disabled={registerMutation.isPending}
+                                    />
+                                  </div>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
                     )}
 
                     <FormField
