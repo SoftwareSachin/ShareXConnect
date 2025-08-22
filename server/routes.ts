@@ -837,7 +837,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isVerified: faculty.isVerified,
       }));
       
-      console.log(`Returning ${safeFacultyData.length} faculty members`);
+      console.log(`Returning ${safeFacultyData.length} faculty members:`, safeFacultyData.map(f => `${f.firstName} ${f.lastName}`));
       res.json(safeFacultyData);
     } catch (error) {
       console.error('Error fetching faculty members:', error);

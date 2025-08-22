@@ -65,6 +65,7 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
   const { data: facultyMembers, isLoading } = useQuery<User[]>({
     queryKey: ["/api/users/faculty", debouncedDepartment, debouncedTechExpertise],
     queryFn: async () => {
+      console.log('🔍 Fetching faculty with filters:', { debouncedDepartment, debouncedTechExpertise });
       const params = new URLSearchParams();
       if (debouncedDepartment?.trim()) {
         params.append('department', debouncedDepartment.trim());
@@ -84,10 +85,12 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
         throw new Error('Failed to fetch faculty members');
       }
       
-      return response.json();
+      const data = await response.json();
+      console.log('✅ Faculty data received:', data);
+      return data;
     },
     enabled: open,
-    staleTime: 30000, // Cache results for 30 seconds
+    staleTime: 10000, // Reduced cache time for testing
   });
 
   const assignMutation = useMutation({
