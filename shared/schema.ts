@@ -427,6 +427,7 @@ export const insertProjectSchema = z.object({
   githubUrl: z.string().url("Invalid GitHub URL").optional().or(z.literal("")),
   demoUrl: z.string().url("Invalid demo URL").optional().or(z.literal("")),
   ownerId: z.string(),
+  assignedReviewerId: z.string().optional(),
   // Academic fields
   academicLevel: z.string().optional(),
   department: z.string().optional(),

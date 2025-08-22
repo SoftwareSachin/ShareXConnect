@@ -733,9 +733,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         lastName: faculty.lastName,
         email: faculty.email,
         institution: faculty.institution,
+        department: faculty.department || "Not specified",
+        techExpertise: faculty.techExpertise || "Not specified",
         isVerified: faculty.isVerified,
-        // Add any specialization info from their bio or other fields
-        specialization: "General" // Placeholder - would come from faculty profile
       }));
       
       res.json(safeFacultyData);

@@ -6,13 +6,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { insertProjectSchema } from "@shared/schema";
 import { apiPost } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { useState } from "react";
 import { useAuthStore } from "@/lib/auth";
+import { Search, User, GraduationCap, Code } from "lucide-react";
 
 
 const createProjectSchema = insertProjectSchema.extend({
@@ -28,6 +29,17 @@ const createProjectSchema = insertProjectSchema.extend({
   projectMethodology: z.string().optional(),
 }).omit({ ownerId: true });
 
+type FacultyMember = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  department: string;
+  techExpertise: string;
+  institution: string;
+  isVerified: boolean;
+};
+
 type CreateProjectFormData = z.infer<typeof createProjectSchema>;
 
 interface CreateProjectModalProps {
@@ -38,7 +50,12 @@ interface CreateProjectModalProps {
 export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { token } = useAuthStore();
+  const { token, user } = useAuthStore();
+  
+  // Faculty selection state
+  const [selectedFaculty, setSelectedFaculty] = useState<string>("");
+  const [facultySearchTerm, setFacultySearchTerm] = useState("");
+  const [departmentFilter, setDepartmentFilter] = useState("");
   
   // File upload state
   const [uploadedFiles, setUploadedFiles] = useState({
@@ -47,6 +64,26 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
     documentation: [] as File[],
     images: [] as File[],
   });
+
+  // Fetch faculty members
+  const { data: facultyMembers, isLoading: isLoadingFaculty } = useQuery<FacultyMember[]>({
+    queryKey: ["/api/users/faculty"],
+    enabled: user?.role === "STUDENT", // Only fetch for students
+  });
+
+  // Filter faculty based on search and department
+  const filteredFaculty = facultyMembers?.filter(faculty => {
+    const matchesSearch = !facultySearchTerm || 
+      `${faculty.firstName} ${faculty.lastName}`.toLowerCase().includes(facultySearchTerm.toLowerCase()) ||
+      faculty.techExpertise.toLowerCase().includes(facultySearchTerm.toLowerCase());
+    
+    const matchesDepartment = !departmentFilter || faculty.department === departmentFilter;
+    
+    return matchesSearch && matchesDepartment;
+  }) || [];
+
+  // Get unique departments for filter
+  const departments = [...new Set(facultyMembers?.map(f => f.department) || [])].filter(d => d && d !== "Not specified");
 
   // File upload handlers
   const handleFileUpload = (type: keyof typeof uploadedFiles, files: FileList | null) => {
@@ -125,6 +162,8 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
         courseSubject: data.courseSubject || "",
         projectMethodology: data.projectMethodology || "",
         setupInstructions: data.installationInstructions || "",
+        // Faculty assignment
+        assignedReviewerId: selectedFaculty || undefined,
       };
 
       console.log('🚀 Creating project:', enhancedProjectData.title);
@@ -459,6 +498,102 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
                 />
               </div>
             </div>
+
+            {/* Faculty Assignment Section - Only for Students */}
+            {user?.role === "STUDENT" && (
+              <div className="space-y-4 bg-slate-50 dark:bg-slate-800/50 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
+                <div className="flex items-center space-x-2 mb-4">
+                  <GraduationCap className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                    Assign Faculty Reviewer (Optional)
+                  </h3>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Faculty Search */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Search Faculty
+                    </Label>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                      <Input
+                        placeholder="Search by name or expertise..."
+                        value={facultySearchTerm}
+                        onChange={(e) => setFacultySearchTerm(e.target.value)}
+                        className="pl-10 h-12 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Department Filter */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Filter by Department
+                    </Label>
+                    <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+                      <SelectTrigger className="h-12 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg">
+                        <SelectValue placeholder="All departments" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">All departments</SelectItem>
+                        {departments.map(dept => (
+                          <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Faculty List */}
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {isLoadingFaculty ? (
+                    <div className="text-center py-4 text-slate-600 dark:text-slate-400">
+                      Loading faculty members...
+                    </div>
+                  ) : filteredFaculty.length === 0 ? (
+                    <div className="text-center py-4 text-slate-600 dark:text-slate-400">
+                      {facultyMembers?.length === 0 ? "No faculty members found" : "No faculty members match your search"}
+                    </div>
+                  ) : (
+                    filteredFaculty.map(faculty => (
+                      <div
+                        key={faculty.id}
+                        data-testid={`faculty-${faculty.id}`}
+                        className={`p-4 rounded-lg border cursor-pointer transition-all duration-200 ${
+                          selectedFaculty === faculty.id
+                            ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-sm"
+                            : "border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800"
+                        }`}
+                        onClick={() => setSelectedFaculty(selectedFaculty === faculty.id ? "" : faculty.id)}
+                      >
+                        <div className="flex items-start space-x-3">
+                          <User className="w-5 h-5 mt-0.5 text-slate-500 dark:text-slate-400" />
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2">
+                              <h4 className="font-semibold text-slate-900 dark:text-slate-100">
+                                {faculty.firstName} {faculty.lastName}
+                              </h4>
+                              {selectedFaculty === faculty.id && (
+                                <span className="text-xs bg-blue-600 text-white px-2 py-1 rounded-full">Selected</span>
+                              )}
+                            </div>
+                            <div className="flex items-center space-x-1 mt-1">
+                              <GraduationCap className="w-4 h-4 text-slate-400" />
+                              <span className="text-sm text-slate-600 dark:text-slate-400">{faculty.department}</span>
+                            </div>
+                            <div className="flex items-center space-x-1 mt-1">
+                              <Code className="w-4 h-4 text-slate-400" />
+                              <span className="text-sm text-slate-600 dark:text-slate-400">{faculty.techExpertise}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* File Uploads Section */}
             <div className="space-y-6">
