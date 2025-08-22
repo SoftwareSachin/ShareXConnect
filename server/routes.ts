@@ -719,71 +719,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Advanced department filtering with fuzzy matching
       if (department && typeof department === 'string') {
         const deptSearch = department.toLowerCase().trim();
-        facultyMembers = facultyMembers.filter(faculty => {
-          if (!faculty.department) return false;
-          
-          const facultyDept = faculty.department.toLowerCase().trim();
-          
-          // Exact match, partial match, or keyword matching
-          return facultyDept.includes(deptSearch) || 
-                 deptSearch.includes(facultyDept) ||
-                 // Check for common department abbreviations
-                 (deptSearch === 'cs' && facultyDept.includes('computer')) ||
-                 (deptSearch === 'ece' && (facultyDept.includes('electrical') || facultyDept.includes('electronics'))) ||
-                 (deptSearch === 'me' && facultyDept.includes('mechanical')) ||
-                 (deptSearch === 'ce' && facultyDept.includes('civil'));
-        });
-        console.log(`After department filter '${department}': ${facultyMembers.length} faculty`);
+        if (deptSearch.length > 0) {
+          facultyMembers = facultyMembers.filter(faculty => {
+            if (!faculty.department || faculty.department === 'Not specified') return false;
+            
+            const facultyDept = faculty.department.toLowerCase().trim();
+            
+            // Exact match, partial match, or keyword matching
+            return facultyDept.includes(deptSearch) || 
+                   deptSearch.includes(facultyDept) ||
+                   // Check for common department abbreviations
+                   (deptSearch === 'cs' && facultyDept.includes('computer')) ||
+                   (deptSearch === 'ece' && (facultyDept.includes('electrical') || facultyDept.includes('electronics'))) ||
+                   (deptSearch === 'me' && facultyDept.includes('mechanical')) ||
+                   (deptSearch === 'ce' && facultyDept.includes('civil')) ||
+                   (deptSearch === 'it' && facultyDept.includes('information')) ||
+                   (deptSearch === 'cse' && (facultyDept.includes('computer science') || facultyDept.includes('computer')));
+          });
+          console.log(`After department filter '${department}': ${facultyMembers.length} faculty`);
+        }
       }
       
       // Enhanced tech expertise filtering with skill matching
       if (techExpertise && typeof techExpertise === 'string') {
-        const searchTechnologies = techExpertise.split(',').map(tech => tech.trim().toLowerCase());
+        const searchTechnologies = techExpertise.split(',')
+          .map(tech => tech.trim().toLowerCase())
+          .filter(tech => tech.length > 0);
         
-        facultyMembers = facultyMembers.filter(faculty => {
-          if (!faculty.techExpertise) return false;
-          
-          const facultyTechnologies = faculty.techExpertise.toLowerCase()
-            .split(',')
-            .map(tech => tech.trim())
-            .filter(tech => tech.length > 0);
-          
-          // Enhanced matching: exact match, partial match, or related technology matching
-          return searchTechnologies.some(searchTech => 
-            facultyTechnologies.some(facultyTech => {
-              // Direct matches
-              if (facultyTech.includes(searchTech) || searchTech.includes(facultyTech)) {
-                return true;
-              }
+        if (searchTechnologies.length > 0) {
+          facultyMembers = facultyMembers.filter(faculty => {
+            if (!faculty.techExpertise || faculty.techExpertise === 'Not specified') return false;
+            
+            const facultyTechnologies = faculty.techExpertise.toLowerCase()
+              .split(',')
+              .map(tech => tech.trim())
+              .filter(tech => tech.length > 0);
+            
+            // Enhanced matching: exact match, partial match, or related technology matching
+            return searchTechnologies.some(searchTech => {
+              if (searchTech.length === 0) return false;
               
-              // Technology family matching
-              const techFamilies = {
-                'react': ['reactjs', 'next.js', 'nextjs', 'frontend', 'javascript', 'js'],
-                'node': ['nodejs', 'node.js', 'backend', 'javascript', 'js'],
-                'python': ['django', 'flask', 'fastapi', 'machine learning', 'ai', 'data science'],
-                'java': ['spring', 'hibernate', 'android', 'kotlin'],
-                'ml': ['machine learning', 'artificial intelligence', 'ai', 'data science', 'python'],
-                'ai': ['artificial intelligence', 'machine learning', 'ml', 'deep learning', 'python'],
-                'web': ['html', 'css', 'javascript', 'react', 'angular', 'vue', 'frontend']
-              };
-              
-              // Check if search term relates to faculty expertise through tech families
-              for (const [key, relatives] of Object.entries(techFamilies)) {
-                if ((searchTech.includes(key) || key.includes(searchTech)) && 
-                    relatives.some(rel => facultyTech.includes(rel))) {
+              return facultyTechnologies.some(facultyTech => {
+                // Direct matches
+                if (facultyTech.includes(searchTech) || searchTech.includes(facultyTech)) {
                   return true;
                 }
-                if ((facultyTech.includes(key) || key.includes(facultyTech)) && 
-                    relatives.some(rel => searchTech.includes(rel))) {
-                  return true;
+                
+                // Technology family matching
+                const techFamilies = {
+                  'react': ['reactjs', 'next.js', 'nextjs', 'frontend', 'javascript', 'js', 'jsx', 'typescript'],
+                  'node': ['nodejs', 'node.js', 'backend', 'javascript', 'js', 'express'],
+                  'python': ['django', 'flask', 'fastapi', 'machine learning', 'ai', 'data science', 'ml', 'pandas'],
+                  'java': ['spring', 'hibernate', 'android', 'kotlin', 'springboot'],
+                  'ml': ['machine learning', 'artificial intelligence', 'ai', 'data science', 'python', 'tensorflow', 'pytorch'],
+                  'ai': ['artificial intelligence', 'machine learning', 'ml', 'deep learning', 'python', 'neural networks'],
+                  'web': ['html', 'css', 'javascript', 'react', 'angular', 'vue', 'frontend', 'bootstrap'],
+                  'database': ['sql', 'mysql', 'postgresql', 'mongodb', 'nosql', 'sqlite'],
+                  'cloud': ['aws', 'azure', 'gcp', 'docker', 'kubernetes', 'devops']
+                };
+                
+                // Check if search term relates to faculty expertise through tech families
+                for (const [key, relatives] of Object.entries(techFamilies)) {
+                  if ((searchTech.includes(key) || key.includes(searchTech)) && 
+                      relatives.some(rel => facultyTech.includes(rel))) {
+                    return true;
+                  }
+                  if ((facultyTech.includes(key) || key.includes(facultyTech)) && 
+                      relatives.some(rel => searchTech.includes(rel))) {
+                    return true;
+                  }
                 }
-              }
-              
-              return false;
-            })
-          );
-        });
-        console.log(`After tech expertise filter '${techExpertise}': ${facultyMembers.length} faculty`);
+                
+                return false;
+              });
+            });
+          });
+          console.log(`After tech expertise filter '${techExpertise}': ${facultyMembers.length} faculty`);
+        }
       }
       
       // Sort faculty by relevance (those with more matching criteria first)

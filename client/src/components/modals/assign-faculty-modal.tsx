@@ -20,8 +20,25 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
   const [searchDepartment, setSearchDepartment] = useState<string>("");
   const [searchTechExpertise, setSearchTechExpertise] = useState<string>("");
   const [useProjectFilters, setUseProjectFilters] = useState<boolean>(true);
+  const [debouncedDepartment, setDebouncedDepartment] = useState<string>("");
+  const [debouncedTechExpertise, setDebouncedTechExpertise] = useState<string>("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Debounce search inputs to prevent excessive API calls
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedDepartment(searchDepartment);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchDepartment]);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedTechExpertise(searchTechExpertise);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTechExpertise]);
 
   // Reset selection when modal closes or project changes
   const handleOpenChange = (newOpen: boolean) => {
@@ -44,16 +61,16 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
     }
   }, [open, project, useProjectFilters]);
 
-  // Fetch faculty members from the same college domain, with search filters
+  // Fetch faculty members from the same college domain, with debounced search filters
   const { data: facultyMembers, isLoading } = useQuery<User[]>({
-    queryKey: ["/api/users/faculty", searchDepartment, searchTechExpertise],
+    queryKey: ["/api/users/faculty", debouncedDepartment, debouncedTechExpertise],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (searchDepartment) {
-        params.append('department', searchDepartment);
+      if (debouncedDepartment?.trim()) {
+        params.append('department', debouncedDepartment.trim());
       }
-      if (searchTechExpertise) {
-        params.append('techExpertise', searchTechExpertise);
+      if (debouncedTechExpertise?.trim()) {
+        params.append('techExpertise', debouncedTechExpertise.trim());
       }
       
       const response = await fetch(`/api/users/faculty?${params.toString()}`, {
@@ -70,6 +87,7 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
       return response.json();
     },
     enabled: open,
+    staleTime: 30000, // Cache results for 30 seconds
   });
 
   const assignMutation = useMutation({
@@ -219,7 +237,7 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
               <label className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                 Select Faculty Member
               </label>
-              {(searchDepartment || searchTechExpertise) && (
+              {(debouncedDepartment || debouncedTechExpertise) && (
                 <span className="text-xs text-blue-600 dark:text-blue-400 font-normal px-2 py-1 bg-blue-50 dark:bg-blue-900/30 rounded">
                   Filtered results ({facultyMembers?.length || 0})
                 </span>
@@ -247,32 +265,37 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
                     <SelectItem 
                       key={faculty.id} 
                       value={faculty.id}
-                      className="p-0 border-0 focus:bg-transparent"
+                      className="p-3 hover:bg-slate-50 dark:hover:bg-slate-800 border-b border-slate-100 dark:border-slate-700 last:border-b-0 min-h-[80px] items-start"
                     >
-                      <div className="w-full p-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md border border-slate-100 dark:border-slate-700 m-1">
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm mb-1">
-                              {faculty.firstName} {faculty.lastName}
-                            </h4>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
-                              {faculty.institution}
-                            </p>
-                          </div>
-                          <span className="text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2 py-1 rounded ml-2">
-                            Verified
-                          </span>
-                        </div>
-                        <div className="space-y-1">
-                          {faculty.department && faculty.department !== "Not specified" && (
-                            <div className="text-xs text-blue-600 dark:text-blue-400">
-                              <span className="font-medium">Dept:</span> {faculty.department}
+                      <div className="w-full">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex-1 min-w-0 pr-3">
+                            <div className="font-medium text-slate-900 dark:text-slate-100 text-sm truncate">
+                              {faculty.firstName && faculty.lastName ? 
+                                `${faculty.firstName} ${faculty.lastName}` : 
+                                faculty.email?.split('@')[0] || 'Faculty Member'
+                              }
                             </div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                              {faculty.institution || 'Institution not specified'}
+                            </div>
+                          </div>
+                          <div className="flex-shrink-0">
+                            <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 rounded">
+                              Verified
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {faculty.department && faculty.department !== "Not specified" && (
+                            <span className="inline-flex items-center px-2 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 rounded">
+                              Dept: {faculty.department}
+                            </span>
                           )}
                           {faculty.techExpertise && faculty.techExpertise !== "Not specified" && (
-                            <div className="text-xs text-purple-600 dark:text-purple-400">
-                              <span className="font-medium">Tech:</span> {faculty.techExpertise}
-                            </div>
+                            <span className="inline-flex items-center px-2 py-1 text-xs bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 rounded">
+                              Tech: {faculty.techExpertise}
+                            </span>
                           )}
                         </div>
                       </div>
@@ -290,7 +313,7 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
                             ? "No faculty found matching your search criteria. Try adjusting your filters."
                             : "No verified faculty members found in your institution."}
                         </div>
-                        {(searchDepartment || searchTechExpertise) && (
+                        {(debouncedDepartment || debouncedTechExpertise) && (
                           <div className="mt-2">
                             <Button 
                               variant="outline" 
@@ -298,6 +321,8 @@ export function AssignFacultyModal({ open, onOpenChange, project }: AssignFacult
                               onClick={() => {
                                 setSearchDepartment("");
                                 setSearchTechExpertise("");
+                                setDebouncedDepartment("");
+                                setDebouncedTechExpertise("");
                               }}
                               className="text-xs"
                             >
