@@ -449,4 +449,164 @@ WHERE u.institution = $1 AND p.visibility != 'PRIVATE';
 
 ---
 
+## Database Setup Queries
+
+### Migration Queries Used During Platform Setup
+
+The following SQL queries were executed to complete the database structure and resolve missing columns/tables during the migration to Replit environment:
+
+#### 1. Create Missing Enums
+```sql
+-- Create all missing enums
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'request_status') THEN
+    CREATE TYPE request_status AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'repo_item_type') THEN
+    CREATE TYPE repo_item_type AS ENUM ('FILE', 'FOLDER');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'change_type') THEN
+    CREATE TYPE change_type AS ENUM ('ADD', 'MODIFY', 'DELETE', 'SUGGEST');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'change_status') THEN
+    CREATE TYPE change_status AS ENUM ('OPEN', 'APPROVED', 'REJECTED', 'MERGED');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'audit_action') THEN
+    CREATE TYPE audit_action AS ENUM ('CREATE', 'UPDATE', 'DELETE', 'VIEW', 'LOGIN', 'LOGOUT', 'UPLOAD', 'DOWNLOAD', 'COLLABORATE', 'REVIEW', 'COMMENT');
+  END IF;
+END
+$$;
+```
+
+#### 2. Add Missing Columns to Projects Table
+```sql
+-- Add missing columns to projects table
+ALTER TABLE projects 
+ADD COLUMN IF NOT EXISTS academic_level VARCHAR(100),
+ADD COLUMN IF NOT EXISTS department VARCHAR(100),
+ADD COLUMN IF NOT EXISTS course_subject VARCHAR(150),
+ADD COLUMN IF NOT EXISTS project_methodology TEXT,
+ADD COLUMN IF NOT EXISTS setup_instructions TEXT,
+ADD COLUMN IF NOT EXISTS repository_url VARCHAR(500),
+ADD COLUMN IF NOT EXISTS live_demo_url VARCHAR(500),
+ADD COLUMN IF NOT EXISTS source_code_repository TEXT,
+ADD COLUMN IF NOT EXISTS documentation_reports TEXT,
+ADD COLUMN IF NOT EXISTS images_assets TEXT,
+ADD COLUMN IF NOT EXISTS star_count INTEGER DEFAULT 0 NOT NULL,
+ADD COLUMN IF NOT EXISTS allows_collaboration BOOLEAN DEFAULT true NOT NULL,
+ADD COLUMN IF NOT EXISTS requires_approval_for_collaboration BOOLEAN DEFAULT true NOT NULL;
+```
+
+#### 3. Add Missing Columns to Users Table
+```sql
+-- Add missing columns to users table
+ALTER TABLE users 
+ADD COLUMN IF NOT EXISTS department VARCHAR(100),
+ADD COLUMN IF NOT EXISTS tech_expertise TEXT;
+```
+
+#### 4. Create Missing Tables
+
+**project_files table:**
+```sql
+CREATE TABLE IF NOT EXISTS project_files (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  file_name VARCHAR(255) NOT NULL,
+  file_path VARCHAR(500) NOT NULL,
+  file_type VARCHAR(50) NOT NULL,
+  file_size INTEGER NOT NULL,
+  content TEXT,
+  is_archive BOOLEAN DEFAULT false,
+  archive_contents TEXT,
+  uploaded_at TIMESTAMP DEFAULT NOW() NOT NULL
+);
+```
+
+**collaboration_requests table:**
+```sql
+CREATE TABLE IF NOT EXISTS collaboration_requests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  requester_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  message TEXT,
+  status request_status DEFAULT 'PENDING' NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+  responded_at TIMESTAMP
+);
+```
+
+**project_repository table:**
+```sql
+CREATE TABLE IF NOT EXISTS project_repository (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  path VARCHAR(500) NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  type repo_item_type NOT NULL,
+  content TEXT,
+  parent_id UUID,
+  size INTEGER DEFAULT 0,
+  language VARCHAR(50),
+  last_modified_by UUID NOT NULL REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+  updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+);
+```
+
+**project_change_requests table:**
+```sql
+CREATE TABLE IF NOT EXISTS project_change_requests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  requester_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  title VARCHAR(200) NOT NULL,
+  description TEXT NOT NULL,
+  file_id UUID REFERENCES project_repository(id),
+  change_type change_type NOT NULL,
+  proposed_changes TEXT,
+  status change_status DEFAULT 'OPEN' NOT NULL,
+  reviewed_by UUID REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+  updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+);
+```
+
+**audit_logs table:**
+```sql
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id),
+  action audit_action NOT NULL,
+  resource VARCHAR(100) NOT NULL,
+  resource_id UUID,
+  details TEXT,
+  ip_address VARCHAR(45),
+  user_agent VARCHAR(500),
+  created_at TIMESTAMP DEFAULT NOW() NOT NULL
+);
+```
+
+#### 5. Verification Queries
+
+To verify all tables and columns exist:
+```sql
+-- Check all tables exist
+SELECT table_name FROM information_schema.tables 
+WHERE table_schema = 'public' ORDER BY table_name;
+
+-- Check projects table columns
+SELECT column_name, data_type FROM information_schema.columns 
+WHERE table_name = 'projects' ORDER BY ordinal_position;
+
+-- Check users table columns
+SELECT column_name, data_type FROM information_schema.columns 
+WHERE table_name = 'users' ORDER BY ordinal_position;
+```
+
+---
+
 This documentation covers all database components used in the ShareXConnect academic project platform. The system supports user management, project collaboration, file management, academic workflows, and comprehensive audit trails.
+
+*Last updated: August 23, 2025*
