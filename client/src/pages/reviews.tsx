@@ -30,7 +30,7 @@ export default function Reviews() {
 
   const { data: assignments, isLoading } = useQuery<AssignmentWithProject[]>({
     queryKey: ["/api/faculty/assignments"],
-    enabled: user?.role === "faculty",
+    enabled: user?.role === "FACULTY",
   });
 
   const filteredAssignments = assignments?.filter(assignment => {
@@ -63,7 +63,7 @@ export default function Reviews() {
     return new Date(date).toLocaleDateString();
   };
 
-  if (user?.role !== "faculty") {
+  if (user?.role !== "FACULTY") {
     return (
       <div className="flex h-screen bg-gray-50">
         <Sidebar />
