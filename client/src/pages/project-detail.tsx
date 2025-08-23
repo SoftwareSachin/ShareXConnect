@@ -47,7 +47,12 @@ import {
   Volume2,
   Users,
   Send,
-  Plus
+  Plus,
+  GraduationCap,
+  CheckCircle,
+  FileText,
+  MessageSquare,
+  Award
 } from 'lucide-react';
 
 interface ProjectDetailParams {
@@ -208,6 +213,13 @@ export default function ProjectDetail() {
   const [collaboratorEmail, setCollaboratorEmail] = useState('');
   const [searchResults, setSearchResults] = useState<User[]>([]);
   
+  // Faculty review state
+  const [showReviewDialog, setShowReviewDialog] = useState(false);
+  const [reviewGrade, setReviewGrade] = useState('');
+  const [reviewFeedback, setReviewFeedback] = useState('');
+  const [fileComments, setFileComments] = useState<Record<string, string>>({});
+  const [submittingReview, setSubmittingReview] = useState(false);
+  
   // Get current user from auth store (must be called before any conditional returns)
   const { user } = useAuthStore();
   const { toast } = useToast();
@@ -360,6 +372,20 @@ export default function ProjectDetail() {
     }
   });
 
+  // Check if current user is assigned as a reviewer for this project
+  const { data: isReviewer } = useQuery<boolean>({
+    queryKey: [`/api/projects/${params.id}/is-reviewer`],
+    queryFn: () => apiGet(`/api/projects/${params.id}/is-reviewer`),
+    enabled: !!user && user.role === 'FACULTY' && !!params.id,
+  });
+
+  // Get current review status if user is a reviewer
+  const { data: currentReview } = useQuery({
+    queryKey: [`/api/projects/${params.id}/review`],
+    queryFn: () => apiGet(`/api/projects/${params.id}/review`),
+    enabled: !!user && user.role === 'FACULTY' && !!isReviewer,
+  });
+
   // Social features queries and mutations
   const { data: commentsResponse } = useQuery<{
     comments: (ProjectComment & { author: User })[];
@@ -440,6 +466,34 @@ export default function ProjectDetail() {
     }
   });
 
+  // Faculty review submission mutation
+  const submitReviewMutation = useMutation({
+    mutationFn: async () => {
+      if (!reviewGrade || !reviewFeedback) {
+        throw new Error('Grade and feedback are required');
+      }
+      return apiRequest('POST', `/api/assignments/${currentReview?.id}/review`, {
+        grade: reviewGrade,
+        feedback: reviewFeedback
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/projects/${params.id}/review`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/faculty/assignments`] });
+      toast({ title: "Success", description: "Review submitted successfully" });
+      setShowReviewDialog(false);
+      setReviewGrade('');
+      setReviewFeedback('');
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: "Error", 
+        description: error.message || "Failed to submit review", 
+        variant: "destructive" 
+      });
+    }
+  });
+
   // Search users for collaboration
   const searchUsers = async (query: string) => {
     if (query.length < 2) {
@@ -454,7 +508,7 @@ export default function ProjectDetail() {
     }
   };
 
-  const { data: projectFiles } = useQuery<ProjectFile[]>({
+  const { data: files } = useQuery<ProjectFile[]>({
     queryKey: [`/api/projects/${params.id}/files`],
     queryFn: async (): Promise<ProjectFile[]> => {
       try {
@@ -628,6 +682,95 @@ export default function ProjectDetail() {
                 {project.description}
               </p>
             </div>
+
+            {/* Faculty Review Interface - Only show for assigned reviewers */}
+            {user?.role === 'FACULTY' && isReviewer && (
+              <div className="mb-8 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border border-purple-200 overflow-hidden">
+                <div className="px-6 py-4 border-b border-purple-200 bg-purple-100">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <GraduationCap className="w-5 h-5 text-purple-700" />
+                      <h3 className="text-lg font-semibold text-purple-900">
+                        Faculty Review Assignment
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {currentReview?.status === 'COMPLETED' ? (
+                        <Badge className="bg-green-100 text-green-800 border-green-200">
+                          <CheckCircle className="w-3 h-3 mr-1" />
+                          Review Completed
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-amber-100 text-amber-800 border-amber-200">
+                          <Clock className="w-3 h-3 mr-1" />
+                          Pending Review
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                        <UserIcon className="w-5 h-5 text-purple-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-slate-900">
+                          Student: {project.owner.firstName} {project.owner.lastName}
+                        </p>
+                        <p className="text-sm text-slate-600">
+                          Assigned on {new Date(currentReview?.createdAt || Date.now()).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                      {currentReview?.status === 'COMPLETED' ? (
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setReviewGrade(currentReview.grade?.toString() || '');
+                            setReviewFeedback(currentReview.feedback || '');
+                            setShowReviewDialog(true);
+                          }}
+                          className="text-purple-700 border-purple-200 hover:bg-purple-50"
+                        >
+                          <FileText className="w-4 h-4 mr-2" />
+                          View Review
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={() => setShowReviewDialog(true)}
+                          className="bg-purple-600 hover:bg-purple-700 text-white"
+                          data-testid="button-start-review"
+                        >
+                          <Award className="w-4 h-4 mr-2" />
+                          Start Review
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {currentReview?.status === 'COMPLETED' && currentReview.feedback && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <div className="flex items-start gap-3">
+                        <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
+                        <div>
+                          <h4 className="font-medium text-green-900 mb-1">
+                            Review Summary (Grade: {currentReview.grade})
+                          </h4>
+                          <p className="text-green-800 text-sm leading-relaxed">
+                            {currentReview.feedback}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Academic Information Grid */}
             <div className="mb-8 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
@@ -2024,6 +2167,192 @@ export default function ProjectDetail() {
             >
               Cancel
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Faculty Review Dialog */}
+      <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <GraduationCap className="w-5 h-5 text-purple-600" />
+              {currentReview?.status === 'COMPLETED' ? 'Review Details' : 'Project Review'}
+            </DialogTitle>
+            <DialogDescription>
+              {currentReview?.status === 'COMPLETED' 
+                ? 'View your submitted review for this project.'
+                : 'Provide comprehensive feedback and grading for this student project.'}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            {/* Project Summary */}
+            <div className="bg-slate-50 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                  <FileText className="w-4 h-4 text-blue-600" />
+                </div>
+                <div>
+                  <h4 className="font-medium text-slate-900 mb-1">{project?.title}</h4>
+                  <p className="text-sm text-slate-600 mb-2">{project?.description}</p>
+                  <div className="flex items-center gap-4 text-xs text-slate-500">
+                    <span>Student: {project?.owner.firstName} {project?.owner.lastName}</span>
+                    <span>Category: {project?.category}</span>
+                    <span>Submitted: {project && new Date(project.createdAt).toLocaleDateString()}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Tech Stack Review */}
+            {project?.techStack && project.techStack.length > 0 && (
+              <div>
+                <h4 className="font-medium text-slate-900 mb-2">Technical Stack</h4>
+                <div className="flex flex-wrap gap-2">
+                  {project.techStack.map((tech) => (
+                    <Badge key={tech} variant="outline" className="text-xs">
+                      {tech}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Overall Grade */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Overall Grade *
+              </label>
+              <div className="flex items-center gap-4">
+                <Select 
+                  value={reviewGrade} 
+                  onValueChange={setReviewGrade}
+                  disabled={currentReview?.status === 'COMPLETED'}
+                >
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Select grade" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="A+">A+ (90-100%) - Exceptional</SelectItem>
+                    <SelectItem value="A">A (85-89%) - Excellent</SelectItem>
+                    <SelectItem value="A-">A- (80-84%) - Very Good</SelectItem>
+                    <SelectItem value="B+">B+ (75-79%) - Good</SelectItem>
+                    <SelectItem value="B">B (70-74%) - Satisfactory</SelectItem>
+                    <SelectItem value="B-">B- (65-69%) - Below Average</SelectItem>
+                    <SelectItem value="C+">C+ (60-64%) - Poor</SelectItem>
+                    <SelectItem value="C">C (55-59%) - Very Poor</SelectItem>
+                    <SelectItem value="F">F (0-54%) - Fail</SelectItem>
+                  </SelectContent>
+                </Select>
+                {reviewGrade && (
+                  <div className="flex items-center gap-1">
+                    <Award className="w-4 h-4 text-amber-500" />
+                    <span className="text-sm font-medium text-slate-700">Grade: {reviewGrade}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Detailed Feedback */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Detailed Feedback & Suggestions *
+              </label>
+              <Textarea
+                value={reviewFeedback}
+                onChange={(e) => setReviewFeedback(e.target.value)}
+                placeholder="Provide comprehensive feedback including:\n\n• Code quality and structure\n• Implementation approach\n• Areas of excellence\n• Suggestions for improvement\n• Learning outcomes achieved\n• Recommendations for future projects"
+                className="min-h-[200px] resize-none"
+                disabled={currentReview?.status === 'COMPLETED'}
+              />
+              <p className="text-xs text-slate-500 mt-1">
+                {reviewFeedback.length}/2000 characters
+              </p>
+            </div>
+
+            {/* File-by-File Review Section */}
+            {files && files.length > 0 && (
+              <div>
+                <h4 className="font-medium text-slate-900 mb-3">File-by-File Review</h4>
+                <div className="space-y-3 max-h-60 overflow-y-auto">
+                  {files.slice(0, 5).map((file) => (
+                    <div key={file.id} className="border border-slate-200 rounded-lg p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        {getFileIcon(file)}
+                        <span className="text-sm font-medium text-slate-700">{file.fileName}</span>
+                        <Badge variant="outline" className="text-xs">
+                          {getFileTypeLabel(file.fileName)}
+                        </Badge>
+                      </div>
+                      <Textarea
+                        placeholder={`Comments for ${file.fileName}...`}
+                        value={fileComments[file.id] || ''}
+                        onChange={(e) => setFileComments(prev => ({ ...prev, [file.id]: e.target.value }))}
+                        className="text-xs min-h-[60px] resize-none"
+                        disabled={currentReview?.status === 'COMPLETED'}
+                      />
+                    </div>
+                  ))}
+                  {files.length > 5 && (
+                    <p className="text-xs text-slate-500 text-center">
+                      Showing first 5 files. View all files in the main project view.
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Review Guidelines */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h4 className="font-medium text-blue-900 mb-2 flex items-center gap-2">
+                <MessageSquare className="w-4 h-4" />
+                Review Guidelines
+              </h4>
+              <ul className="text-sm text-blue-800 space-y-1">
+                <li>• Evaluate code quality, documentation, and implementation approach</li>
+                <li>• Provide constructive feedback for improvement</li>
+                <li>• Consider creativity, problem-solving, and technical skills</li>
+                <li>• Be specific about strengths and areas for development</li>
+                <li>• Remember this review helps student learning and growth</li>
+              </ul>
+            </div>
+          </div>
+          
+          <DialogFooter className="gap-3">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowReviewDialog(false);
+                if (currentReview?.status !== 'COMPLETED') {
+                  setReviewGrade('');
+                  setReviewFeedback('');
+                  setFileComments({});
+                }
+              }}
+            >
+              {currentReview?.status === 'COMPLETED' ? 'Close' : 'Cancel'}
+            </Button>
+            
+            {currentReview?.status !== 'COMPLETED' && (
+              <Button
+                onClick={() => submitReviewMutation.mutate()}
+                disabled={!reviewGrade || !reviewFeedback || submitReviewMutation.isPending}
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                {submitReviewMutation.isPending ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Award className="w-4 h-4 mr-2" />
+                    Submit Review
+                  </>
+                )}
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

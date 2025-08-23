@@ -891,6 +891,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
+  // Check if current user is assigned as a reviewer for a project
+  app.get("/api/projects/:id/is-reviewer", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      if (req.user!.role !== "FACULTY") {
+        return res.json(false);
+      }
+
+      const isReviewer = await storage.isProjectReviewer(req.params.id, req.user!.id);
+      res.json(isReviewer);
+    } catch (error) {
+      console.error('Error checking reviewer status:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }));
+
+  // Get current review assignment for a project
+  app.get("/api/projects/:id/review", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      if (req.user!.role !== "FACULTY") {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const assignments = await storage.getFacultyAssignments(req.user!.id);
+      const assignment = assignments.find(a => a.project.id === req.params.id);
+      
+      if (!assignment) {
+        return res.status(404).json({ message: "Assignment not found" });
+      }
+
+      res.json(assignment);
+    } catch (error) {
+      console.error('Error getting review assignment:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }));
+
   // Project collaborators
   app.post("/api/projects/:id/collaborators", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
