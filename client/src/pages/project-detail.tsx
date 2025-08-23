@@ -687,18 +687,23 @@ export default function ProjectDetail() {
 
             {/* Faculty Review Interface - Only show for assigned reviewers */}
             {user?.role === 'FACULTY' && isReviewer && (
-              <div className="mb-8 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border border-purple-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-purple-200 bg-purple-100">
+              <div className="mb-8 bg-gradient-to-r from-purple-50 via-blue-50 to-indigo-50 rounded-xl border border-purple-200 overflow-hidden shadow-sm">
+                <div className="px-6 py-5 border-b border-purple-200 bg-gradient-to-r from-purple-100 to-blue-100">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <GraduationCap className="w-5 h-5 text-purple-700" />
-                      <h3 className="text-lg font-semibold text-purple-900">
-                        Faculty Review Assignment
-                      </h3>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-purple-200 rounded-lg flex items-center justify-center">
+                        <GraduationCap className="w-6 h-6 text-purple-700" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-purple-900">
+                          Faculty Review Assignment
+                        </h3>
+                        <p className="text-sm text-purple-700">Comprehensive evaluation with individual file grading and detailed feedback</p>
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       {currentReview?.status === 'COMPLETED' ? (
-                        <Badge className="bg-green-100 text-green-800 border-green-200">
+                        <Badge className="bg-green-100 text-green-800 border-green-200 px-3 py-1">
                           <CheckCircle className="w-3 h-3 mr-1" />
                           Review Completed
                         </Badge>
@@ -2175,8 +2180,8 @@ export default function ProjectDetail() {
 
       {/* Faculty Review Dialog */}
       <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
-        <DialogContent className="max-w-6xl max-h-[95vh] overflow-hidden flex flex-col">
-          <DialogHeader className="border-b border-slate-200 pb-4">
+        <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader className="border-b border-slate-200 pb-4 flex-shrink-0">
             <DialogTitle className="flex items-center gap-2 text-xl">
               <GraduationCap className="w-6 h-6 text-purple-600" />
               {currentReview?.status === 'COMPLETED' ? 'Review Details' : 'Project Review & Grading'}
@@ -2188,42 +2193,42 @@ export default function ProjectDetail() {
             </DialogDescription>
           </DialogHeader>
           
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 flex flex-col min-h-0">
             {/* Navigation Tabs */}
-            <div className="flex border-b border-slate-200 mb-6">
+            <div className="flex border-b border-slate-200 mb-4 flex-shrink-0 bg-white">
               <button
                 onClick={() => setActiveTab('overview')}
-                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === 'overview'
-                    ? 'border-purple-600 text-purple-600'
-                    : 'border-transparent text-slate-500 hover:text-slate-700'
+                    ? 'border-purple-600 text-purple-600 bg-purple-50'
+                    : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
                 }`}
               >
                 Project Overview
               </button>
               <button
                 onClick={() => setActiveTab('files')}
-                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === 'files'
-                    ? 'border-purple-600 text-purple-600'
-                    : 'border-transparent text-slate-500 hover:text-slate-700'
+                    ? 'border-purple-600 text-purple-600 bg-purple-50'
+                    : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
                 }`}
               >
                 Individual Files ({projectFiles?.length || 0})
               </button>
               <button
                 onClick={() => setActiveTab('criteria')}
-                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === 'criteria'
-                    ? 'border-purple-600 text-purple-600'
-                    : 'border-transparent text-slate-500 hover:text-slate-700'
+                    ? 'border-purple-600 text-purple-600 bg-purple-50'
+                    : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
                 }`}
               >
                 Grading Criteria
               </button>
             </div>
 
-            <div className="overflow-y-auto max-h-[60vh] space-y-6">
+            <div className="flex-1 overflow-y-auto p-1 space-y-6">
             {/* Overview Tab */}
             {activeTab === 'overview' && (
               <div className="space-y-6">
