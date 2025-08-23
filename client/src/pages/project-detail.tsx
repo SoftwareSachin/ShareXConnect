@@ -2409,7 +2409,7 @@ export default function ProjectDetail() {
                           <SelectTrigger className="w-72 h-12 border-2 border-slate-200 focus:border-blue-500">
                             <SelectValue placeholder="Select final grade" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="z-50 max-h-[200px] overflow-y-auto">
                             <SelectItem value="A+">A+ (95-100%) - Outstanding</SelectItem>
                             <SelectItem value="A">A (90-94%) - Excellent</SelectItem>
                             <SelectItem value="A-">A- (85-89%) - Very Good</SelectItem>
@@ -2532,7 +2532,7 @@ export default function ProjectDetail() {
                                     <SelectTrigger className="h-10 border-2 border-slate-200 focus:border-blue-500">
                                       <SelectValue placeholder="Score" />
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    <SelectContent className="z-50 max-h-[200px] overflow-y-auto">
                                       {[10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map(score => (
                                         <SelectItem key={score} value={score.toString()}>
                                           {score}/10 - {score >= 9 ? 'Excellent' : score >= 7 ? 'Good' : score >= 5 ? 'Average' : 'Poor'}
