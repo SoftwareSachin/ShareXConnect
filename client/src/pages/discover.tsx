@@ -11,7 +11,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { RoleProtectedComponent, usePermissions } from "@/components/RoleProtectedComponent";
 import { apiGet } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Shield, Filter, Eye } from "lucide-react";
+import { Shield, Filter, Eye, Search } from "lucide-react";
 import type { ProjectWithDetails } from "@shared/schema";
 
 export default function Discover() {
@@ -28,6 +28,27 @@ export default function Discover() {
   const getVisibilityOptions = () => {
     if (isGuest) {
       return [{ value: "PUBLIC", label: "Public Projects" }];
+    } else if (isStudent) {
+      return [
+        { value: "all", label: "All Visible to Me" },
+        { value: "PUBLIC", label: "Public Projects" },
+        { value: "INSTITUTION", label: "Institution Projects" },
+        { value: "PRIVATE", label: "My Private Projects" }
+      ];
+    } else if (isFaculty) {
+      return [
+        { value: "all", label: "All Visible to Me" },
+        { value: "PUBLIC", label: "Public Projects" },
+        { value: "INSTITUTION", label: "Institution Projects" },
+        { value: "PRIVATE", label: "Private Projects I Can Review" }
+      ];
+    } else if (isAdmin) {
+      return [
+        { value: "all", label: "All Institution Projects" },
+        { value: "PUBLIC", label: "Public Projects" },
+        { value: "INSTITUTION", label: "Institution Projects" },
+        { value: "PRIVATE", label: "Private Projects" }
+      ];
     }
     return [
       { value: "all", label: "All Visible Projects" },
@@ -121,7 +142,7 @@ export default function Discover() {
 
         <main className="relative p-8 space-y-8">
           {/* Modern Filter Bar */}
-          <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/20 dark:border-slate-700/30 rounded-3xl overflow-hidden shadow-xl shadow-slate-900/5 dark:shadow-black/10">
+          <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/20 dark:border-slate-700/30 rounded-3xl overflow-hidden shadow-xl shadow-slate-900/5 dark:shadow-black/10 relative z-10">
             <div className="p-8">
               <div className="flex flex-wrap items-center gap-6">
                 <div className="flex items-center space-x-3">
@@ -130,10 +151,10 @@ export default function Discover() {
                     <SelectTrigger className="w-48 bg-white/60 dark:bg-slate-800/60 border-white/20 dark:border-slate-700/30 rounded-xl" data-testid="select-category-filter">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="z-50 max-h-60 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-xl rounded-xl">
                       <SelectItem value="all">All Categories</SelectItem>
                       {availableCategories.map((category) => (
-                        <SelectItem key={category} value={category}>{category}</SelectItem>
+                        <SelectItem key={category} value={category} className="focus:bg-slate-100 dark:focus:bg-slate-800">{category}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -142,14 +163,15 @@ export default function Discover() {
                 <div className="flex items-center space-x-3">
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Visibility:</label>
                   <Select value={visibilityFilter} onValueChange={setVisibilityFilter}>
-                    <SelectTrigger className="w-40 bg-white/60 dark:bg-slate-800/60 border-white/20 dark:border-slate-700/30 rounded-xl" data-testid="select-visibility-filter">
+                    <SelectTrigger className="w-52 bg-white/60 dark:bg-slate-800/60 border-white/20 dark:border-slate-700/30 rounded-xl" data-testid="select-visibility-filter">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All</SelectItem>
-                      <SelectItem value="PUBLIC">Public</SelectItem>
-                      <SelectItem value="INSTITUTION">Institution</SelectItem>
-                      <SelectItem value="PRIVATE">Private</SelectItem>
+                    <SelectContent className="z-50 max-h-60 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-xl rounded-xl">
+                      {getVisibilityOptions().map((option) => (
+                        <SelectItem key={option.value} value={option.value} className="focus:bg-slate-100 dark:focus:bg-slate-800">
+                          {option.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -160,10 +182,10 @@ export default function Discover() {
                     <SelectTrigger className="w-48 bg-white/60 dark:bg-slate-800/60 border-white/20 dark:border-slate-700/30 rounded-xl" data-testid="select-department-filter">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="z-50 max-h-60 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-xl rounded-xl">
                       <SelectItem value="all">All Departments</SelectItem>
                       {availableDepartments.map((department) => (
-                        <SelectItem key={department} value={department}>{department}</SelectItem>
+                        <SelectItem key={department} value={department} className="focus:bg-slate-100 dark:focus:bg-slate-800">{department}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -212,7 +234,7 @@ export default function Discover() {
                       >
                         {tech}
                         {selectedTechFilters.includes(tech) && (
-                          <span className="ml-1 text-xs">✓</span>
+                          <Eye className="ml-1 w-3 h-3" />
                         )}
                       </Button>
                     ))}
@@ -324,7 +346,7 @@ export default function Discover() {
           ) : (
             <div className="text-center py-20">
               <div className="w-32 h-32 bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/20 dark:border-slate-700/30 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-xl shadow-slate-900/5 dark:shadow-black/10">
-                <span className="text-6xl">🔍</span>
+                <Search className="w-16 h-16 text-slate-400 dark:text-slate-500" />
               </div>
               <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-3">No projects found</h3>
               <p className="text-slate-500 dark:text-slate-400 mb-8 text-lg max-w-md mx-auto">
@@ -334,6 +356,7 @@ export default function Discover() {
                 onClick={clearFilters} 
                 className="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200 rounded-2xl px-8 py-3 text-base font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg"
               >
+                <Filter className="w-4 h-4 mr-2" />
                 Clear all filters
               </Button>
             </div>

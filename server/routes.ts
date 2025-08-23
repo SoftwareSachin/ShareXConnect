@@ -256,23 +256,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (my === "true") {
         filters.ownerId = req.user!.id;
       } else {
-        // Apply visibility rules based on user role and institution
-        if (req.user!.role === "ADMIN") {
-          filters.institution = req.user!.institution;
-        } else if (visibility) {
-          filters.visibility = visibility;
+        // Enhanced role-based filtering logic
+        const userRole = req.user!.role;
+        const userInstitution = req.user!.institution;
+        
+        // Apply visibility filters based on user role and permissions
+        if (visibility && visibility !== "all") {
+          // User specifically requested a visibility filter
+          if (userRole === "ADMIN") {
+            // Admin can see all projects of specified visibility
+            filters.visibility = visibility;
+          } else if (userRole === "FACULTY") {
+            // Faculty can see PUBLIC, INSTITUTION, and PRIVATE projects from their institution
+            if (visibility === "PRIVATE") {
+              // For private projects, faculty can see their own + those assigned to them
+              const projects = await storage.getProjects();
+              const filteredProjects = projects.filter(p => {
+                if (p.visibility !== "PRIVATE") return false;
+                return p.ownerId === req.user!.id || 
+                       p.owner.institution === userInstitution;
+              });
+              return res.json(filteredProjects);
+            } else {
+              filters.visibility = visibility;
+              if (visibility === "INSTITUTION") {
+                filters.institution = userInstitution;
+              }
+            }
+          } else if (userRole === "STUDENT") {
+            // Students can see PUBLIC and INSTITUTION projects from their institution
+            if (visibility === "PRIVATE") {
+              // Students can only see their own private projects
+              filters.visibility = visibility;
+              filters.ownerId = req.user!.id;
+            } else {
+              filters.visibility = visibility;
+              if (visibility === "INSTITUTION") {
+                filters.institution = userInstitution;
+              }
+            }
+          } else {
+            // GUEST - only PUBLIC projects
+            filters.visibility = "PUBLIC";
+          }
         } else {
-          // Default: show public + institution projects for the user's institution
+          // No specific visibility filter - show appropriate defaults based on role
           const projects = await storage.getProjects();
-          const filteredProjects = projects.filter(p => 
-            p.visibility === "PUBLIC" || 
-            (p.visibility === "INSTITUTION" && p.owner.institution === req.user!.institution) ||
-            p.ownerId === req.user!.id
-          );
-          return res.json(filteredProjects);
+          const filteredProjects = projects.filter(p => {
+            if (userRole === "ADMIN") {
+              // Admin sees all projects from their institution
+              return p.owner.institution === userInstitution;
+            } else if (userRole === "FACULTY") {
+              // Faculty see: PUBLIC + INSTITUTION from their institution + PRIVATE they own or review
+              return p.visibility === "PUBLIC" || 
+                     (p.visibility === "INSTITUTION" && p.owner.institution === userInstitution) ||
+                     (p.visibility === "PRIVATE" && p.ownerId === req.user!.id);
+            } else if (userRole === "STUDENT") {
+              // Students see: PUBLIC + INSTITUTION from their institution + their own PRIVATE
+              return p.visibility === "PUBLIC" || 
+                     (p.visibility === "INSTITUTION" && p.owner.institution === userInstitution) ||
+                     (p.visibility === "PRIVATE" && p.ownerId === req.user!.id);
+            } else {
+              // GUEST - only PUBLIC projects
+              return p.visibility === "PUBLIC";
+            }
+          });
+          
+          // Apply additional filters to the pre-filtered projects
+          let finalProjects = filteredProjects;
+          if (status) finalProjects = finalProjects.filter(p => p.status === status);
+          if (category) finalProjects = finalProjects.filter(p => p.category === category);
+          if (department) finalProjects = finalProjects.filter(p => p.department === department);
+          if (techStack) {
+            const techArray = (techStack as string).split(',');
+            finalProjects = finalProjects.filter(p => 
+              p.techStack && p.techStack.length > 0 && techArray.some(tech => p.techStack!.includes(tech))
+            );
+          }
+          if (search) {
+            const searchLower = (search as string).toLowerCase();
+            finalProjects = finalProjects.filter(p => 
+              p.title.toLowerCase().includes(searchLower) ||
+              p.description.toLowerCase().includes(searchLower) ||
+              p.owner.firstName?.toLowerCase().includes(searchLower) ||
+              p.owner.lastName?.toLowerCase().includes(searchLower)
+            );
+          }
+          
+          return res.json(finalProjects);
         }
       }
       
+      // Apply remaining filters
       if (status) filters.status = status;
       if (category) filters.category = category;
       if (department) filters.department = department as string;
@@ -282,6 +357,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const projects = await storage.getProjects(filters);
       res.json(projects);
     } catch (error) {
+      console.error('Error fetching projects:', error);
       res.status(500).json({ message: "Internal server error" });
     }
   }));
