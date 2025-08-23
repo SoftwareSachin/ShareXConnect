@@ -57,7 +57,7 @@ export default function Discover() {
 
   const filteredProjects = projects?.filter(project => {
     if (selectedTechFilters.length === 0) return true;
-    return selectedTechFilters.some(tech => project.techStack.includes(tech));
+    return selectedTechFilters.some(tech => project.techStack?.includes(tech) || false);
   });
 
   const handleSearch = (query: string) => {
@@ -80,9 +80,9 @@ export default function Discover() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
       <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="pl-80">
         <Header
           title="Discover Projects"
           description={
@@ -94,15 +94,22 @@ export default function Discover() {
           showCreateButton={false}
         />
 
-        <main className="flex-1 overflow-y-auto p-6">
-          {/* Filter Bar */}
-          <Card className="mb-6">
-            <CardContent className="p-4">
-              <div className="flex flex-wrap items-center gap-4">
-                <div className="flex items-center space-x-2">
-                  <label className="text-sm font-medium text-gray-700">Category:</label>
+        {/* Modern Background Elements */}
+        <div className="fixed inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-20 right-20 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 left-20 w-[400px] h-[400px] bg-purple-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+          <div className="absolute top-1/2 left-1/2 w-[300px] h-[300px] bg-emerald-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '4s' }}></div>
+        </div>
+
+        <main className="relative p-8 space-y-8">
+          {/* Modern Filter Bar */}
+          <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/20 dark:border-slate-700/30 rounded-3xl overflow-hidden shadow-xl shadow-slate-900/5 dark:shadow-black/10">
+            <div className="p-8">
+              <div className="flex flex-wrap items-center gap-6">
+                <div className="flex items-center space-x-3">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Category:</label>
                   <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                    <SelectTrigger className="w-48" data-testid="select-category-filter">
+                    <SelectTrigger className="w-48 bg-white/60 dark:bg-slate-800/60 border-white/20 dark:border-slate-700/30 rounded-xl" data-testid="select-category-filter">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -117,23 +124,24 @@ export default function Discover() {
                   </Select>
                 </div>
                 
-                <div className="flex items-center space-x-2">
-                  <label className="text-sm font-medium text-gray-700">Visibility:</label>
+                <div className="flex items-center space-x-3">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Visibility:</label>
                   <Select value={visibilityFilter} onValueChange={setVisibilityFilter}>
-                    <SelectTrigger className="w-32" data-testid="select-visibility-filter">
+                    <SelectTrigger className="w-40 bg-white/60 dark:bg-slate-800/60 border-white/20 dark:border-slate-700/30 rounded-xl" data-testid="select-visibility-filter">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All</SelectItem>
-                      <SelectItem value="public">Public</SelectItem>
-                      <SelectItem value="institution">Institution</SelectItem>
+                      <SelectItem value="PUBLIC">Public</SelectItem>
+                      <SelectItem value="INSTITUTION">Institution</SelectItem>
+                      <SelectItem value="PRIVATE">Private</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 {availableTech.length > 0 && (
-                  <div className="flex items-center space-x-2">
-                    <label className="text-sm font-medium text-gray-700">Tech Stack:</label>
+                  <div className="flex items-center space-x-3">
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Tech Stack:</label>
                     <div className="flex items-center space-x-2">
                       {availableTech.slice(0, 4).map((tech) => (
                         <Button
@@ -141,7 +149,11 @@ export default function Discover() {
                           variant={selectedTechFilters.includes(tech) ? "default" : "outline"}
                           size="sm"
                           onClick={() => toggleTechFilter(tech)}
-                          className="text-xs"
+                          className={`text-xs rounded-xl ${
+                            selectedTechFilters.includes(tech)
+                              ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900"
+                              : "bg-white/60 dark:bg-slate-800/60 border-white/20 dark:border-slate-700/30"
+                          }`}
                           data-testid={`button-tech-filter-${tech.toLowerCase()}`}
                         >
                           {tech}
@@ -155,7 +167,7 @@ export default function Discover() {
                   variant="ghost" 
                   size="sm" 
                   onClick={clearFilters}
-                  className="text-sm text-muted-foreground hover:text-primary"
+                  className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 bg-white/40 dark:bg-slate-800/40 rounded-xl border border-white/20 dark:border-slate-700/20"
                   data-testid="button-clear-filters"
                 >
                   Clear Filters
@@ -164,66 +176,66 @@ export default function Discover() {
 
               {/* Active Filters */}
               {(categoryFilter !== "all" || visibilityFilter !== "all" || selectedTechFilters.length > 0) && (
-                <div className="flex items-center space-x-2 mt-3 pt-3 border-t border-gray-200">
-                  <span className="text-sm text-muted-foreground">Active filters:</span>
+                <div className="flex items-center space-x-3 mt-6 pt-6 border-t border-white/20 dark:border-slate-700/30">
+                  <span className="text-sm text-slate-500 dark:text-slate-400 font-medium">Active filters:</span>
                   {categoryFilter !== "all" && (
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg">
                       Category: {categoryFilter}
                     </Badge>
                   )}
                   {visibilityFilter !== "all" && (
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg">
                       Visibility: {visibilityFilter}
                     </Badge>
                   )}
                   {selectedTechFilters.map((tech) => (
-                    <Badge key={tech} variant="secondary" className="text-xs">
+                    <Badge key={tech} className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg">
                       Tech: {tech}
                     </Badge>
                   ))}
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          {/* Results */}
-          <div className="flex items-center justify-between mb-6">
+          {/* Modern Results Header */}
+          <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-xl font-semibold text-gray-900">Projects</h3>
-              <p className="text-muted-foreground">
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">Projects</h3>
+              <p className="text-slate-500 dark:text-slate-400 text-lg">
                 {filteredProjects?.length || 0} project{filteredProjects?.length !== 1 ? 's' : ''} found
               </p>
             </div>
           </div>
 
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="bg-white rounded-lg shadow-sm border border-gray-200">
-                  <Skeleton className="h-40 w-full rounded-t-lg" />
-                  <div className="p-6">
-                    <Skeleton className="h-6 w-3/4 mb-2" />
-                    <Skeleton className="h-4 w-1/2 mb-4" />
+                <div key={i} className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/20 dark:border-slate-700/30 rounded-3xl overflow-hidden shadow-xl shadow-slate-900/5 dark:shadow-black/10">
+                  <Skeleton className="h-48 w-full" />
+                  <div className="p-8">
+                    <Skeleton className="h-6 w-3/4 mb-3" />
+                    <Skeleton className="h-4 w-1/2 mb-6" />
                     <Skeleton className="h-4 w-full mb-2" />
-                    <Skeleton className="h-4 w-2/3 mb-4" />
-                    <div className="flex items-center space-x-2 mb-4">
-                      <Skeleton className="h-6 w-16" />
-                      <Skeleton className="h-6 w-20" />
-                      <Skeleton className="h-6 w-18" />
+                    <Skeleton className="h-4 w-2/3 mb-6" />
+                    <div className="flex items-center space-x-2 mb-6">
+                      <Skeleton className="h-6 w-16 rounded-xl" />
+                      <Skeleton className="h-6 w-20 rounded-xl" />
+                      <Skeleton className="h-6 w-18 rounded-xl" />
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
                         <Skeleton className="h-4 w-8" />
                         <Skeleton className="h-4 w-8" />
                       </div>
-                      <Skeleton className="h-6 w-20" />
+                      <Skeleton className="h-8 w-24 rounded-xl" />
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : filteredProjects?.length ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredProjects.map((project) => (
                 <ProjectCard 
                   key={project.id} 
@@ -233,15 +245,18 @@ export default function Discover() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-12">
-              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-4xl">🔍</span>
+            <div className="text-center py-20">
+              <div className="w-32 h-32 bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/20 dark:border-slate-700/30 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-xl shadow-slate-900/5 dark:shadow-black/10">
+                <span className="text-6xl">🔍</span>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No projects found</h3>
-              <p className="text-muted-foreground mb-6">
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-3">No projects found</h3>
+              <p className="text-slate-500 dark:text-slate-400 mb-8 text-lg max-w-md mx-auto">
                 Try adjusting your filters or search query to find more projects
               </p>
-              <Button onClick={clearFilters} variant="outline">
+              <Button 
+                onClick={clearFilters} 
+                className="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200 rounded-2xl px-8 py-3 text-base font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg"
+              >
                 Clear all filters
               </Button>
             </div>
