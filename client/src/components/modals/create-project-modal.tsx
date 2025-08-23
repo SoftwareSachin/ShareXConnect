@@ -77,13 +77,13 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
       `${faculty.firstName} ${faculty.lastName}`.toLowerCase().includes(facultySearchTerm.toLowerCase()) ||
       faculty.techExpertise.toLowerCase().includes(facultySearchTerm.toLowerCase());
     
-    const matchesDepartment = !departmentFilter || faculty.department === departmentFilter;
+    const matchesDepartment = !departmentFilter || departmentFilter === "all" || faculty.department === departmentFilter;
     
     return matchesSearch && matchesDepartment;
   }) || [];
 
   // Get unique departments for filter
-  const departments = [...new Set(facultyMembers?.map(f => f.department) || [])].filter(d => d && d !== "Not specified");
+  const departments = Array.from(new Set(facultyMembers?.map(f => f.department) || [])).filter(d => d && d !== "Not specified");
 
   // File upload handlers
   const handleFileUpload = (type: keyof typeof uploadedFiles, files: FileList | null) => {
@@ -536,7 +536,7 @@ export function CreateProjectModal({ open, onOpenChange }: CreateProjectModalPro
                         <SelectValue placeholder="All departments" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All departments</SelectItem>
+                        <SelectItem value="all">All departments</SelectItem>
                         {departments.map(dept => (
                           <SelectItem key={dept} value={dept}>{dept}</SelectItem>
                         ))}
