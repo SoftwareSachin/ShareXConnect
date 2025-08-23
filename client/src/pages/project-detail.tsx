@@ -218,6 +218,8 @@ export default function ProjectDetail() {
   const [reviewGrade, setReviewGrade] = useState('');
   const [reviewFeedback, setReviewFeedback] = useState('');
   const [fileComments, setFileComments] = useState<Record<string, string>>({});
+  const [fileGrades, setFileGrades] = useState<Record<string, { score: number; feedback: string }>>({});
+  const [activeTab, setActiveTab] = useState<'overview' | 'files' | 'criteria'>('overview');
   const [submittingReview, setSubmittingReview] = useState(false);
   
   // Get current user from auth store (must be called before any conditional returns)
@@ -2173,153 +2175,484 @@ export default function ProjectDetail() {
 
       {/* Faculty Review Dialog */}
       <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <GraduationCap className="w-5 h-5 text-purple-600" />
-              {currentReview?.status === 'COMPLETED' ? 'Review Details' : 'Project Review'}
+        <DialogContent className="max-w-6xl max-h-[95vh] overflow-hidden flex flex-col">
+          <DialogHeader className="border-b border-slate-200 pb-4">
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <GraduationCap className="w-6 h-6 text-purple-600" />
+              {currentReview?.status === 'COMPLETED' ? 'Review Details' : 'Project Review & Grading'}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-slate-600">
               {currentReview?.status === 'COMPLETED' 
                 ? 'View your submitted review for this project.'
-                : 'Provide comprehensive feedback and grading for this student project.'}
+                : 'Comprehensive evaluation with individual file grading and detailed feedback.'}
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-6">
-            {/* Project Summary */}
-            <div className="bg-slate-50 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <FileText className="w-4 h-4 text-blue-600" />
-                </div>
-                <div>
-                  <h4 className="font-medium text-slate-900 mb-1">{project?.title}</h4>
-                  <p className="text-sm text-slate-600 mb-2">{project?.description}</p>
-                  <div className="flex items-center gap-4 text-xs text-slate-500">
-                    <span>Student: {project?.owner.firstName} {project?.owner.lastName}</span>
-                    <span>Category: {project?.category}</span>
-                    <span>Submitted: {project && new Date(project.createdAt).toLocaleDateString()}</span>
-                  </div>
-                </div>
-              </div>
+          <div className="flex-1 overflow-hidden">
+            {/* Navigation Tabs */}
+            <div className="flex border-b border-slate-200 mb-6">
+              <button
+                onClick={() => setActiveTab('overview')}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === 'overview'
+                    ? 'border-purple-600 text-purple-600'
+                    : 'border-transparent text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                Project Overview
+              </button>
+              <button
+                onClick={() => setActiveTab('files')}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === 'files'
+                    ? 'border-purple-600 text-purple-600'
+                    : 'border-transparent text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                Individual Files ({projectFiles?.length || 0})
+              </button>
+              <button
+                onClick={() => setActiveTab('criteria')}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === 'criteria'
+                    ? 'border-purple-600 text-purple-600'
+                    : 'border-transparent text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                Grading Criteria
+              </button>
             </div>
 
-            {/* Tech Stack Review */}
-            {project?.techStack && project.techStack.length > 0 && (
-              <div>
-                <h4 className="font-medium text-slate-900 mb-2">Technical Stack</h4>
-                <div className="flex flex-wrap gap-2">
-                  {project.techStack.map((tech) => (
-                    <Badge key={tech} variant="outline" className="text-xs">
-                      {tech}
-                    </Badge>
-                  ))}
+            <div className="overflow-y-auto max-h-[60vh] space-y-6">
+            {/* Overview Tab */}
+            {activeTab === 'overview' && (
+              <div className="space-y-6">
+                {/* Project Summary */}
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                      <FileText className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-lg font-semibold text-slate-900 mb-2">{project?.title}</h4>
+                      <p className="text-slate-600 mb-3">{project?.description}</p>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div className="bg-white/50 rounded-lg p-3">
+                          <p className="text-slate-500 text-xs">Student</p>
+                          <p className="font-medium">{project?.owner.firstName} {project?.owner.lastName}</p>
+                        </div>
+                        <div className="bg-white/50 rounded-lg p-3">
+                          <p className="text-slate-500 text-xs">Category</p>
+                          <p className="font-medium">{project?.category}</p>
+                        </div>
+                        <div className="bg-white/50 rounded-lg p-3">
+                          <p className="text-slate-500 text-xs">Department</p>
+                          <p className="font-medium">{project?.department || 'Not specified'}</p>
+                        </div>
+                        <div className="bg-white/50 rounded-lg p-3">
+                          <p className="text-slate-500 text-xs">Submitted</p>
+                          <p className="font-medium">{project && new Date(project.createdAt).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Technical Details Grid */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Tech Stack */}
+                  {project?.techStack && project.techStack.length > 0 && (
+                    <div className="bg-white rounded-xl p-5 border border-slate-200">
+                      <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                        <Code className="w-4 h-4 text-purple-600" />
+                        Technology Stack
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {project.techStack.map((tech) => (
+                          <Badge key={tech} variant="secondary" className="text-xs">
+                            {tech}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Project Stats */}
+                  <div className="bg-white rounded-xl p-5 border border-slate-200">
+                    <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                      <BarChart3 className="w-4 h-4 text-green-600" />
+                      Project Statistics
+                    </h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-slate-600">Total Files:</span>
+                        <span className="font-medium">{projectFiles?.length || 0}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-600">Code Files:</span>
+                        <span className="font-medium">
+                          {projectFiles?.filter(f => ['js', 'ts', 'py', 'java', 'cpp', 'html', 'css'].some(ext => f.fileName.toLowerCase().endsWith(ext))).length || 0}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-600">Documentation:</span>
+                        <span className="font-medium">
+                          {projectFiles?.filter(f => ['md', 'txt', 'pdf', 'doc'].some(ext => f.fileName.toLowerCase().endsWith(ext))).length || 0}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Overall Grade Section */}
+                <div className="bg-white rounded-xl p-6 border border-slate-200">
+                  <h4 className="font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                    <Award className="w-5 h-5 text-amber-500" />
+                    Overall Project Grade
+                  </h4>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Final Grade *
+                      </label>
+                      <div className="flex items-center gap-4">
+                        <Select 
+                          value={reviewGrade} 
+                          onValueChange={setReviewGrade}
+                          disabled={currentReview?.status === 'COMPLETED'}
+                        >
+                          <SelectTrigger className="w-64">
+                            <SelectValue placeholder="Select final grade" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="A+">A+ (95-100%) - Outstanding</SelectItem>
+                            <SelectItem value="A">A (90-94%) - Excellent</SelectItem>
+                            <SelectItem value="A-">A- (85-89%) - Very Good</SelectItem>
+                            <SelectItem value="B+">B+ (80-84%) - Good</SelectItem>
+                            <SelectItem value="B">B (75-79%) - Satisfactory</SelectItem>
+                            <SelectItem value="B-">B- (70-74%) - Below Average</SelectItem>
+                            <SelectItem value="C+">C+ (65-69%) - Poor</SelectItem>
+                            <SelectItem value="C">C (60-64%) - Very Poor</SelectItem>
+                            <SelectItem value="F">F (0-59%) - Fail</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {reviewGrade && (
+                          <div className="flex items-center gap-2 bg-amber-50 px-3 py-2 rounded-lg">
+                            <Award className="w-4 h-4 text-amber-600" />
+                            <span className="text-sm font-semibold text-amber-800">Grade: {reviewGrade}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Detailed Feedback */}
+                <div className="bg-white rounded-xl p-6 border border-slate-200">
+                  <h4 className="font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                    <MessageSquare className="w-5 h-5 text-blue-600" />
+                    Comprehensive Feedback
+                  </h4>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-3">
+                      Detailed Assessment & Recommendations *
+                    </label>
+                    <Textarea
+                      value={reviewFeedback}
+                      onChange={(e) => setReviewFeedback(e.target.value)}
+                      placeholder="Provide comprehensive feedback including:\n\n• Code Quality & Architecture\n• Implementation Approach & Best Practices\n• Areas of Excellence & Innovation\n• Technical Skills Demonstrated\n• Areas for Improvement\n• Learning Outcomes Achieved\n• Recommendations for Future Development"
+                      className="min-h-[250px] resize-none border-slate-300 focus:border-purple-500 focus:ring-purple-500"
+                      disabled={currentReview?.status === 'COMPLETED'}
+                    />
+                    <div className="flex justify-between items-center mt-2">
+                      <p className="text-xs text-slate-500">
+                        {reviewFeedback.length}/2000 characters
+                      </p>
+                      <div className="flex items-center gap-1 text-xs text-slate-500">
+                        <Info className="w-3 h-3" />
+                        Be specific and constructive
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* Overall Grade */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Overall Grade *
-              </label>
-              <div className="flex items-center gap-4">
-                <Select 
-                  value={reviewGrade} 
-                  onValueChange={setReviewGrade}
-                  disabled={currentReview?.status === 'COMPLETED'}
-                >
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Select grade" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="A+">A+ (90-100%) - Exceptional</SelectItem>
-                    <SelectItem value="A">A (85-89%) - Excellent</SelectItem>
-                    <SelectItem value="A-">A- (80-84%) - Very Good</SelectItem>
-                    <SelectItem value="B+">B+ (75-79%) - Good</SelectItem>
-                    <SelectItem value="B">B (70-74%) - Satisfactory</SelectItem>
-                    <SelectItem value="B-">B- (65-69%) - Below Average</SelectItem>
-                    <SelectItem value="C+">C+ (60-64%) - Poor</SelectItem>
-                    <SelectItem value="C">C (55-59%) - Very Poor</SelectItem>
-                    <SelectItem value="F">F (0-54%) - Fail</SelectItem>
-                  </SelectContent>
-                </Select>
-                {reviewGrade && (
-                  <div className="flex items-center gap-1">
-                    <Award className="w-4 h-4 text-amber-500" />
-                    <span className="text-sm font-medium text-slate-700">Grade: {reviewGrade}</span>
+            {/* Files Tab */}
+            {activeTab === 'files' && (
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h4 className="font-semibold text-slate-900">Individual File Assessment</h4>
+                  <div className="text-sm text-slate-500">
+                    {projectFiles?.length || 0} files to review
+                  </div>
+                </div>
+                
+                {projectFiles && projectFiles.length > 0 ? (
+                  <div className="space-y-4">
+                    {projectFiles.map((file) => {
+                      const fileGrade = fileGrades[file.id] || { score: 0, feedback: '' };
+                      const isCodeFile = ['js', 'ts', 'py', 'java', 'cpp', 'html', 'css', 'jsx', 'tsx'].some(ext => 
+                        file.fileName.toLowerCase().endsWith(`.${ext}`)
+                      );
+                      const isDocFile = ['md', 'txt', 'pdf', 'doc', 'docx', 'readme'].some(ext => 
+                        file.fileName.toLowerCase().includes(ext)
+                      );
+                      const isImageFile = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'].some(ext => 
+                        file.fileName.toLowerCase().endsWith(`.${ext}`)
+                      );
+                      
+                      return (
+                        <div key={file.id} className="bg-white border border-slate-200 rounded-xl p-5 hover:shadow-md transition-shadow">
+                          <div className="flex items-start gap-4">
+                            <div className="flex-shrink-0">
+                              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                                isCodeFile ? 'bg-blue-100' : isDocFile ? 'bg-green-100' : isImageFile ? 'bg-purple-100' : 'bg-gray-100'
+                              }`}>
+                                {getFileIcon(file)}
+                              </div>
+                            </div>
+                            
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-3 mb-3">
+                                <h5 className="font-medium text-slate-900 truncate">{file.fileName}</h5>
+                                <Badge variant={isCodeFile ? 'default' : isDocFile ? 'secondary' : 'outline'} className="text-xs">
+                                  {getFileTypeLabel(file)}
+                                </Badge>
+                                {file.fileSize && (
+                                  <span className="text-xs text-slate-500">
+                                    {(file.fileSize / 1024).toFixed(1)}KB
+                                  </span>
+                                )}
+                              </div>
+                              
+                              {/* Individual File Score */}
+                              <div className="grid md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                  <label className="block text-xs font-medium text-slate-700 mb-2">
+                                    Quality Score (1-10)
+                                  </label>
+                                  <Select
+                                    value={fileGrade.score.toString()}
+                                    onValueChange={(value) => {
+                                      setFileGrades(prev => ({
+                                        ...prev,
+                                        [file.id]: { ...fileGrade, score: parseInt(value) }
+                                      }));
+                                    }}
+                                    disabled={currentReview?.status === 'COMPLETED'}
+                                  >
+                                    <SelectTrigger className="h-8">
+                                      <SelectValue placeholder="Score" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {[10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map(score => (
+                                        <SelectItem key={score} value={score.toString()}>
+                                          {score}/10 - {score >= 9 ? 'Excellent' : score >= 7 ? 'Good' : score >= 5 ? 'Average' : 'Poor'}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                
+                                <div className="flex items-end">
+                                  <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                    fileGrade.score >= 8 ? 'bg-green-100 text-green-800' :
+                                    fileGrade.score >= 6 ? 'bg-yellow-100 text-yellow-800' :
+                                    fileGrade.score >= 4 ? 'bg-orange-100 text-orange-800' :
+                                    fileGrade.score >= 1 ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
+                                  }`}>
+                                    {fileGrade.score > 0 ? `${fileGrade.score}/10` : 'Not graded'}
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              {/* File-specific Feedback */}
+                              <div>
+                                <label className="block text-xs font-medium text-slate-700 mb-2">
+                                  File-specific Comments
+                                </label>
+                                <Textarea
+                                  placeholder={`Assessment for ${file.fileName}...\n\n${
+                                    isCodeFile ? '• Code structure and organization\n• Logic and algorithms\n• Comments and documentation\n• Best practices followed' :
+                                    isDocFile ? '• Clarity and completeness\n• Organization and structure\n• Technical accuracy\n• Usefulness for understanding' :
+                                    isImageFile ? '• Visual quality and relevance\n• Appropriateness for project\n• Resolution and format' :
+                                    '• File relevance and quality\n• Organization and naming\n• Contribution to project'
+                                  }`}
+                                  value={fileGrade.feedback}
+                                  onChange={(e) => {
+                                    setFileGrades(prev => ({
+                                      ...prev,
+                                      [file.id]: { ...fileGrade, feedback: e.target.value }
+                                    }));
+                                  }}
+                                  className="text-sm min-h-[100px] resize-none border-slate-300 focus:border-purple-500 focus:ring-purple-500"
+                                  disabled={currentReview?.status === 'COMPLETED'}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-slate-500">
+                    <FileText className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+                    <p>No files uploaded for this project</p>
                   </div>
                 )}
               </div>
-            </div>
+            )}
 
-            {/* Detailed Feedback */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Detailed Feedback & Suggestions *
-              </label>
-              <Textarea
-                value={reviewFeedback}
-                onChange={(e) => setReviewFeedback(e.target.value)}
-                placeholder="Provide comprehensive feedback including:\n\n• Code quality and structure\n• Implementation approach\n• Areas of excellence\n• Suggestions for improvement\n• Learning outcomes achieved\n• Recommendations for future projects"
-                className="min-h-[200px] resize-none"
-                disabled={currentReview?.status === 'COMPLETED'}
-              />
-              <p className="text-xs text-slate-500 mt-1">
-                {reviewFeedback.length}/2000 characters
-              </p>
-            </div>
+            {/* Criteria Tab */}
+            {activeTab === 'criteria' && (
+              <div className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Technical Assessment */}
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6">
+                    <h4 className="font-semibold text-blue-900 mb-4 flex items-center gap-2">
+                      <Code className="w-5 h-5" />
+                      Technical Excellence
+                    </h4>
+                    <ul className="text-sm text-blue-800 space-y-2">
+                      <li className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
+                        Code structure, organization, and readability
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
+                        Algorithm efficiency and problem-solving approach
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
+                        Error handling and edge case management
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
+                        Technology stack appropriateness
+                      </li>
+                    </ul>
+                  </div>
 
-            {/* File-by-File Review Section */}
-            {projectFiles && projectFiles.length > 0 && (
-              <div>
-                <h4 className="font-medium text-slate-900 mb-3">File-by-File Review</h4>
-                <div className="space-y-3 max-h-60 overflow-y-auto">
-                  {projectFiles.slice(0, 5).map((file) => (
-                    <div key={file.id} className="border border-slate-200 rounded-lg p-3">
-                      <div className="flex items-center gap-2 mb-2">
-                        {getFileIcon(file)}
-                        <span className="text-sm font-medium text-slate-700">{file.fileName}</span>
-                        <Badge variant="outline" className="text-xs">
-                          {getFileTypeLabel(file)}
-                        </Badge>
+                  {/* Documentation Quality */}
+                  <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6">
+                    <h4 className="font-semibold text-green-900 mb-4 flex items-center gap-2">
+                      <FileText className="w-5 h-5" />
+                      Documentation & Communication
+                    </h4>
+                    <ul className="text-sm text-green-800 space-y-2">
+                      <li className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
+                        README clarity and completeness
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
+                        Code comments and inline documentation
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
+                        Setup and installation instructions
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
+                        Project structure explanation
+                      </li>
+                    </ul>
+                  </div>
+
+                  {/* Innovation & Creativity */}
+                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6">
+                    <h4 className="font-semibold text-purple-900 mb-4 flex items-center gap-2">
+                      <Lightbulb className="w-5 h-5" />
+                      Innovation & Creativity
+                    </h4>
+                    <ul className="text-sm text-purple-800 space-y-2">
+                      <li className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-purple-600 rounded-full mt-2 flex-shrink-0"></div>
+                        Creative problem-solving approaches
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-purple-600 rounded-full mt-2 flex-shrink-0"></div>
+                        Unique features or implementations
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-purple-600 rounded-full mt-2 flex-shrink-0"></div>
+                        User experience considerations
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-purple-600 rounded-full mt-2 flex-shrink-0"></div>
+                        Going beyond basic requirements
+                      </li>
+                    </ul>
+                  </div>
+
+                  {/* Academic Standards */}
+                  <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-6">
+                    <h4 className="font-semibold text-amber-900 mb-4 flex items-center gap-2">
+                      <GraduationCap className="w-5 h-5" />
+                      Academic Standards
+                    </h4>
+                    <ul className="text-sm text-amber-800 space-y-2">
+                      <li className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-amber-600 rounded-full mt-2 flex-shrink-0"></div>
+                        Meets course learning objectives
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-amber-600 rounded-full mt-2 flex-shrink-0"></div>
+                        Demonstrates technical competency
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-amber-600 rounded-full mt-2 flex-shrink-0"></div>
+                        Appropriate scope and complexity
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-amber-600 rounded-full mt-2 flex-shrink-0"></div>
+                        Professional presentation quality
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Grading Scale */}
+                <div className="bg-white rounded-xl border border-slate-200 p-6">
+                  <h4 className="font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5 text-slate-600" />
+                    Grading Scale Reference
+                  </h4>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <h5 className="font-medium text-green-700">Excellent (A Range)</h5>
+                      <div className="text-sm text-slate-600 space-y-1">
+                        <div>A+ (95-100%): Exceptional work</div>
+                        <div>A (90-94%): Outstanding quality</div>
+                        <div>A- (85-89%): Excellent with minor areas for improvement</div>
                       </div>
-                      <Textarea
-                        placeholder={`Comments for ${file.fileName}...`}
-                        value={fileComments[file.id] || ''}
-                        onChange={(e) => setFileComments(prev => ({ ...prev, [file.id]: e.target.value }))}
-                        className="text-xs min-h-[60px] resize-none"
-                        disabled={currentReview?.status === 'COMPLETED'}
-                      />
                     </div>
-                  ))}
-                  {projectFiles.length > 5 && (
-                    <p className="text-xs text-slate-500 text-center">
-                      Showing first 5 files. View all files in the main project view.
-                    </p>
-                  )}
+                    <div className="space-y-2">
+                      <h5 className="font-medium text-blue-700">Good (B Range)</h5>
+                      <div className="text-sm text-slate-600 space-y-1">
+                        <div>B+ (80-84%): Very good work</div>
+                        <div>B (75-79%): Good quality</div>
+                        <div>B- (70-74%): Satisfactory with improvements needed</div>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <h5 className="font-medium text-red-700">Needs Improvement</h5>
+                      <div className="text-sm text-slate-600 space-y-1">
+                        <div>C+ (65-69%): Below expectations</div>
+                        <div>C (60-64%): Significant improvements needed</div>
+                        <div>F (0-59%): Does not meet requirements</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
-
-            {/* Review Guidelines */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h4 className="font-medium text-blue-900 mb-2 flex items-center gap-2">
-                <MessageSquare className="w-4 h-4" />
-                Review Guidelines
-              </h4>
-              <ul className="text-sm text-blue-800 space-y-1">
-                <li>• Evaluate code quality, documentation, and implementation approach</li>
-                <li>• Provide constructive feedback for improvement</li>
-                <li>• Consider creativity, problem-solving, and technical skills</li>
-                <li>• Be specific about strengths and areas for development</li>
-                <li>• Remember this review helps student learning and growth</li>
-              </ul>
             </div>
           </div>
           
-          <DialogFooter className="gap-3">
+          <DialogFooter className="gap-3 border-t border-slate-200 pt-4">
             <Button
               variant="outline"
               onClick={() => {
@@ -2328,6 +2661,8 @@ export default function ProjectDetail() {
                   setReviewGrade('');
                   setReviewFeedback('');
                   setFileComments({});
+                  setFileGrades({});
+                  setActiveTab('overview');
                 }
               }}
             >
