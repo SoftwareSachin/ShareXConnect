@@ -55,9 +55,9 @@ function CollegeSelector({ value, onValueChange, disabled, control }: {
               </SelectTrigger>
               <SelectContent className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl border-slate-200/60 dark:border-slate-700/60 shadow-2xl rounded-xl max-h-60">
                 {error ? (
-                  <SelectItem value="error" disabled className="text-red-500 dark:text-red-400 italic">
+                  <div className="text-red-500 dark:text-red-400 italic p-3 text-sm">
                     Error loading colleges
-                  </SelectItem>
+                  </div>
                 ) : colleges && (colleges as any[]).length > 0 ? (
                   (colleges as any[]).map((college: any) => (
                     <SelectItem 
@@ -72,9 +72,9 @@ function CollegeSelector({ value, onValueChange, disabled, control }: {
                     </SelectItem>
                   ))
                 ) : (
-                  <SelectItem value="no-colleges" disabled className="text-slate-500 dark:text-slate-400 italic">
+                  <div className="text-slate-500 dark:text-slate-400 italic p-3 text-sm">
                     {isLoading ? "Loading..." : "No colleges registered yet. Contact admin to register your college domain."}
-                  </SelectItem>
+                  </div>
                 )}
               </SelectContent>
             </Select>
