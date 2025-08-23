@@ -474,9 +474,10 @@ export default function ProjectDetail() {
       if (!reviewGrade || !reviewFeedback) {
         throw new Error('Grade and feedback are required');
       }
-      return apiRequest('POST', `/api/assignments/${currentReview?.id || params.id}/review`, {
+      return apiRequest('POST', `/api/projects/${params.id}/review`, {
         grade: reviewGrade,
-        feedback: reviewFeedback
+        feedback: reviewFeedback,
+        fileGrades: fileGrades
       });
     },
     onSuccess: () => {
@@ -2180,7 +2181,7 @@ export default function ProjectDetail() {
 
       {/* Faculty Review Dialog */}
       <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
-        <DialogContent className="max-w-[90vw] max-h-[85vh] overflow-hidden flex flex-col p-0 m-4">
+        <DialogContent className="w-[95vw] h-[95vh] max-w-none max-h-none overflow-hidden flex flex-col p-0">
           <DialogHeader className="border-b border-slate-200 pb-3 px-6 pt-4 flex-shrink-0">
             <DialogTitle className="flex items-center gap-2 text-lg font-semibold">
               <GraduationCap className="w-5 h-5 text-purple-600" />
@@ -2193,7 +2194,7 @@ export default function ProjectDetail() {
             </DialogDescription>
           </DialogHeader>
           
-          <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+          <div className="flex-1 flex flex-col min-h-0">
             {/* Navigation Tabs */}
             <div className="flex border-b border-slate-200 flex-shrink-0 bg-white px-6">
               <button
@@ -2228,8 +2229,8 @@ export default function ProjectDetail() {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-6 py-4">
-              <div className="space-y-6">
+            <div className="flex-1 overflow-y-auto px-6 py-4 min-h-0">
+              <div className="space-y-6 pb-6">
             {/* Overview Tab */}
             {activeTab === 'overview' && (
               <div className="space-y-6">
@@ -2704,7 +2705,7 @@ export default function ProjectDetail() {
             </div>
           </div>
           
-          <DialogFooter className="gap-3 border-t border-slate-200 pt-3 px-6 pb-4 flex-shrink-0">
+          <DialogFooter className="gap-3 border-t border-slate-200 pt-4 px-6 pb-4 flex-shrink-0 bg-white">
             <Button
               variant="outline"
               onClick={() => {
