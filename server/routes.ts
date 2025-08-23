@@ -992,6 +992,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
+  // Mark a review as read by student
+  app.post("/api/projects/:projectId/reviews/:reviewId/mark-read", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      const project = await storage.getProject(req.params.projectId);
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+
+      // Only allow project owner to mark reviews as read
+      if (project.ownerId !== req.user!.id) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const success = await storage.markReviewAsRead(req.params.reviewId, req.user!.id);
+      if (success) {
+        res.json({ message: "Review marked as read" });
+      } else {
+        res.status(500).json({ message: "Failed to mark review as read" });
+      }
+    } catch (error) {
+      console.error('Error marking review as read:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }));
+
   // Project collaborators
   app.post("/api/projects/:id/collaborators", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {

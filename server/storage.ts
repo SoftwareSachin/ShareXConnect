@@ -109,6 +109,7 @@ export interface IStorage {
   getProjectReviews(reviewerId: string): Promise<(ProjectReview & { project: ProjectWithDetails })[]>;
   getProjectReviewsForProject(projectId: string): Promise<(ProjectReview & { reviewer: any })[]>;
   submitReview(reviewId: string, grade: string, feedback: string): Promise<ProjectReview | undefined>;
+  markReviewAsRead(reviewId: string, studentId: string): Promise<boolean>;
   isProjectReviewer(projectId: string, reviewerId: string): Promise<boolean>;
 
   // Dashboard statistics
@@ -948,7 +949,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async getProjectReviewsForProject(projectId: string): Promise<(ProjectReview & { reviewer: any })[]> {
+  async getProjectReviewsForProject(projectId: string): Promise<(ProjectReview & { reviewer: any, letterGrade?: string })[]> {
     try {
       const reviews = await db
         .select()
@@ -956,17 +957,50 @@ export class DatabaseStorage implements IStorage {
         .innerJoin(users, eq(projectReviews.reviewerId, users.id))
         .where(eq(projectReviews.projectId, projectId));
 
-      return reviews.map(result => ({
-        ...result.project_reviews,
-        reviewer: {
-          id: result.users.id,
-          firstName: result.users.firstName,
-          lastName: result.users.lastName,
-          email: result.users.email,
-          institution: result.users.institution,
-          department: result.users.department
+      return reviews.map(result => {
+        const review = result.project_reviews;
+        const feedback = review.feedback || '';
+        
+        // Extract original letter grade from feedback if stored with | separator
+        let letterGrade = '';
+        let actualFeedback = feedback;
+        
+        if (feedback.includes('|')) {
+          const parts = feedback.split('|');
+          letterGrade = parts[0];
+          actualFeedback = parts.slice(1).join('|');
+        } else {
+          // Convert numeric grade back to letter grade
+          const grade = review.grade || 0;
+          if (grade >= 97) letterGrade = 'A+';
+          else if (grade >= 93) letterGrade = 'A';
+          else if (grade >= 90) letterGrade = 'A-';
+          else if (grade >= 87) letterGrade = 'B+';
+          else if (grade >= 83) letterGrade = 'B';
+          else if (grade >= 80) letterGrade = 'B-';
+          else if (grade >= 77) letterGrade = 'C+';
+          else if (grade >= 73) letterGrade = 'C';
+          else if (grade >= 70) letterGrade = 'C-';
+          else if (grade >= 67) letterGrade = 'D+';
+          else if (grade >= 63) letterGrade = 'D';
+          else if (grade >= 60) letterGrade = 'D-';
+          else letterGrade = 'F';
         }
-      }));
+
+        return {
+          ...review,
+          feedback: actualFeedback,
+          letterGrade,
+          reviewer: {
+            id: result.users.id,
+            firstName: result.users.firstName,
+            lastName: result.users.lastName,
+            email: result.users.email,
+            institution: result.users.institution,
+            department: result.users.department
+          }
+        };
+      });
     } catch (error) {
       console.error('Error getting project reviews:', error);
       return [];
@@ -999,11 +1033,22 @@ export class DatabaseStorage implements IStorage {
 
   async submitReview(reviewId: string, grade: string, feedback: string): Promise<ProjectReview | undefined> {
     try {
+      // Convert letter grades to numeric values for database storage
+      const gradeMapping: Record<string, number> = {
+        'A+': 97, 'A': 93, 'A-': 90,
+        'B+': 87, 'B': 83, 'B-': 80,
+        'C+': 77, 'C': 73, 'C-': 70,
+        'D+': 67, 'D': 63, 'D-': 60,
+        'F': 0
+      };
+      
+      const numericGrade = gradeMapping[grade] || parseInt(grade) || 0;
+      
       const result = await db
         .update(projectReviews)
         .set({
-          grade: parseInt(grade) || 0,
-          feedback,
+          grade: numericGrade,
+          feedback: `${grade}|${feedback}`, // Store original grade with feedback
           status: "COMPLETED",
           updatedAt: new Date()
         })
@@ -1014,6 +1059,23 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error submitting review:', error);
       return undefined;
+    }
+  }
+
+  async markReviewAsRead(reviewId: string, studentId: string): Promise<boolean> {
+    try {
+      // You could add a separate table to track read status, for now we'll update the review
+      await db
+        .update(projectReviews)
+        .set({
+          updatedAt: new Date()
+        })
+        .where(eq(projectReviews.id, reviewId));
+      
+      return true;
+    } catch (error) {
+      console.error('Error marking review as read:', error);
+      return false;
     }
   }
 

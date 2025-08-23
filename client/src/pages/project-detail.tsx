@@ -224,6 +224,35 @@ export default function ProjectDetail() {
   // Student reviews state  
   const [studentReviews, setStudentReviews] = useState<any[]>([]);
   const [submittingReview, setSubmittingReview] = useState(false);
+
+  // Mark review as read functionality
+  const markReviewAsRead = async (reviewId: string) => {
+    try {
+      const response = await fetch(`/api/projects/${params.id}/reviews/${reviewId}/mark-read`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Review marked as read",
+          description: "You have acknowledged this faculty review.",
+        });
+        // Refresh the reviews
+        queryClient.invalidateQueries({ queryKey: [`/api/projects/${params.id}/reviews`] });
+      } else {
+        throw new Error('Failed to mark review as read');
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to mark review as read. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
   
   // Get current user from auth store (must be called before any conditional returns)
   const { user } = useAuthStore();
@@ -1895,11 +1924,23 @@ export default function ProjectDetail() {
                           </div>
                         </div>
                         
-                        {review.grade && (
+                        {(review.letterGrade || review.grade) && review.grade !== 0 && (
                           <div className="flex items-center gap-2 bg-green-50 dark:bg-green-900/20 px-3 py-1 rounded-lg border border-green-200 dark:border-green-800">
                             <Award className="w-4 h-4 text-green-700 dark:text-green-400" />
-                            <span className="text-sm font-semibold text-green-900 dark:text-green-100">Grade: {review.grade}</span>
+                            <span className="text-sm font-semibold text-green-900 dark:text-green-100">
+                              Grade: {review.letterGrade || review.grade}
+                            </span>
                           </div>
+                        )}
+
+                        {review.status === 'COMPLETED' && (
+                          <button
+                            onClick={() => markReviewAsRead(review.id)}
+                            className="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/20 px-3 py-1 rounded-lg border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                          >
+                            <CheckCircle className="w-4 h-4 text-blue-700 dark:text-blue-400" />
+                            <span className="text-sm font-semibold text-blue-900 dark:text-blue-100">Mark as Read</span>
+                          </button>
                         )}
                       </div>
 
