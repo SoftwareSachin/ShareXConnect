@@ -2250,7 +2250,7 @@ export default function ProjectDetail() {
 
       {/* Faculty Review Dialog */}
       <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
-        <DialogContent className="max-w-7xl w-[90vw] h-[90vh] max-h-[900px] overflow-hidden flex flex-col p-0 bg-white">
+        <DialogContent className="max-w-7xl w-[90vw] h-[90vh] max-h-[900px] overflow-visible flex flex-col p-0 bg-white">
           <DialogHeader className="border-b border-slate-200 pb-4 px-6 pt-6 flex-shrink-0 bg-white">
             <DialogTitle className="flex items-center gap-2 text-xl font-semibold text-slate-900">
               <GraduationCap className="w-6 h-6 text-purple-600" />
@@ -2401,26 +2401,33 @@ export default function ProjectDetail() {
                         Final Grade *
                       </label>
                       <div className="flex items-center gap-4">
-                        <Select 
-                          value={reviewGrade} 
-                          onValueChange={setReviewGrade}
-                          disabled={currentReview?.status === 'COMPLETED'}
-                        >
-                          <SelectTrigger className="w-72 h-12 border-2 border-slate-200 focus:border-blue-500">
-                            <SelectValue placeholder="Select final grade" />
-                          </SelectTrigger>
-                          <SelectContent className="z-[9999] max-h-[200px] overflow-y-auto bg-white border shadow-lg">
-                            <SelectItem value="A+">A+ (95-100%) - Outstanding</SelectItem>
-                            <SelectItem value="A">A (90-94%) - Excellent</SelectItem>
-                            <SelectItem value="A-">A- (85-89%) - Very Good</SelectItem>
-                            <SelectItem value="B+">B+ (80-84%) - Good</SelectItem>
-                            <SelectItem value="B">B (75-79%) - Satisfactory</SelectItem>
-                            <SelectItem value="B-">B- (70-74%) - Below Average</SelectItem>
-                            <SelectItem value="C+">C+ (65-69%) - Poor</SelectItem>
-                            <SelectItem value="C">C (60-64%) - Very Poor</SelectItem>
-                            <SelectItem value="F">F (0-59%) - Fail</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <div className="relative">
+                          <Select 
+                            value={reviewGrade} 
+                            onValueChange={setReviewGrade}
+                            disabled={currentReview?.status === 'COMPLETED'}
+                          >
+                            <SelectTrigger className="w-72 h-12 border-2 border-slate-200 focus:border-blue-500">
+                              <SelectValue placeholder="Select final grade" />
+                            </SelectTrigger>
+                            <SelectContent 
+                              className="z-[99999] max-h-[200px] overflow-y-auto bg-white border shadow-lg"
+                              style={{ position: 'fixed', zIndex: 99999 }}
+                              sideOffset={4}
+                              align="start"
+                            >
+                              <SelectItem value="A+">A+ (95-100%) - Outstanding</SelectItem>
+                              <SelectItem value="A">A (90-94%) - Excellent</SelectItem>
+                              <SelectItem value="A-">A- (85-89%) - Very Good</SelectItem>
+                              <SelectItem value="B+">B+ (80-84%) - Good</SelectItem>
+                              <SelectItem value="B">B (75-79%) - Satisfactory</SelectItem>
+                              <SelectItem value="B-">B- (70-74%) - Below Average</SelectItem>
+                              <SelectItem value="C+">C+ (65-69%) - Poor</SelectItem>
+                              <SelectItem value="C">C (60-64%) - Very Poor</SelectItem>
+                              <SelectItem value="F">F (0-59%) - Fail</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                         {reviewGrade && (
                           <div className="flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-lg border border-blue-200">
                             <Award className="w-4 h-4 text-blue-700" />
@@ -2519,27 +2526,34 @@ export default function ProjectDetail() {
                                   <label className="block text-xs font-medium text-slate-700 mb-2">
                                     Quality Score (1-10)
                                   </label>
-                                  <Select
-                                    value={fileGrade.score.toString()}
-                                    onValueChange={(value) => {
-                                      setFileGrades(prev => ({
-                                        ...prev,
-                                        [file.id]: { ...fileGrade, score: parseInt(value) }
-                                      }));
-                                    }}
-                                    disabled={currentReview?.status === 'COMPLETED'}
-                                  >
-                                    <SelectTrigger className="h-10 border-2 border-slate-200 focus:border-blue-500">
-                                      <SelectValue placeholder="Score" />
-                                    </SelectTrigger>
-                                    <SelectContent className="z-[9999] max-h-[200px] overflow-y-auto bg-white border shadow-lg">
-                                      {[10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map(score => (
-                                        <SelectItem key={score} value={score.toString()}>
-                                          {score}/10 - {score >= 9 ? 'Excellent' : score >= 7 ? 'Good' : score >= 5 ? 'Average' : 'Poor'}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
+                                  <div className="relative">
+                                    <Select
+                                      value={fileGrade.score.toString()}
+                                      onValueChange={(value) => {
+                                        setFileGrades(prev => ({
+                                          ...prev,
+                                          [file.id]: { ...fileGrade, score: parseInt(value) }
+                                        }));
+                                      }}
+                                      disabled={currentReview?.status === 'COMPLETED'}
+                                    >
+                                      <SelectTrigger className="h-10 border-2 border-slate-200 focus:border-blue-500">
+                                        <SelectValue placeholder="Score" />
+                                      </SelectTrigger>
+                                      <SelectContent 
+                                        className="z-[99999] max-h-[200px] overflow-y-auto bg-white border shadow-lg"
+                                        style={{ position: 'fixed', zIndex: 99999 }}
+                                        sideOffset={4}
+                                        align="start"
+                                      >
+                                        {[10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map(score => (
+                                          <SelectItem key={score} value={score.toString()}>
+                                            {score}/10 - {score >= 9 ? 'Excellent' : score >= 7 ? 'Good' : score >= 5 ? 'Average' : 'Poor'}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
                                 </div>
                                 
                                 <div className="flex items-end">
