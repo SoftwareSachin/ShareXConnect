@@ -2206,6 +2206,9 @@ export default function ProjectDetail() {
                 }`}
               >
                 Project Overview
+                {currentReview?.status !== 'COMPLETED' && (!reviewGrade || !reviewFeedback) && (
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                )}
               </button>
               <button
                 onClick={() => setActiveTab('files')}
@@ -2229,7 +2232,7 @@ export default function ProjectDetail() {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-6 py-6">
+            <div className="flex-1 overflow-y-auto px-6 py-6 bg-white">
               <div className="space-y-6">
             {/* Overview Tab */}
             {activeTab === 'overview' && (
@@ -2723,23 +2726,39 @@ export default function ProjectDetail() {
             </Button>
             
             {currentReview?.status !== 'COMPLETED' && (
-              <Button
-                onClick={() => submitReviewMutation.mutate()}
-                disabled={!reviewGrade || !reviewFeedback || submitReviewMutation.isPending}
-                className="bg-purple-600 hover:bg-purple-700"
-              >
-                {submitReviewMutation.isPending ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                    Submitting...
-                  </>
-                ) : (
-                  <>
-                    <Award className="w-4 h-4 mr-2" />
-                    Submit Review
-                  </>
+              <div className="flex items-center gap-3">
+                {(!reviewGrade || !reviewFeedback) && (
+                  <div className="text-sm text-amber-600 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200 flex items-center gap-2">
+                    <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
+                    {!reviewGrade && !reviewFeedback ? 'Grade & feedback required' : 
+                     !reviewGrade ? 'Grade required' : 'Feedback required'} 
+                    <button 
+                      onClick={() => setActiveTab('overview')} 
+                      className="text-amber-700 underline hover:text-amber-800 ml-1"
+                    >
+                      (Project Overview tab)
+                    </button>
+                  </div>
                 )}
-              </Button>
+                <Button
+                  onClick={() => submitReviewMutation.mutate()}
+                  disabled={!reviewGrade || !reviewFeedback || submitReviewMutation.isPending}
+                  className="bg-purple-600 hover:bg-purple-700"
+                  data-testid="button-submit-review"
+                >
+                  {submitReviewMutation.isPending ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      <Award className="w-4 h-4 mr-2" />
+                      Submit Review
+                    </>
+                  )}
+                </Button>
+              </div>
             )}
           </DialogFooter>
         </DialogContent>
