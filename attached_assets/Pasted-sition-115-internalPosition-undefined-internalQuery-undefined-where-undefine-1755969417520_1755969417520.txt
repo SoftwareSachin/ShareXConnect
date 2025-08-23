@@ -1,0 +1,78 @@
+sition: '115',
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: undefined,
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: 'parse_relation.c',
+    line: '3722',
+    routine: 'errorMissingColumn'
+  }
+}
+🗑️ Database connection removed from pool
+✅ New PostgreSQL client connected
+🔄 Database connection acquired from pool
+🔒 Password hashed successfully with salt rounds: 12
+🔄 Database connection acquired from pool
+🔄 Creating user with role: ADMIN for email: a@u.ac.in
+❌ Error creating user: DrizzleQueryError: Failed query: insert into "users" ("id", "username", "email", "password", "first_name", "last_name", "role", "institution", "college_domain", "department", "tech_expertise", "is_verified", "created_at", "updated_at") values (default, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) returning "id", "username", "email", "password", "first_name", "last_name", "role", "institution", "college_domain", "department", "tech_expertise", "is_verified", "created_at", "updated_at"
+params: dfdf,a@u.ac.in,$2b$12$N8kDJxMuDYDYm7Atcg0kMewZQOl2JHZw2gx6HS7SC8P18zgYxKMlG,df,sdnfm,ADMIN,u,@u.ac.in,,,true,2025-08-23T17:16:25.590Z,2025-08-23T17:16:25.590Z
+    at NodePgPreparedQuery.queryWithCache (/home/runner/workspace/node_modules/src/pg-core/session.ts:73:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async <anonymous> (/home/runner/workspace/node_modules/src/node-postgres/session.ts:154:19)
+    ... 3 lines matching cause stack trace ...
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:120:22) {
+  query: 'insert into "users" ("id", "username", "email", "password", "first_name", "last_name", "role", "institution", "college_domain", "department", "tech_expertise", "is_verified", "created_at", "updated_at") values (default, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) returning "id", "username", "email", "password", "first_name", "last_name", "role", "institution", "college_domain", "department", "tech_expertise", "is_verified", "created_at", "updated_at"',
+  params: [
+    'dfdf',
+    'a@u.ac.in',
+    '$2b$12$N8kDJxMuDYDYm7Atcg0kMewZQOl2JHZw2gx6HS7SC8P18zgYxKMlG',
+    'df',
+    'sdnfm',
+    'ADMIN',
+    'u',
+    '@u.ac.in',
+    '',
+    '',
+    true,
+    '2025-08-23T17:16:25.590Z',
+    '2025-08-23T17:16:25.590Z'
+  ],
+  cause: error: column "department" of relation "users" does not exist
+      at /home/runner/workspace/node_modules/pg/lib/client.js:545:17
+      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+      at async <anonymous> (/home/runner/workspace/node_modules/src/node-postgres/session.ts:161:13)
+      at async NodePgPreparedQuery.queryWithCache (/home/runner/workspace/node_modules/src/pg-core/session.ts:71:12)
+      at async <anonymous> (/home/runner/workspace/node_modules/src/node-postgres/session.ts:154:19)
+      at async <anonymous> (/home/runner/workspace/server/storage.ts:193:16)
+      at async NodePgSession.transaction (/home/runner/workspace/node_modules/src/node-postgres/session.ts:258:19)
+      at async DatabaseStorage.createUser (/home/runner/workspace/server/storage.ts:185:22)
+      at async <anonymous> (/home/runner/workspace/server/routes.ts:120:22) {
+    length: 129,
+    severity: 'ERROR',
+    code: '42703',
+    detail: undefined,
+    hint: undefined,
+    position: '129',
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: undefined,
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: 'parse_target.c',
+    line: '1066',
+    routine: 'checkInsertTargets'
+  }
+}
+Registration error: Error: Failed to create user: Failed query: insert into "users" ("id", "username", "email", "password", "first_name", "last_name", "role", "institution", "college_domain", "department", "tech_expertise", "is_verified", "created_at", "updated_at") values (default, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) returning "id", "username", "email", "password", "first_name", "last_name", "role", "institution", "college_domain", "department", "tech_expertise", "is_verified", "created_at", "updated_at"
+params: dfdf,a@u.ac.in,$2b$12$N8kDJxMuDYDYm7Atcg0kMewZQOl2JHZw2gx6HS7SC8P18zgYxKMlG,df,sdnfm,ADMIN,u,@u.ac.in,,,true,2025-08-23T17:16:25.590Z,2025-08-23T17:16:25.590Z
+    at DatabaseStorage.createUser (/home/runner/workspace/server/storage.ts:222:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:120:22)
+5:16:25 PM [express] POST /api/auth/register 500 in 1400ms :: {"message":"Internal server error"}
