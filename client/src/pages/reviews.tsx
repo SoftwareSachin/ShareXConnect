@@ -19,10 +19,11 @@ import {
   CheckCircle,
   Star
 } from "lucide-react";
-import type { FacultyAssignment, ProjectWithDetails } from "@shared/schema";
+import type { ProjectReview, ProjectWithDetails } from "@shared/schema";
 import { useState } from "react";
+import { Link } from "wouter";
 
-type AssignmentWithProject = FacultyAssignment & { project: ProjectWithDetails };
+type AssignmentWithProject = ProjectReview & { project: ProjectWithDetails };
 
 export default function Reviews() {
   const { user } = useAuthStore();
@@ -35,11 +36,11 @@ export default function Reviews() {
 
   const filteredAssignments = assignments?.filter(assignment => {
     if (statusFilter === "all") return true;
-    return assignment.reviewStatus === statusFilter;
+    return assignment.status.toLowerCase() === statusFilter;
   });
 
   const getStatusColor = (status: string) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case "completed":
         return "bg-green-100 text-green-800";
       case "pending":
@@ -49,7 +50,7 @@ export default function Reviews() {
     }
   };
 
-  const getGradeDisplay = (grade: string | null) => {
+  const getGradeDisplay = (grade: number | null) => {
     if (!grade) return null;
     return (
       <div className="flex items-center space-x-1">
@@ -59,7 +60,7 @@ export default function Reviews() {
     );
   };
 
-  const formatDate = (date: string) => {
+  const formatDate = (date: string | Date) => {
     return new Date(date).toLocaleDateString();
   };
 
@@ -147,8 +148,8 @@ export default function Reviews() {
                           <h4 className="font-semibold text-gray-900" data-testid={`text-project-title-${assignment.id}`}>
                             {assignment.project.title}
                           </h4>
-                          <Badge className={getStatusColor(assignment.reviewStatus)} variant="secondary">
-                            {assignment.reviewStatus === "pending" ? "Pending Review" : "Completed"}
+                          <Badge className={getStatusColor(assignment.status)} variant="secondary">
+                            {assignment.status === "PENDING" ? "Pending Review" : "Completed"}
                           </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground mb-2">
@@ -163,24 +164,26 @@ export default function Reviews() {
                           </div>
                           <div className="flex items-center space-x-1">
                             <Clock className="w-4 h-4" />
-                            <span>Assigned {formatDate(assignment.assignedAt)}</span>
+                            <span>Assigned {formatDate(assignment.createdAt)}</span>
                           </div>
-                          {assignment.reviewStatus === "completed" && assignment.reviewedAt && (
+                          {assignment.status === "COMPLETED" && assignment.updatedAt && (
                             <div className="flex items-center space-x-1">
                               <CheckCircle className="w-4 h-4" />
-                              <span>Reviewed {formatDate(assignment.reviewedAt)}</span>
+                              <span>Reviewed {formatDate(assignment.updatedAt)}</span>
                             </div>
                           )}
                           {assignment.grade && getGradeDisplay(assignment.grade)}
                         </div>
                       </div>
                       <div className="flex items-center space-x-3">
-                        <Button
-                          variant={assignment.reviewStatus === "pending" ? "default" : "outline"}
-                          data-testid={`button-review-${assignment.id}`}
-                        >
-                          {assignment.reviewStatus === "pending" ? "Review Project" : "View Review"}
-                        </Button>
+                        <Link href={`/project/${assignment.project.id}`}>
+                          <Button
+                            variant={assignment.status === "PENDING" ? "default" : "outline"}
+                            data-testid={`button-review-${assignment.id}`}
+                          >
+                            {assignment.status === "PENDING" ? "Review Project" : "View Review"}
+                          </Button>
+                        </Link>
                         <Button variant="ghost" size="sm">
                           <MoreHorizontal className="w-5 h-5" />
                         </Button>
@@ -188,18 +191,20 @@ export default function Reviews() {
                     </div>
                     
                     {/* Tech Stack */}
-                    <div className="flex items-center space-x-2 mb-4">
-                      {assignment.project.techStack.slice(0, 4).map((tech) => (
-                        <Badge key={tech} variant="outline" className="text-xs">
-                          {tech}
-                        </Badge>
-                      ))}
-                      {assignment.project.techStack.length > 4 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{assignment.project.techStack.length - 4} more
-                        </Badge>
-                      )}
-                    </div>
+                    {assignment.project.techStack && assignment.project.techStack.length > 0 && (
+                      <div className="flex items-center space-x-2 mb-4">
+                        {assignment.project.techStack.slice(0, 4).map((tech) => (
+                          <Badge key={tech} variant="outline" className="text-xs">
+                            {tech}
+                          </Badge>
+                        ))}
+                        {assignment.project.techStack.length > 4 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{assignment.project.techStack.length - 4} more
+                          </Badge>
+                        )}
+                      </div>
+                    )}
 
                     {/* Files and Links */}
                     <div className="border-t border-gray-200 pt-4">
@@ -238,7 +243,7 @@ export default function Reviews() {
                     </div>
 
                     {/* Review Feedback (if completed) */}
-                    {assignment.reviewStatus === "completed" && assignment.feedback && (
+                    {assignment.status === "COMPLETED" && assignment.feedback && (
                       <div className="border-t border-gray-200 pt-4 mt-4">
                         <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                           <p className="text-sm text-green-800 font-medium mb-1">Review Summary</p>
