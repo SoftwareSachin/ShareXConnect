@@ -2180,8 +2180,8 @@ export default function ProjectDetail() {
 
       {/* Faculty Review Dialog */}
       <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
-        <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden flex flex-col">
-          <DialogHeader className="border-b border-slate-200 pb-4 flex-shrink-0">
+        <DialogContent className="max-w-[95vw] max-h-[95vh] overflow-hidden flex flex-col p-0">
+          <DialogHeader className="border-b border-slate-200 pb-4 px-6 pt-6 flex-shrink-0">
             <DialogTitle className="flex items-center gap-2 text-xl">
               <GraduationCap className="w-6 h-6 text-purple-600" />
               {currentReview?.status === 'COMPLETED' ? 'Review Details' : 'Project Review & Grading'}
@@ -2195,10 +2195,10 @@ export default function ProjectDetail() {
           
           <div className="flex-1 flex flex-col min-h-0">
             {/* Navigation Tabs */}
-            <div className="flex border-b border-slate-200 mb-4 flex-shrink-0 bg-white">
+            <div className="flex border-b border-slate-200 flex-shrink-0 bg-white px-6">
               <button
                 onClick={() => setActiveTab('overview')}
-                className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors relative ${
                   activeTab === 'overview'
                     ? 'border-purple-600 text-purple-600 bg-purple-50'
                     : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
@@ -2208,7 +2208,7 @@ export default function ProjectDetail() {
               </button>
               <button
                 onClick={() => setActiveTab('files')}
-                className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors relative ${
                   activeTab === 'files'
                     ? 'border-purple-600 text-purple-600 bg-purple-50'
                     : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
@@ -2218,7 +2218,7 @@ export default function ProjectDetail() {
               </button>
               <button
                 onClick={() => setActiveTab('criteria')}
-                className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors relative ${
                   activeTab === 'criteria'
                     ? 'border-purple-600 text-purple-600 bg-purple-50'
                     : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
@@ -2228,7 +2228,8 @@ export default function ProjectDetail() {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-1 space-y-6">
+            <div className="flex-1 overflow-y-auto px-6 py-6">
+              <div className="space-y-8">
             {/* Overview Tab */}
             {activeTab === 'overview' && (
               <div className="space-y-6">
@@ -2699,10 +2700,11 @@ export default function ProjectDetail() {
                 </div>
               </div>
             )}
+              </div>
             </div>
           </div>
           
-          <DialogFooter className="gap-3 border-t border-slate-200 pt-4">
+          <DialogFooter className="gap-3 border-t border-slate-200 pt-4 px-6 pb-6">
             <Button
               variant="outline"
               onClick={() => {
