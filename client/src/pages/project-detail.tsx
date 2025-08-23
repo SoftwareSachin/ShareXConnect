@@ -380,7 +380,7 @@ export default function ProjectDetail() {
   });
 
   // Get current review status if user is a reviewer
-  const { data: currentReview } = useQuery({
+  const { data: currentReview } = useQuery<any>({
     queryKey: [`/api/projects/${params.id}/review`],
     queryFn: () => apiGet(`/api/projects/${params.id}/review`),
     enabled: !!user && user.role === 'FACULTY' && !!isReviewer,
@@ -472,7 +472,7 @@ export default function ProjectDetail() {
       if (!reviewGrade || !reviewFeedback) {
         throw new Error('Grade and feedback are required');
       }
-      return apiRequest('POST', `/api/assignments/${currentReview?.id}/review`, {
+      return apiRequest('POST', `/api/assignments/${currentReview?.id || params.id}/review`, {
         grade: reviewGrade,
         feedback: reviewFeedback
       });
@@ -508,7 +508,7 @@ export default function ProjectDetail() {
     }
   };
 
-  const { data: files } = useQuery<ProjectFile[]>({
+  const { data: projectFiles } = useQuery<ProjectFile[]>({
     queryKey: [`/api/projects/${params.id}/files`],
     queryFn: async (): Promise<ProjectFile[]> => {
       try {
@@ -731,8 +731,8 @@ export default function ProjectDetail() {
                         <Button
                           variant="outline"
                           onClick={() => {
-                            setReviewGrade(currentReview.grade?.toString() || '');
-                            setReviewFeedback(currentReview.feedback || '');
+                            setReviewGrade(currentReview?.grade?.toString() || '');
+                            setReviewFeedback(currentReview?.feedback || '');
                             setShowReviewDialog(true);
                           }}
                           className="text-purple-700 border-purple-200 hover:bg-purple-50"
@@ -753,16 +753,16 @@ export default function ProjectDetail() {
                     </div>
                   </div>
                   
-                  {currentReview?.status === 'COMPLETED' && currentReview.feedback && (
+                  {currentReview?.status === 'COMPLETED' && currentReview?.feedback && (
                     <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                       <div className="flex items-start gap-3">
                         <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
                         <div>
                           <h4 className="font-medium text-green-900 mb-1">
-                            Review Summary (Grade: {currentReview.grade})
+                            Review Summary (Grade: {currentReview?.grade})
                           </h4>
                           <p className="text-green-800 text-sm leading-relaxed">
-                            {currentReview.feedback}
+                            {currentReview?.feedback}
                           </p>
                         </div>
                       </div>
@@ -2272,17 +2272,17 @@ export default function ProjectDetail() {
             </div>
 
             {/* File-by-File Review Section */}
-            {files && files.length > 0 && (
+            {projectFiles && projectFiles.length > 0 && (
               <div>
                 <h4 className="font-medium text-slate-900 mb-3">File-by-File Review</h4>
                 <div className="space-y-3 max-h-60 overflow-y-auto">
-                  {files.slice(0, 5).map((file) => (
+                  {projectFiles.slice(0, 5).map((file) => (
                     <div key={file.id} className="border border-slate-200 rounded-lg p-3">
                       <div className="flex items-center gap-2 mb-2">
                         {getFileIcon(file)}
                         <span className="text-sm font-medium text-slate-700">{file.fileName}</span>
                         <Badge variant="outline" className="text-xs">
-                          {getFileTypeLabel(file.fileName)}
+                          {getFileTypeLabel(file)}
                         </Badge>
                       </div>
                       <Textarea
@@ -2294,7 +2294,7 @@ export default function ProjectDetail() {
                       />
                     </div>
                   ))}
-                  {files.length > 5 && (
+                  {projectFiles.length > 5 && (
                     <p className="text-xs text-slate-500 text-center">
                       Showing first 5 files. View all files in the main project view.
                     </p>
