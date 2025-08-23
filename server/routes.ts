@@ -248,7 +248,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Project routes
   app.get("/api/projects", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
-      const { visibility, status, category, search, my } = req.query;
+      const { visibility, status, category, search, my, department, techStack } = req.query;
       
       let filters: any = {};
       
@@ -274,6 +274,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (status) filters.status = status;
       if (category) filters.category = category;
+      if (department) filters.department = department as string;
+      if (techStack) filters.techStack = (techStack as string).split(',');
       if (search) filters.search = search as string;
 
       const projects = await storage.getProjects(filters);

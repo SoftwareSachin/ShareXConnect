@@ -84,6 +84,8 @@ export interface IStorage {
     category?: string;
     search?: string;
     institution?: string;
+    department?: string;
+    techStack?: string[];
   }): Promise<ProjectWithDetails[]>;
   createProject(project: InsertProject): Promise<Project>;
   updateProject(id: string, updates: Partial<InsertProject>): Promise<Project | undefined>;
@@ -489,6 +491,8 @@ export class DatabaseStorage implements IStorage {
     category?: string;
     search?: string;
     institution?: string;
+    department?: string;
+    techStack?: string[];
   }): Promise<ProjectWithDetails[]> {
     try {
       let query = db
@@ -520,6 +524,16 @@ export class DatabaseStorage implements IStorage {
       }
       if (filters?.institution) {
         conditions.push(eq(users.institution, filters.institution));
+      }
+      if (filters?.department) {
+        conditions.push(eq(projects.department, filters.department));
+      }
+      if (filters?.techStack && filters.techStack.length > 0) {
+        // Check if any of the requested tech stacks are in the project's tech stack array
+        const techStackConditions = filters.techStack.map(tech => 
+          sql`${projects.techStack} @> ARRAY[${tech}]`
+        );
+        conditions.push(or(...techStackConditions));
       }
 
       if (conditions.length > 0) {
