@@ -880,7 +880,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Grade and feedback are required" });
       }
 
-      const assignment = await storage.submitReview(req.params.id, grade, feedback);
+      const assignment = await storage.submitReview(req.params.id, req.user!.id, grade, feedback);
       if (!assignment) {
         return res.status(404).json({ message: "Assignment not found" });
       }
@@ -947,9 +947,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "You are not assigned to review this project" });
       }
 
-      // Submit the review using the assignment ID
-      const updatedReview = await storage.submitReview(assignment.id, grade, feedback);
-      if (!updatedReview) {
+      // Submit a new review (allows multiple reviews from same faculty)
+      const newReview = await storage.submitReview(req.params.id, req.user!.id, grade, feedback);
+      if (!newReview) {
         return res.status(404).json({ message: "Failed to submit review" });
       }
 
@@ -957,7 +957,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`✅ Review submitted for project ${req.params.id} by faculty ${req.user!.id}: Grade ${grade}`);
 
       res.json({
-        ...updatedReview,
+        ...newReview,
         project: assignment.project
       });
     } catch (error) {

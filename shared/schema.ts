@@ -123,6 +123,7 @@ export const projectReviews = pgTable("project_reviews", {
   status: reviewStatusEnum("status").notNull(),
   grade: integer("grade"),
   feedback: text("feedback"),
+  isReadByStudent: boolean("is_read_by_student").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

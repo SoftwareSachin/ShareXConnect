@@ -108,7 +108,7 @@ export interface IStorage {
   assignProjectToReviewer(projectId: string, reviewerId: string): Promise<ProjectReview>;
   getProjectReviews(reviewerId: string): Promise<(ProjectReview & { project: ProjectWithDetails })[]>;
   getProjectReviewsForProject(projectId: string): Promise<(ProjectReview & { reviewer: any })[]>;
-  submitReview(reviewId: string, grade: string, feedback: string): Promise<ProjectReview | undefined>;
+  submitReview(projectId: string, reviewerId: string, grade: string, feedback: string): Promise<ProjectReview | undefined>;
   markReviewAsRead(reviewId: string, studentId: string): Promise<boolean>;
   isProjectReviewer(projectId: string, reviewerId: string): Promise<boolean>;
 
@@ -991,6 +991,7 @@ export class DatabaseStorage implements IStorage {
           ...review,
           feedback: actualFeedback,
           letterGrade,
+          isReadByStudent: review.isReadByStudent || false,
           reviewer: {
             id: result.users.id,
             firstName: result.users.firstName,
@@ -1031,7 +1032,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async submitReview(reviewId: string, grade: string, feedback: string): Promise<ProjectReview | undefined> {
+  async submitReview(projectId: string, reviewerId: string, grade: string, feedback: string): Promise<ProjectReview | undefined> {
     try {
       // Convert letter grades to numeric values for database storage
       const gradeMapping: Record<string, number> = {
@@ -1044,17 +1045,21 @@ export class DatabaseStorage implements IStorage {
       
       const numericGrade = gradeMapping[grade] || parseInt(grade) || 0;
       
+      // CREATE a new review instead of updating existing one
+      // This allows faculty to submit multiple reviews
       const result = await db
-        .update(projectReviews)
-        .set({
+        .insert(projectReviews)
+        .values({
+          projectId,
+          reviewerId,
           grade: numericGrade,
           feedback: `${grade}|${feedback}`, // Store original grade with feedback
           status: "COMPLETED",
-          updatedAt: new Date()
+          isReadByStudent: false
         })
-        .where(eq(projectReviews.id, reviewId))
         .returning();
       
+      console.log(`✅ New review created for project ${projectId} by faculty ${reviewerId}: Grade ${grade}`);
       return result[0] || undefined;
     } catch (error) {
       console.error('Error submitting review:', error);
@@ -1064,15 +1069,21 @@ export class DatabaseStorage implements IStorage {
 
   async markReviewAsRead(reviewId: string, studentId: string): Promise<boolean> {
     try {
-      // You could add a separate table to track read status, for now we'll update the review
-      await db
+      // Update the review to mark it as read by student
+      const result = await db
         .update(projectReviews)
         .set({
+          isReadByStudent: true,
           updatedAt: new Date()
         })
-        .where(eq(projectReviews.id, reviewId));
+        .where(eq(projectReviews.id, reviewId))
+        .returning();
       
-      return true;
+      if (result.length > 0) {
+        console.log(`✅ Review ${reviewId} marked as read by student ${studentId}`);
+        return true;
+      }
+      return false;
     } catch (error) {
       console.error('Error marking review as read:', error);
       return false;
