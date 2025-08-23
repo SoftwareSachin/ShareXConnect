@@ -2228,30 +2228,30 @@ export default function ProjectDetail() {
             {activeTab === 'overview' && (
               <div className="space-y-6">
                 {/* Project Summary */}
-                <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6">
+                <div className="bg-slate-50 rounded-lg p-6 border border-slate-200">
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                      <FileText className="w-6 h-6 text-blue-600" />
+                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <FileText className="w-6 h-6 text-blue-700" />
                     </div>
                     <div className="flex-1">
-                      <h4 className="text-lg font-semibold text-slate-900 mb-2">{project?.title}</h4>
-                      <p className="text-slate-600 mb-3">{project?.description}</p>
+                      <h4 className="text-xl font-semibold text-slate-900 mb-2">{project?.title}</h4>
+                      <p className="text-slate-600 mb-4 text-sm leading-relaxed">{project?.description}</p>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        <div className="bg-white/50 rounded-lg p-3">
-                          <p className="text-slate-500 text-xs">Student</p>
-                          <p className="font-medium">{project?.owner.firstName} {project?.owner.lastName}</p>
+                        <div className="bg-white rounded-lg p-4 border border-slate-100">
+                          <p className="text-slate-500 text-xs font-medium mb-1">Student</p>
+                          <p className="font-semibold text-slate-900">{project?.owner.firstName} {project?.owner.lastName}</p>
                         </div>
-                        <div className="bg-white/50 rounded-lg p-3">
-                          <p className="text-slate-500 text-xs">Category</p>
-                          <p className="font-medium">{project?.category}</p>
+                        <div className="bg-white rounded-lg p-4 border border-slate-100">
+                          <p className="text-slate-500 text-xs font-medium mb-1">Category</p>
+                          <p className="font-semibold text-slate-900">{project?.category}</p>
                         </div>
-                        <div className="bg-white/50 rounded-lg p-3">
-                          <p className="text-slate-500 text-xs">Department</p>
-                          <p className="font-medium">{project?.department || 'Not specified'}</p>
+                        <div className="bg-white rounded-lg p-4 border border-slate-100">
+                          <p className="text-slate-500 text-xs font-medium mb-1">Department</p>
+                          <p className="font-semibold text-slate-900">{project?.department || 'Not specified'}</p>
                         </div>
-                        <div className="bg-white/50 rounded-lg p-3">
-                          <p className="text-slate-500 text-xs">Submitted</p>
-                          <p className="font-medium">{project && new Date(project.createdAt).toLocaleDateString()}</p>
+                        <div className="bg-white rounded-lg p-4 border border-slate-100">
+                          <p className="text-slate-500 text-xs font-medium mb-1">Submitted</p>
+                          <p className="font-semibold text-slate-900">{project && new Date(project.createdAt).toLocaleDateString()}</p>
                         </div>
                       </div>
                     </div>
@@ -2262,14 +2262,16 @@ export default function ProjectDetail() {
                 <div className="grid md:grid-cols-2 gap-6">
                   {/* Tech Stack */}
                   {project?.techStack && project.techStack.length > 0 && (
-                    <div className="bg-white rounded-xl p-5 border border-slate-200">
-                      <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                        <Code className="w-4 h-4 text-purple-600" />
+                    <div className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
+                      <h4 className="font-semibold text-slate-900 mb-4 flex items-center gap-3">
+                        <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
+                          <Code2 className="w-4 h-4 text-blue-700" />
+                        </div>
                         Technology Stack
                       </h4>
                       <div className="flex flex-wrap gap-2">
                         {project.techStack.map((tech) => (
-                          <Badge key={tech} variant="secondary" className="text-xs">
+                          <Badge key={tech} variant="secondary" className="text-xs px-2 py-1">
                             {tech}
                           </Badge>
                         ))}
@@ -2278,25 +2280,27 @@ export default function ProjectDetail() {
                   )}
 
                   {/* Project Stats */}
-                  <div className="bg-white rounded-xl p-5 border border-slate-200">
-                    <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                      <BarChart3 className="w-4 h-4 text-green-600" />
+                  <div className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
+                    <h4 className="font-semibold text-slate-900 mb-4 flex items-center gap-3">
+                      <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center">
+                        <FileText className="w-4 h-4 text-green-700" />
+                      </div>
                       Project Statistics
                     </h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-slate-600">Total Files:</span>
-                        <span className="font-medium">{projectFiles?.length || 0}</span>
+                    <div className="space-y-3 text-sm">
+                      <div className="flex justify-between items-center py-1">
+                        <span className="text-slate-600">Total Files</span>
+                        <span className="font-semibold text-slate-900">{projectFiles?.length || 0}</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-600">Code Files:</span>
-                        <span className="font-medium">
+                      <div className="flex justify-between items-center py-1">
+                        <span className="text-slate-600">Code Files</span>
+                        <span className="font-semibold text-slate-900">
                           {projectFiles?.filter(f => ['js', 'ts', 'py', 'java', 'cpp', 'html', 'css'].some(ext => f.fileName.toLowerCase().endsWith(ext))).length || 0}
                         </span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-600">Documentation:</span>
-                        <span className="font-medium">
+                      <div className="flex justify-between items-center py-1">
+                        <span className="text-slate-600">Documentation</span>
+                        <span className="font-semibold text-slate-900">
                           {projectFiles?.filter(f => ['md', 'txt', 'pdf', 'doc'].some(ext => f.fileName.toLowerCase().endsWith(ext))).length || 0}
                         </span>
                       </div>
@@ -2305,14 +2309,16 @@ export default function ProjectDetail() {
                 </div>
 
                 {/* Overall Grade Section */}
-                <div className="bg-white rounded-xl p-6 border border-slate-200">
-                  <h4 className="font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                    <Award className="w-5 h-5 text-amber-500" />
+                <div className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
+                  <h4 className="font-semibold text-slate-900 mb-4 flex items-center gap-3">
+                    <div className="w-8 h-8 bg-amber-50 rounded-lg flex items-center justify-center">
+                      <Award className="w-4 h-4 text-amber-700" />
+                    </div>
                     Overall Project Grade
                   </h4>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                      <label className="block text-sm font-semibold text-slate-700 mb-3">
                         Final Grade *
                       </label>
                       <div className="flex items-center gap-4">
@@ -2321,7 +2327,7 @@ export default function ProjectDetail() {
                           onValueChange={setReviewGrade}
                           disabled={currentReview?.status === 'COMPLETED'}
                         >
-                          <SelectTrigger className="w-64">
+                          <SelectTrigger className="w-72 h-12 border-2 border-slate-200 focus:border-blue-500">
                             <SelectValue placeholder="Select final grade" />
                           </SelectTrigger>
                           <SelectContent>
@@ -2337,9 +2343,9 @@ export default function ProjectDetail() {
                           </SelectContent>
                         </Select>
                         {reviewGrade && (
-                          <div className="flex items-center gap-2 bg-amber-50 px-3 py-2 rounded-lg">
-                            <Award className="w-4 h-4 text-amber-600" />
-                            <span className="text-sm font-semibold text-amber-800">Grade: {reviewGrade}</span>
+                          <div className="flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-lg border border-blue-200">
+                            <Award className="w-4 h-4 text-blue-700" />
+                            <span className="text-sm font-semibold text-blue-900">Grade: {reviewGrade}</span>
                           </div>
                         )}
                       </div>
@@ -2348,28 +2354,30 @@ export default function ProjectDetail() {
                 </div>
 
                 {/* Detailed Feedback */}
-                <div className="bg-white rounded-xl p-6 border border-slate-200">
-                  <h4 className="font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                    <MessageSquare className="w-5 h-5 text-blue-600" />
+                <div className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
+                  <h4 className="font-semibold text-slate-900 mb-4 flex items-center gap-3">
+                    <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
+                      <MessageSquare className="w-4 h-4 text-blue-700" />
+                    </div>
                     Comprehensive Feedback
                   </h4>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-3">
+                    <label className="block text-sm font-semibold text-slate-700 mb-3">
                       Detailed Assessment & Recommendations *
                     </label>
                     <Textarea
                       value={reviewFeedback}
                       onChange={(e) => setReviewFeedback(e.target.value)}
-                      placeholder="Provide comprehensive feedback including:\n\n• Code Quality & Architecture\n• Implementation Approach & Best Practices\n• Areas of Excellence & Innovation\n• Technical Skills Demonstrated\n• Areas for Improvement\n• Learning Outcomes Achieved\n• Recommendations for Future Development"
-                      className="min-h-[250px] resize-none border-slate-300 focus:border-purple-500 focus:ring-purple-500"
+                      placeholder="Provide comprehensive feedback including:\n\n- Code Quality & Architecture\n- Implementation Approach & Best Practices\n- Areas of Excellence & Innovation\n- Technical Skills Demonstrated\n- Areas for Improvement\n- Learning Outcomes Achieved\n- Recommendations for Future Development"
+                      className="min-h-[250px] resize-none border-2 border-slate-200 focus:border-blue-500 focus:ring-0"
                       disabled={currentReview?.status === 'COMPLETED'}
                     />
-                    <div className="flex justify-between items-center mt-2">
-                      <p className="text-xs text-slate-500">
+                    <div className="flex justify-between items-center mt-3">
+                      <p className="text-xs text-slate-500 font-medium">
                         {reviewFeedback.length}/2000 characters
                       </p>
                       <div className="flex items-center gap-1 text-xs text-slate-500">
-                        <Info className="w-3 h-3" />
+                        <MessageSquare className="w-3 h-3" />
                         Be specific and constructive
                       </div>
                     </div>
@@ -2403,24 +2411,24 @@ export default function ProjectDetail() {
                       );
                       
                       return (
-                        <div key={file.id} className="bg-white border border-slate-200 rounded-xl p-5 hover:shadow-md transition-shadow">
+                        <div key={file.id} className="bg-white border border-slate-200 rounded-lg p-6 hover:shadow-sm transition-shadow">
                           <div className="flex items-start gap-4">
                             <div className="flex-shrink-0">
-                              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                                isCodeFile ? 'bg-blue-100' : isDocFile ? 'bg-green-100' : isImageFile ? 'bg-purple-100' : 'bg-gray-100'
+                              <div className={`w-12 h-12 rounded-lg flex items-center justify-center border ${
+                                isCodeFile ? 'bg-blue-50 border-blue-200' : isDocFile ? 'bg-green-50 border-green-200' : isImageFile ? 'bg-purple-50 border-purple-200' : 'bg-slate-50 border-slate-200'
                               }`}>
                                 {getFileIcon(file)}
                               </div>
                             </div>
                             
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-3 mb-3">
-                                <h5 className="font-medium text-slate-900 truncate">{file.fileName}</h5>
-                                <Badge variant={isCodeFile ? 'default' : isDocFile ? 'secondary' : 'outline'} className="text-xs">
+                              <div className="flex items-center gap-3 mb-4">
+                                <h5 className="font-semibold text-slate-900 truncate">{file.fileName}</h5>
+                                <Badge variant={isCodeFile ? 'default' : isDocFile ? 'secondary' : 'outline'} className="text-xs px-2 py-1">
                                   {getFileTypeLabel(file)}
                                 </Badge>
                                 {file.fileSize && (
-                                  <span className="text-xs text-slate-500">
+                                  <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">
                                     {(file.fileSize / 1024).toFixed(1)}KB
                                   </span>
                                 )}
@@ -2442,7 +2450,7 @@ export default function ProjectDetail() {
                                     }}
                                     disabled={currentReview?.status === 'COMPLETED'}
                                   >
-                                    <SelectTrigger className="h-8">
+                                    <SelectTrigger className="h-10 border-2 border-slate-200 focus:border-blue-500">
                                       <SelectValue placeholder="Score" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -2456,11 +2464,11 @@ export default function ProjectDetail() {
                                 </div>
                                 
                                 <div className="flex items-end">
-                                  <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                    fileGrade.score >= 8 ? 'bg-green-100 text-green-800' :
-                                    fileGrade.score >= 6 ? 'bg-yellow-100 text-yellow-800' :
-                                    fileGrade.score >= 4 ? 'bg-orange-100 text-orange-800' :
-                                    fileGrade.score >= 1 ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
+                                  <div className={`px-3 py-2 rounded-lg text-xs font-semibold border ${
+                                    fileGrade.score >= 8 ? 'bg-green-50 text-green-800 border-green-200' :
+                                    fileGrade.score >= 6 ? 'bg-yellow-50 text-yellow-800 border-yellow-200' :
+                                    fileGrade.score >= 4 ? 'bg-orange-50 text-orange-800 border-orange-200' :
+                                    fileGrade.score >= 1 ? 'bg-red-50 text-red-800 border-red-200' : 'bg-slate-50 text-slate-800 border-slate-200'
                                   }`}>
                                     {fileGrade.score > 0 ? `${fileGrade.score}/10` : 'Not graded'}
                                   </div>
@@ -2474,10 +2482,10 @@ export default function ProjectDetail() {
                                 </label>
                                 <Textarea
                                   placeholder={`Assessment for ${file.fileName}...\n\n${
-                                    isCodeFile ? '• Code structure and organization\n• Logic and algorithms\n• Comments and documentation\n• Best practices followed' :
-                                    isDocFile ? '• Clarity and completeness\n• Organization and structure\n• Technical accuracy\n• Usefulness for understanding' :
-                                    isImageFile ? '• Visual quality and relevance\n• Appropriateness for project\n• Resolution and format' :
-                                    '• File relevance and quality\n• Organization and naming\n• Contribution to project'
+                                    isCodeFile ? '- Code structure and organization\n- Logic and algorithms\n- Comments and documentation\n- Best practices followed' :
+                                    isDocFile ? '- Clarity and completeness\n- Organization and structure\n- Technical accuracy\n- Usefulness for understanding' :
+                                    isImageFile ? '- Visual quality and relevance\n- Appropriateness for project\n- Resolution and format' :
+                                    '- File relevance and quality\n- Organization and naming\n- Contribution to project'
                                   }`}
                                   value={fileGrade.feedback}
                                   onChange={(e) => {
@@ -2486,7 +2494,7 @@ export default function ProjectDetail() {
                                       [file.id]: { ...fileGrade, feedback: e.target.value }
                                     }));
                                   }}
-                                  className="text-sm min-h-[100px] resize-none border-slate-300 focus:border-purple-500 focus:ring-purple-500"
+                                  className="text-sm min-h-[120px] resize-none border-2 border-slate-200 focus:border-blue-500 focus:ring-0"
                                   disabled={currentReview?.status === 'COMPLETED'}
                                 />
                               </div>
@@ -2510,104 +2518,112 @@ export default function ProjectDetail() {
               <div className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   {/* Technical Assessment */}
-                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6">
-                    <h4 className="font-semibold text-blue-900 mb-4 flex items-center gap-2">
-                      <Code className="w-5 h-5" />
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                    <h4 className="font-semibold text-blue-900 mb-4 flex items-center gap-3">
+                      <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <Code2 className="w-4 h-4 text-blue-700" />
+                      </div>
                       Technical Excellence
                     </h4>
-                    <ul className="text-sm text-blue-800 space-y-2">
-                      <li className="flex items-start gap-2">
-                        <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
+                    <ul className="text-sm text-blue-800 space-y-3">
+                      <li className="flex items-start gap-3">
+                        <div className="w-2 h-2 bg-blue-600 rounded-full mt-1.5 flex-shrink-0"></div>
                         Code structure, organization, and readability
                       </li>
-                      <li className="flex items-start gap-2">
-                        <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
+                      <li className="flex items-start gap-3">
+                        <div className="w-2 h-2 bg-blue-600 rounded-full mt-1.5 flex-shrink-0"></div>
                         Algorithm efficiency and problem-solving approach
                       </li>
-                      <li className="flex items-start gap-2">
-                        <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
+                      <li className="flex items-start gap-3">
+                        <div className="w-2 h-2 bg-blue-600 rounded-full mt-1.5 flex-shrink-0"></div>
                         Error handling and edge case management
                       </li>
-                      <li className="flex items-start gap-2">
-                        <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
+                      <li className="flex items-start gap-3">
+                        <div className="w-2 h-2 bg-blue-600 rounded-full mt-1.5 flex-shrink-0"></div>
                         Technology stack appropriateness
                       </li>
                     </ul>
                   </div>
 
                   {/* Documentation Quality */}
-                  <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6">
-                    <h4 className="font-semibold text-green-900 mb-4 flex items-center gap-2">
-                      <FileText className="w-5 h-5" />
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+                    <h4 className="font-semibold text-green-900 mb-4 flex items-center gap-3">
+                      <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                        <FileText className="w-4 h-4 text-green-700" />
+                      </div>
                       Documentation & Communication
                     </h4>
-                    <ul className="text-sm text-green-800 space-y-2">
-                      <li className="flex items-start gap-2">
-                        <div className="w-1.5 h-1.5 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
+                    <ul className="text-sm text-green-800 space-y-3">
+                      <li className="flex items-start gap-3">
+                        <div className="w-2 h-2 bg-green-600 rounded-full mt-1.5 flex-shrink-0"></div>
                         README clarity and completeness
                       </li>
-                      <li className="flex items-start gap-2">
-                        <div className="w-1.5 h-1.5 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
+                      <li className="flex items-start gap-3">
+                        <div className="w-2 h-2 bg-green-600 rounded-full mt-1.5 flex-shrink-0"></div>
                         Code comments and inline documentation
                       </li>
-                      <li className="flex items-start gap-2">
-                        <div className="w-1.5 h-1.5 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
+                      <li className="flex items-start gap-3">
+                        <div className="w-2 h-2 bg-green-600 rounded-full mt-1.5 flex-shrink-0"></div>
                         Setup and installation instructions
                       </li>
-                      <li className="flex items-start gap-2">
-                        <div className="w-1.5 h-1.5 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
+                      <li className="flex items-start gap-3">
+                        <div className="w-2 h-2 bg-green-600 rounded-full mt-1.5 flex-shrink-0"></div>
                         Project structure explanation
                       </li>
                     </ul>
                   </div>
 
                   {/* Innovation & Creativity */}
-                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6">
-                    <h4 className="font-semibold text-purple-900 mb-4 flex items-center gap-2">
-                      <Lightbulb className="w-5 h-5" />
+                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-6">
+                    <h4 className="font-semibold text-purple-900 mb-4 flex items-center gap-3">
+                      <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <Star className="w-4 h-4 text-purple-700" />
+                      </div>
                       Innovation & Creativity
                     </h4>
-                    <ul className="text-sm text-purple-800 space-y-2">
-                      <li className="flex items-start gap-2">
-                        <div className="w-1.5 h-1.5 bg-purple-600 rounded-full mt-2 flex-shrink-0"></div>
+                    <ul className="text-sm text-purple-800 space-y-3">
+                      <li className="flex items-start gap-3">
+                        <div className="w-2 h-2 bg-purple-600 rounded-full mt-1.5 flex-shrink-0"></div>
                         Creative problem-solving approaches
                       </li>
-                      <li className="flex items-start gap-2">
-                        <div className="w-1.5 h-1.5 bg-purple-600 rounded-full mt-2 flex-shrink-0"></div>
+                      <li className="flex items-start gap-3">
+                        <div className="w-2 h-2 bg-purple-600 rounded-full mt-1.5 flex-shrink-0"></div>
                         Unique features or implementations
                       </li>
-                      <li className="flex items-start gap-2">
-                        <div className="w-1.5 h-1.5 bg-purple-600 rounded-full mt-2 flex-shrink-0"></div>
+                      <li className="flex items-start gap-3">
+                        <div className="w-2 h-2 bg-purple-600 rounded-full mt-1.5 flex-shrink-0"></div>
                         User experience considerations
                       </li>
-                      <li className="flex items-start gap-2">
-                        <div className="w-1.5 h-1.5 bg-purple-600 rounded-full mt-2 flex-shrink-0"></div>
+                      <li className="flex items-start gap-3">
+                        <div className="w-2 h-2 bg-purple-600 rounded-full mt-1.5 flex-shrink-0"></div>
                         Going beyond basic requirements
                       </li>
                     </ul>
                   </div>
 
                   {/* Academic Standards */}
-                  <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-6">
-                    <h4 className="font-semibold text-amber-900 mb-4 flex items-center gap-2">
-                      <GraduationCap className="w-5 h-5" />
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-6">
+                    <h4 className="font-semibold text-amber-900 mb-4 flex items-center gap-3">
+                      <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                        <GraduationCap className="w-4 h-4 text-amber-700" />
+                      </div>
                       Academic Standards
                     </h4>
-                    <ul className="text-sm text-amber-800 space-y-2">
-                      <li className="flex items-start gap-2">
-                        <div className="w-1.5 h-1.5 bg-amber-600 rounded-full mt-2 flex-shrink-0"></div>
+                    <ul className="text-sm text-amber-800 space-y-3">
+                      <li className="flex items-start gap-3">
+                        <div className="w-2 h-2 bg-amber-600 rounded-full mt-1.5 flex-shrink-0"></div>
                         Meets course learning objectives
                       </li>
-                      <li className="flex items-start gap-2">
-                        <div className="w-1.5 h-1.5 bg-amber-600 rounded-full mt-2 flex-shrink-0"></div>
+                      <li className="flex items-start gap-3">
+                        <div className="w-2 h-2 bg-amber-600 rounded-full mt-1.5 flex-shrink-0"></div>
                         Demonstrates technical competency
                       </li>
-                      <li className="flex items-start gap-2">
-                        <div className="w-1.5 h-1.5 bg-amber-600 rounded-full mt-2 flex-shrink-0"></div>
+                      <li className="flex items-start gap-3">
+                        <div className="w-2 h-2 bg-amber-600 rounded-full mt-1.5 flex-shrink-0"></div>
                         Appropriate scope and complexity
                       </li>
-                      <li className="flex items-start gap-2">
-                        <div className="w-1.5 h-1.5 bg-amber-600 rounded-full mt-2 flex-shrink-0"></div>
+                      <li className="flex items-start gap-3">
+                        <div className="w-2 h-2 bg-amber-600 rounded-full mt-1.5 flex-shrink-0"></div>
                         Professional presentation quality
                       </li>
                     </ul>
@@ -2615,34 +2631,63 @@ export default function ProjectDetail() {
                 </div>
 
                 {/* Grading Scale */}
-                <div className="bg-white rounded-xl border border-slate-200 p-6">
-                  <h4 className="font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                    <BarChart3 className="w-5 h-5 text-slate-600" />
+                <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
+                  <h4 className="font-semibold text-slate-900 mb-6 flex items-center gap-3">
+                    <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center">
+                      <Award className="w-4 h-4 text-slate-700" />
+                    </div>
                     Grading Scale Reference
                   </h4>
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <h5 className="font-medium text-green-700">Excellent (A Range)</h5>
-                      <div className="text-sm text-slate-600 space-y-1">
-                        <div>A+ (95-100%): Exceptional work</div>
-                        <div>A (90-94%): Outstanding quality</div>
-                        <div>A- (85-89%): Excellent with minor areas for improvement</div>
+                  <div className="grid md:grid-cols-3 gap-6">
+                    <div className="space-y-3">
+                      <h5 className="font-semibold text-green-700 text-sm">Excellent (A Range)</h5>
+                      <div className="text-sm text-slate-600 space-y-2">
+                        <div className="flex justify-between items-center py-1">
+                          <span>A+ (95-100%)</span>
+                          <span className="text-green-700 font-medium">Exceptional</span>
+                        </div>
+                        <div className="flex justify-between items-center py-1">
+                          <span>A (90-94%)</span>
+                          <span className="text-green-700 font-medium">Outstanding</span>
+                        </div>
+                        <div className="flex justify-between items-center py-1">
+                          <span>A- (85-89%)</span>
+                          <span className="text-green-700 font-medium">Excellent</span>
+                        </div>
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <h5 className="font-medium text-blue-700">Good (B Range)</h5>
-                      <div className="text-sm text-slate-600 space-y-1">
-                        <div>B+ (80-84%): Very good work</div>
-                        <div>B (75-79%): Good quality</div>
-                        <div>B- (70-74%): Satisfactory with improvements needed</div>
+                    <div className="space-y-3">
+                      <h5 className="font-semibold text-blue-700 text-sm">Good (B Range)</h5>
+                      <div className="text-sm text-slate-600 space-y-2">
+                        <div className="flex justify-between items-center py-1">
+                          <span>B+ (80-84%)</span>
+                          <span className="text-blue-700 font-medium">Very Good</span>
+                        </div>
+                        <div className="flex justify-between items-center py-1">
+                          <span>B (75-79%)</span>
+                          <span className="text-blue-700 font-medium">Good</span>
+                        </div>
+                        <div className="flex justify-between items-center py-1">
+                          <span>B- (70-74%)</span>
+                          <span className="text-blue-700 font-medium">Satisfactory</span>
+                        </div>
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <h5 className="font-medium text-red-700">Needs Improvement</h5>
-                      <div className="text-sm text-slate-600 space-y-1">
-                        <div>C+ (65-69%): Below expectations</div>
-                        <div>C (60-64%): Significant improvements needed</div>
-                        <div>F (0-59%): Does not meet requirements</div>
+                    <div className="space-y-3">
+                      <h5 className="font-semibold text-red-700 text-sm">Needs Improvement</h5>
+                      <div className="text-sm text-slate-600 space-y-2">
+                        <div className="flex justify-between items-center py-1">
+                          <span>C+ (65-69%)</span>
+                          <span className="text-red-700 font-medium">Below Avg</span>
+                        </div>
+                        <div className="flex justify-between items-center py-1">
+                          <span>C (60-64%)</span>
+                          <span className="text-red-700 font-medium">Poor</span>
+                        </div>
+                        <div className="flex justify-between items-center py-1">
+                          <span>F (0-59%)</span>
+                          <span className="text-red-700 font-medium">Fail</span>
+                        </div>
                       </div>
                     </div>
                   </div>
