@@ -192,7 +192,7 @@ export class DatabaseStorage implements IStorage {
         return await tx.insert(users).values({
           ...insertUser,
           password: hashedPassword,
-          isVerified: insertUser.role === 'ADMIN' ? true : (insertUser.isVerified || false),
+          isVerified: (insertUser.role === 'ADMIN' || insertUser.role === 'FACULTY') ? true : (insertUser.isVerified || false),
           createdAt: new Date(),
           updatedAt: new Date()
         }).returning();
@@ -229,7 +229,6 @@ export class DatabaseStorage implements IStorage {
       }
       
       const institutionUsers = await db.select().from(users).where(eq(users.institution, institution));
-      console.log(`📊 Found ${institutionUsers.length} users for institution: ${institution}`);
       return institutionUsers;
     } catch (error) {
       console.error('❌ Error fetching users by institution:', error);

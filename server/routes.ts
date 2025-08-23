@@ -698,23 +698,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get faculty members for student assignment (filtered by college domain, department, and tech expertise)
   app.get("/api/users/faculty", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
-      const { department, techExpertise } = req.query;
+      const { department, techExpertise, limit = "20" } = req.query;
+      
+      // Input validation
+      const searchLimit = Math.min(parseInt(limit as string) || 20, 100); // Max 100 results
       
       // Get the current user's college domain
       const currentUser = req.user!;
-      console.log(`Searching faculty for user: ${currentUser.username}, college domain: ${currentUser.collegeDomain}`);
       
       // Get all users from the same college domain (not just institution)
       const users = await storage.getUsersByInstitution(currentUser.institution);
       
-      // Filter for verified faculty members with the same college domain
+      // Filter for faculty members with the same college domain (all faculty are considered verified within same college)
       let facultyMembers = users.filter(user => 
         user.role === "FACULTY" && 
-        user.isVerified === true &&
         user.collegeDomain === currentUser.collegeDomain
       );
-      
-      console.log(`Found ${facultyMembers.length} verified faculty from same college domain`);
       
       // Advanced department filtering with fuzzy matching
       if (department && typeof department === 'string') {
@@ -736,7 +735,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
                    (deptSearch === 'it' && facultyDept.includes('information')) ||
                    (deptSearch === 'cse' && (facultyDept.includes('computer science') || facultyDept.includes('computer')));
           });
-          console.log(`After department filter '${department}': ${facultyMembers.length} faculty`);
         }
       }
       
@@ -794,7 +792,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
               });
             });
           });
-          console.log(`After tech expertise filter '${techExpertise}': ${facultyMembers.length} faculty`);
         }
       }
       
@@ -826,18 +823,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Remove sensitive information and add additional data
-      const safeFacultyData = facultyMembers.map(faculty => ({
-        id: faculty.id,
-        firstName: faculty.firstName,
-        lastName: faculty.lastName,
-        email: faculty.email,
-        institution: faculty.institution,
-        department: faculty.department || "Not specified",
-        techExpertise: faculty.techExpertise || "Not specified",
-        isVerified: faculty.isVerified,
-      }));
+      const safeFacultyData = facultyMembers
+        .slice(0, searchLimit)
+        .map(faculty => ({
+          id: faculty.id,
+          firstName: faculty.firstName,
+          lastName: faculty.lastName,
+          email: faculty.email,
+          institution: faculty.institution,
+          department: faculty.department || "Not specified",
+          techExpertise: faculty.techExpertise || "Not specified",
+          isVerified: faculty.isVerified,
+        }));
       
-      console.log(`Returning ${safeFacultyData.length} faculty members:`, safeFacultyData.map(f => `${f.firstName} ${f.lastName}`));
       res.json(safeFacultyData);
     } catch (error) {
       console.error('Error fetching faculty members:', error);
@@ -1261,10 +1259,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get users (for collaboration invites)
   app.get("/api/users/search", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
-      const { q, projectId } = req.query;
-      if (!q || typeof q !== "string" || q.length < 2) {
+      const { q, projectId, limit = "15", role } = req.query;
+      
+      // Input validation
+      if (!q || typeof q !== "string") {
+        return res.status(400).json({ message: "Search query is required" });
+      }
+      
+      const searchQuery = q.trim();
+      if (searchQuery.length < 2) {
         return res.json([]);
       }
+      
+      if (searchQuery.length > 100) {
+        return res.status(400).json({ message: "Search query too long" });
+      }
+
+      const searchLimit = Math.min(parseInt(limit as string) || 15, 50); // Max 50 results
 
       const users = await storage.getUsersByInstitution(req.user!.institution);
       
@@ -1275,30 +1286,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const collaborators = await storage.getProjectCollaborators(projectId);
           currentCollaboratorIds = collaborators.map(c => c.id);
         } catch (error) {
-          console.log('Could not fetch current collaborators for filtering');
+          // Silent fail for this optional feature
         }
       }
 
-      const filteredUsers = users
+      // Enhanced search with relevance scoring
+      const searchResults = users
         .filter(user => 
           user.id !== req.user!.id &&
           !currentCollaboratorIds.includes(user.id) &&
-          (user.username.toLowerCase().includes(q.toLowerCase()) ||
-           user.email.toLowerCase().includes(q.toLowerCase()) ||
-           `${user.firstName} ${user.lastName}`.toLowerCase().includes(q.toLowerCase()))
+          (!role || user.role === role) // Optional role filter
         )
-        .slice(0, 15)
-        .map(user => ({
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          role: user.role,
-          institution: user.institution
+        .map(user => {
+          const searchLower = searchQuery.toLowerCase();
+          const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+          const username = user.username.toLowerCase();
+          const email = user.email.toLowerCase();
+          
+          let relevanceScore = 0;
+          
+          // Exact matches get highest score
+          if (username === searchLower || email === searchLower) relevanceScore += 10;
+          if (fullName === searchLower) relevanceScore += 10;
+          
+          // Starts with matches get high score
+          if (username.startsWith(searchLower)) relevanceScore += 8;
+          if (fullName.startsWith(searchLower)) relevanceScore += 8;
+          if (email.startsWith(searchLower)) relevanceScore += 7;
+          
+          // Contains matches get medium score
+          if (username.includes(searchLower)) relevanceScore += 5;
+          if (fullName.includes(searchLower)) relevanceScore += 5;
+          if (email.includes(searchLower)) relevanceScore += 4;
+          
+          return relevanceScore > 0 ? { user, relevanceScore } : null;
+        })
+        .filter(result => result !== null)
+        .sort((a, b) => b!.relevanceScore - a!.relevanceScore)
+        .slice(0, searchLimit)
+        .map(result => ({
+          id: result!.user.id,
+          username: result!.user.username,
+          email: result!.user.email,
+          firstName: result!.user.firstName,
+          lastName: result!.user.lastName,
+          role: result!.user.role,
+          institution: result!.user.institution,
+          relevanceScore: result!.relevanceScore
         }));
 
-      res.json(filteredUsers);
+      res.json(searchResults);
     } catch (error) {
       console.error('Error searching users:', error);
       res.status(500).json({ message: "Internal server error" });
