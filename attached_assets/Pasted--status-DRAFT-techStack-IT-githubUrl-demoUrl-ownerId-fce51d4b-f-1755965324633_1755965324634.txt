@@ -1,0 +1,133 @@
+  status: 'DRAFT',
+  techStack: [ 'IT' ],
+  githubUrl: '',
+  demoUrl: '',
+  ownerId: 'fce51d4b-f7fb-4080-8274-ab18f1b06abe',
+  department: 'IT',
+  courseSubject: '',
+  projectMethodology: 'fgh df',
+  setupInstructions: '',
+  repositoryStructure: '',
+  readmeContent: '',
+  licenseType: 'MIT',
+  contributingGuidelines: '',
+  installationInstructions: '',
+  apiDocumentation: ''
+}
+🔄 Database connection acquired from pool
+📊 BEFORE: User fce51d4b-f7fb-4080-8274-ab18f1b06abe had 0 projects
+🔄 Database connection acquired from pool
+❌ Error creating project in database: DrizzleQueryError: Failed query: insert into "projects" ("id", "title", "description", "category", "visibility", "status", "tech_stack", "github_url", "demo_url", "academic_level", "department", "course_subject", "project_methodology", "setup_instructions", "repository_url", "live_demo_url", "source_code_repository", "documentation_reports", "images_assets", "repository_structure", "readme_content", "license_type", "contributing_guidelines", "installation_instructions", "api_documentation", "star_count", "allows_collaboration", "requires_approval_for_collaboration", "owner_id", "created_at", "updated_at") values (default, $1, $2, $3, $4, $5, $6, $7, $8, default, $9, $10, $11, $12, default, default, default, default, default, $13, $14, $15, $16, $17, $18, default, default, default, $19, default, default) returning "id", "title", "description", "category", "visibility", "status", "tech_stack", "github_url", "demo_url", "academic_level", "department", "course_subject", "project_methodology", "setup_instructions", "repository_url", "live_demo_url", "source_code_repository", "documentation_reports", "images_assets", "repository_structure", "readme_content", "license_type", "contributing_guidelines", "installation_instructions", "api_documentation", "star_count", "allows_collaboration", "requires_approval_for_collaboration", "owner_id", "created_at", "updated_at"
+params: dm gdfdg ,dfgkj,Web Development,PUBLIC,DRAFT,{"IT"},,,IT,,fgh df,,,,MIT,,,,fce51d4b-f7fb-4080-8274-ab18f1b06abe
+    at NodePgPreparedQuery.queryWithCache (/home/runner/workspace/node_modules/src/pg-core/session.ts:73:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async <anonymous> (/home/runner/workspace/node_modules/src/node-postgres/session.ts:154:19)
+    at async DatabaseStorage.createProject (/home/runner/workspace/server/storage.ts:596:22)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:346:23) {
+  query: 'insert into "projects" ("id", "title", "description", "category", "visibility", "status", "tech_stack", "github_url", "demo_url", "academic_level", "department", "course_subject", "project_methodology", "setup_instructions", "repository_url", "live_demo_url", "source_code_repository", "documentation_reports", "images_assets", "repository_structure", "readme_content", "license_type", "contributing_guidelines", "installation_instructions", "api_documentation", "star_count", "allows_collaboration", "requires_approval_for_collaboration", "owner_id", "created_at", "updated_at") values (default, $1, $2, $3, $4, $5, $6, $7, $8, default, $9, $10, $11, $12, default, default, default, default, default, $13, $14, $15, $16, $17, $18, default, default, default, $19, default, default) returning "id", "title", "description", "category", "visibility", "status", "tech_stack", "github_url", "demo_url", "academic_level", "department", "course_subject", "project_methodology", "setup_instructions", "repository_url", "live_demo_url", "source_code_repository", "documentation_reports", "images_assets", "repository_structure", "readme_content", "license_type", "contributing_guidelines", "installation_instructions", "api_documentation", "star_count", "allows_collaboration", "requires_approval_for_collaboration", "owner_id", "created_at", "updated_at"',
+  params: [
+    'dm gdfdg ',
+    'dfgkj',
+    'Web Development',
+    'PUBLIC',
+    'DRAFT',
+    '{"IT"}',
+    '',
+    '',
+    'IT',
+    '',
+    'fgh df',
+    '',
+    '',
+    '',
+    'MIT',
+    '',
+    '',
+    '',
+    'fce51d4b-f7fb-4080-8274-ab18f1b06abe'
+  ],
+  cause: error: column "academic_level" of relation "projects" does not exist
+      at /home/runner/workspace/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+      at async <anonymous> (/home/runner/workspace/node_modules/src/node-postgres/session.ts:161:13)
+      at async NodePgPreparedQuery.queryWithCache (/home/runner/workspace/node_modules/src/pg-core/session.ts:71:12)
+      at async <anonymous> (/home/runner/workspace/node_modules/src/node-postgres/session.ts:154:19)
+      at async DatabaseStorage.createProject (/home/runner/workspace/server/storage.ts:596:22)
+      at async <anonymous> (/home/runner/workspace/server/routes.ts:346:23) {
+    length: 136,
+    severity: 'ERROR',
+    code: '42703',
+    detail: undefined,
+    hint: undefined,
+    position: '131',
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: undefined,
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: 'parse_target.c',
+    line: '1066',
+    routine: 'checkInsertTargets'
+  }
+}
+❌ Project creation error: DrizzleQueryError: Failed query: insert into "projects" ("id", "title", "description", "category", "visibility", "status", "tech_stack", "github_url", "demo_url", "academic_level", "department", "course_subject", "project_methodology", "setup_instructions", "repository_url", "live_demo_url", "source_code_repository", "documentation_reports", "images_assets", "repository_structure", "readme_content", "license_type", "contributing_guidelines", "installation_instructions", "api_documentation", "star_count", "allows_collaboration", "requires_approval_for_collaboration", "owner_id", "created_at", "updated_at") values (default, $1, $2, $3, $4, $5, $6, $7, $8, default, $9, $10, $11, $12, default, default, default, default, default, $13, $14, $15, $16, $17, $18, default, default, default, $19, default, default) returning "id", "title", "description", "category", "visibility", "status", "tech_stack", "github_url", "demo_url", "academic_level", "department", "course_subject", "project_methodology", "setup_instructions", "repository_url", "live_demo_url", "source_code_repository", "documentation_reports", "images_assets", "repository_structure", "readme_content", "license_type", "contributing_guidelines", "installation_instructions", "api_documentation", "star_count", "allows_collaboration", "requires_approval_for_collaboration", "owner_id", "created_at", "updated_at"
+params: dm gdfdg ,dfgkj,Web Development,PUBLIC,DRAFT,{"IT"},,,IT,,fgh df,,,,MIT,,,,fce51d4b-f7fb-4080-8274-ab18f1b06abe
+    at NodePgPreparedQuery.queryWithCache (/home/runner/workspace/node_modules/src/pg-core/session.ts:73:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async <anonymous> (/home/runner/workspace/node_modules/src/node-postgres/session.ts:154:19)
+    at async DatabaseStorage.createProject (/home/runner/workspace/server/storage.ts:596:22)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:346:23) {
+  query: 'insert into "projects" ("id", "title", "description", "category", "visibility", "status", "tech_stack", "github_url", "demo_url", "academic_level", "department", "course_subject", "project_methodology", "setup_instructions", "repository_url", "live_demo_url", "source_code_repository", "documentation_reports", "images_assets", "repository_structure", "readme_content", "license_type", "contributing_guidelines", "installation_instructions", "api_documentation", "star_count", "allows_collaboration", "requires_approval_for_collaboration", "owner_id", "created_at", "updated_at") values (default, $1, $2, $3, $4, $5, $6, $7, $8, default, $9, $10, $11, $12, default, default, default, default, default, $13, $14, $15, $16, $17, $18, default, default, default, $19, default, default) returning "id", "title", "description", "category", "visibility", "status", "tech_stack", "github_url", "demo_url", "academic_level", "department", "course_subject", "project_methodology", "setup_instructions", "repository_url", "live_demo_url", "source_code_repository", "documentation_reports", "images_assets", "repository_structure", "readme_content", "license_type", "contributing_guidelines", "installation_instructions", "api_documentation", "star_count", "allows_collaboration", "requires_approval_for_collaboration", "owner_id", "created_at", "updated_at"',
+  params: [
+    'dm gdfdg ',
+    'dfgkj',
+    'Web Development',
+    'PUBLIC',
+    'DRAFT',
+    '{"IT"}',
+    '',
+    '',
+    'IT',
+    '',
+    'fgh df',
+    '',
+    '',
+    '',
+    'MIT',
+    '',
+    '',
+    '',
+    'fce51d4b-f7fb-4080-8274-ab18f1b06abe'
+  ],
+  cause: error: column "academic_level" of relation "projects" does not exist
+      at /home/runner/workspace/node_modules/pg-pool/index.js:45:11
+      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+      at async <anonymous> (/home/runner/workspace/node_modules/src/node-postgres/session.ts:161:13)
+      at async NodePgPreparedQuery.queryWithCache (/home/runner/workspace/node_modules/src/pg-core/session.ts:71:12)
+      at async <anonymous> (/home/runner/workspace/node_modules/src/node-postgres/session.ts:154:19)
+      at async DatabaseStorage.createProject (/home/runner/workspace/server/storage.ts:596:22)
+      at async <anonymous> (/home/runner/workspace/server/routes.ts:346:23) {
+    length: 136,
+    severity: 'ERROR',
+    code: '42703',
+    detail: undefined,
+    hint: undefined,
+    position: '131',
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: undefined,
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: 'parse_target.c',
+    line: '1066',
+    routine: 'checkInsertTargets'
+  }
+}
+4:08:24 PM [express] POST /api/projects 500 in 76ms :: {"message":"Internal server error"}
+🗑️ Database connection removed from pool
