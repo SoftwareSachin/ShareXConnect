@@ -12,6 +12,7 @@ import type { DashboardStats, ProjectWithDetails } from "@shared/schema";
 import { useState } from "react";
 import { CreateProjectModal } from "@/components/modals/create-project-modal";
 import { AssignFacultyModal } from "@/components/modals/assign-faculty-modal";
+import { RoleProtectedComponent } from "@/components/RoleProtectedComponent";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Dashboard() {
@@ -135,6 +136,7 @@ export default function Dashboard() {
           description="Welcome back! Here's your project overview."
           onCreateProject={() => setShowCreateModal(true)}
           showSearch={false}
+          showCreateButton={true}
         />
 
         {/* Modern Background Elements */}
@@ -219,12 +221,14 @@ export default function Dashboard() {
                       <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">Recent Projects</h2>
                       <p className="text-slate-500 dark:text-slate-400">Your latest academic work and collaborations</p>
                     </div>
-                    <Button 
-                      onClick={() => setShowCreateModal(true)}
-                      className="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200 rounded-2xl px-6 py-3 text-sm font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                    >
-                      New Project
-                    </Button>
+                    <RoleProtectedComponent permissions={['canCreateProject']}>
+                      <Button 
+                        onClick={() => setShowCreateModal(true)}
+                        className="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200 rounded-2xl px-6 py-3 text-sm font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                      >
+                        New Project
+                      </Button>
+                    </RoleProtectedComponent>
                   </div>
                 </div>
                 <div className="p-8">
@@ -303,12 +307,14 @@ export default function Dashboard() {
                       </div>
                       <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-3">No projects yet</h3>
                       <p className="text-slate-500 dark:text-slate-400 mb-8 text-lg">Create your first project to get started with collaboration</p>
-                      <Button 
-                        onClick={() => setShowCreateModal(true)} 
-                        className="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200 rounded-2xl px-8 py-3 text-base font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                      >
-                        Create your first project
-                      </Button>
+                      <RoleProtectedComponent permissions={['canCreateProject']}>
+                        <Button 
+                          onClick={() => setShowCreateModal(true)} 
+                          className="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200 rounded-2xl px-8 py-3 text-base font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                        >
+                          Create your first project
+                        </Button>
+                      </RoleProtectedComponent>
                     </div>
                   )}
                 </div>
@@ -324,19 +330,21 @@ export default function Dashboard() {
                   <p className="text-slate-500 dark:text-slate-400">Common tasks and shortcuts</p>
                 </div>
                 <div className="p-8 space-y-4">
-                  <Button 
-                    onClick={() => setShowCreateModal(true)}
-                    className="w-full justify-start h-14 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200 rounded-xl shadow-sm"
-                    data-testid="button-create-project"
-                  >
-                    <div className="w-8 h-8 bg-white/20 dark:bg-slate-900/20 rounded-lg flex items-center justify-center mr-3">
-                      <div className="w-4 h-4 bg-white dark:bg-slate-900 rounded"></div>
-                    </div>
-                    <div className="text-left">
-                      <div className="font-semibold">Create New Project</div>
-                      <div className="text-xs opacity-80">Start your next idea</div>
-                    </div>
-                  </Button>
+                  <RoleProtectedComponent permissions={['canCreateProject']}>
+                    <Button 
+                      onClick={() => setShowCreateModal(true)}
+                      className="w-full justify-start h-14 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200 rounded-xl shadow-sm"
+                      data-testid="button-create-project"
+                    >
+                      <div className="w-8 h-8 bg-white/20 dark:bg-slate-900/20 rounded-lg flex items-center justify-center mr-3">
+                        <div className="w-4 h-4 bg-white dark:bg-slate-900 rounded"></div>
+                      </div>
+                      <div className="text-left">
+                        <div className="font-semibold">Create New Project</div>
+                        <div className="text-xs opacity-80">Start your next idea</div>
+                      </div>
+                    </Button>
+                  </RoleProtectedComponent>
                   
                   {user?.role === "STUDENT" && (
                     <>
