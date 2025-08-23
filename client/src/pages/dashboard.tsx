@@ -14,6 +14,16 @@ import { CreateProjectModal } from "@/components/modals/create-project-modal";
 import { AssignFacultyModal } from "@/components/modals/assign-faculty-modal";
 import { RoleProtectedComponent, usePermissions } from "@/components/RoleProtectedComponent";
 import { useToast } from "@/hooks/use-toast";
+import { 
+  FolderOpen, 
+  Clock, 
+  CheckCircle, 
+  Users, 
+  FileCheck, 
+  ClipboardList,
+  GraduationCap,
+  BarChart3 
+} from "lucide-react";
 
 export default function Dashboard() {
   const { user } = useAuthStore();
@@ -40,6 +50,30 @@ export default function Dashboard() {
     queryFn: () => apiGet("/api/projects"),
     enabled: !!user,
   });
+
+  // Helper function to get appropriate icon for each card
+  const getCardIcon = (title: string) => {
+    switch (title) {
+      case "Active Projects":
+      case "Total Projects":
+        return <FolderOpen className="w-6 h-6" />;
+      case "Under Review":
+      case "Pending Reviews":
+        return <Clock className="w-6 h-6" />;
+      case "Completed":
+      case "Approved":
+        return <CheckCircle className="w-6 h-6" />;
+      case "Collaborations":
+      case "Active Users":
+        return <Users className="w-6 h-6" />;
+      case "Total Reviews":
+        return <FileCheck className="w-6 h-6" />;
+      case "Mentoring":
+        return <GraduationCap className="w-6 h-6" />;
+      default:
+        return <BarChart3 className="w-6 h-6" />;
+    }
+  };
 
   const getStatCards = () => {
     if (user?.role === "STUDENT") {
@@ -168,7 +202,7 @@ export default function Dashboard() {
                 `}
                 data-testid={`card-stat-${card.title.toLowerCase().replace(/\s+/g, '-')}`}
               >
-                {/* Modern Floating Icon */}
+                {/* Professional Icon */}
                 <div className="mb-6">
                   <div className={`
                     w-16 h-16 rounded-2xl flex items-center justify-center
@@ -180,12 +214,13 @@ export default function Dashboard() {
                     transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3
                   `}>
                     <div className={`
-                      w-8 h-8 rounded-lg
                       ${card.primary 
-                        ? 'bg-white dark:bg-slate-900' 
-                        : 'bg-slate-500 dark:bg-slate-400'
+                        ? 'text-white dark:text-slate-900' 
+                        : 'text-slate-600 dark:text-slate-300'
                       }
-                    `}></div>
+                    `}>
+                      {getCardIcon(card.title)}
+                    </div>
                   </div>
                 </div>
                 
