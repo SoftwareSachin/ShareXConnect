@@ -12,12 +12,13 @@ import type { DashboardStats, ProjectWithDetails } from "@shared/schema";
 import { useState } from "react";
 import { CreateProjectModal } from "@/components/modals/create-project-modal";
 import { AssignFacultyModal } from "@/components/modals/assign-faculty-modal";
-import { RoleProtectedComponent } from "@/components/RoleProtectedComponent";
+import { RoleProtectedComponent, usePermissions } from "@/components/RoleProtectedComponent";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Dashboard() {
   const { user } = useAuthStore();
   const { toast } = useToast();
+  const { canAccess } = usePermissions();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState<ProjectWithDetails | null>(null);
@@ -136,7 +137,7 @@ export default function Dashboard() {
           description="Welcome back! Here's your project overview."
           onCreateProject={() => setShowCreateModal(true)}
           showSearch={false}
-          showCreateButton={true}
+          showCreateButton={canAccess('canCreateProject')}
         />
 
         {/* Modern Background Elements */}

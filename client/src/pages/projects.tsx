@@ -73,6 +73,7 @@ export default function Projects() {
           description="Create, manage and collaborate on your academic projects"
           onCreateProject={() => setShowCreateModal(true)}
           onSearch={handleSearch}
+          showCreateButton={canAccess('canCreateProject')}
         />
 
         <main className="flex-1 overflow-y-auto p-6">

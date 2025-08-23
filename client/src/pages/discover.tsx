@@ -130,7 +130,11 @@ export default function Discover() {
               : `Explore projects • ${canAccess('canViewAllProjects') ? 'Full Access' : 'Limited Access'}`
           }
           onSearch={handleSearch}
-          showCreateButton={false}
+          showCreateButton={canAccess('canCreateProject')}
+          onCreateProject={() => {
+            // Navigate to projects page where create modal is handled
+            window.location.href = '/projects';
+          }}
         />
 
         {/* Modern Background Elements */}
