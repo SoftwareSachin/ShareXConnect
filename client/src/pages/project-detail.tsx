@@ -2181,13 +2181,13 @@ export default function ProjectDetail() {
 
       {/* Faculty Review Dialog */}
       <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
-        <DialogContent className="w-[95vw] h-[95vh] max-w-none max-h-none overflow-hidden flex flex-col p-0">
-          <DialogHeader className="border-b border-slate-200 pb-3 px-6 pt-4 flex-shrink-0">
-            <DialogTitle className="flex items-center gap-2 text-lg font-semibold">
-              <GraduationCap className="w-5 h-5 text-purple-600" />
+        <DialogContent className="fixed inset-4 w-auto h-auto max-w-none max-h-none overflow-hidden flex flex-col p-0 bg-white rounded-lg shadow-xl border">
+          <DialogHeader className="border-b border-slate-200 pb-4 px-6 pt-6 flex-shrink-0 bg-white">
+            <DialogTitle className="flex items-center gap-2 text-xl font-semibold text-slate-900">
+              <GraduationCap className="w-6 h-6 text-purple-600" />
               {currentReview?.status === 'COMPLETED' ? 'Review Details' : 'Project Review & Grading'}
             </DialogTitle>
-            <DialogDescription className="text-slate-600 text-sm">
+            <DialogDescription className="text-slate-600 text-sm mt-2">
               {currentReview?.status === 'COMPLETED' 
                 ? 'View your submitted review for this project.'
                 : 'Comprehensive evaluation with individual file grading and detailed feedback.'}
@@ -2705,7 +2705,7 @@ export default function ProjectDetail() {
             </div>
           </div>
           
-          <DialogFooter className="gap-3 border-t border-slate-200 pt-4 px-6 pb-4 flex-shrink-0 bg-white">
+          <DialogFooter className="gap-3 border-t border-slate-200 pt-4 px-6 pb-6 flex-shrink-0 bg-white">
             <Button
               variant="outline"
               onClick={() => {
