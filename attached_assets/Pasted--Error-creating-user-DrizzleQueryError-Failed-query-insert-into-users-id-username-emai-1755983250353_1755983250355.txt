@@ -1,0 +1,58 @@
+❌ Error creating user: DrizzleQueryError: Failed query: insert into "users" ("id", "username", "email", "password", "first_name", "last_name", "role", "institution", "college_domain", "department", "tech_expertise", "is_verified", "created_at", "updated_at") values (default, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) returning "id", "username", "email", "password", "first_name", "last_name", "role", "institution", "college_domain", "department", "tech_expertise", "is_verified", "created_at", "updated_at"
+params: djd,d@iit.ac.in,$2b$12$sgChCoywlOl7IevBt2AYSOLuKh5LH2X4/GI7Wg/aWpcvh4PwKfqR.,jhbhj,ndf,ADMIN,iit,@iit.ac.in,,,true,2025-08-23T21:07:06.711Z,2025-08-23T21:07:06.711Z
+    at NodePgPreparedQuery.queryWithCache (/home/runner/workspace/node_modules/src/pg-core/session.ts:73:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async <anonymous> (/home/runner/workspace/node_modules/src/node-postgres/session.ts:154:19)
+    ... 3 lines matching cause stack trace ...
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:120:22) {
+  query: 'insert into "users" ("id", "username", "email", "password", "first_name", "last_name", "role", "institution", "college_domain", "department", "tech_expertise", "is_verified", "created_at", "updated_at") values (default, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) returning "id", "username", "email", "password", "first_name", "last_name", "role", "institution", "college_domain", "department", "tech_expertise", "is_verified", "created_at", "updated_at"',
+  params: [
+    'djd',
+    'd@iit.ac.in',
+    '$2b$12$sgChCoywlOl7IevBt2AYSOLuKh5LH2X4/GI7Wg/aWpcvh4PwKfqR.',
+    'jhbhj',
+    'ndf',
+    'ADMIN',
+    'iit',
+    '@iit.ac.in',
+    '',
+    '',
+    true,
+    '2025-08-23T21:07:06.711Z',
+    '2025-08-23T21:07:06.711Z'
+  ],
+  cause: error: column "department" of relation "users" does not exist
+      at /home/runner/workspace/node_modules/pg/lib/client.js:545:17
+      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+      at async <anonymous> (/home/runner/workspace/node_modules/src/node-postgres/session.ts:161:13)
+      at async NodePgPreparedQuery.queryWithCache (/home/runner/workspace/node_modules/src/pg-core/session.ts:71:12)
+      at async <anonymous> (/home/runner/workspace/node_modules/src/node-postgres/session.ts:154:19)
+      at async <anonymous> (/home/runner/workspace/server/storage.ts:200:16)
+      at async NodePgSession.transaction (/home/runner/workspace/node_modules/src/node-postgres/session.ts:258:19)
+      at async DatabaseStorage.createUser (/home/runner/workspace/server/storage.ts:192:22)
+      at async <anonymous> (/home/runner/workspace/server/routes.ts:120:22) {
+    length: 129,
+    severity: 'ERROR',
+    code: '42703',
+    detail: undefined,
+    hint: undefined,
+    position: '129',
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: undefined,
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: 'parse_target.c',
+    line: '1066',
+    routine: 'checkInsertTargets'
+  }
+}
+Registration error: Error: Failed to create user: Failed query: insert into "users" ("id", "username", "email", "password", "first_name", "last_name", "role", "institution", "college_domain", "department", "tech_expertise", "is_verified", "created_at", "updated_at") values (default, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) returning "id", "username", "email", "password", "first_name", "last_name", "role", "institution", "college_domain", "department", "tech_expertise", "is_verified", "created_at", "updated_at"
+params: djd,d@iit.ac.in,$2b$12$sgChCoywlOl7IevBt2AYSOLuKh5LH2X4/GI7Wg/aWpcvh4PwKfqR.,jhbhj,ndf,ADMIN,iit,@iit.ac.in,,,true,2025-08-23T21:07:06.711Z,2025-08-23T21:07:06.711Z
+    at DatabaseStorage.createUser (/home/runner/workspace/server/storage.ts:229:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:120:22)
+9:07:06 PM [express] POST /api/auth/register 500 in 4278ms :: {"message":"Internal server error"}
