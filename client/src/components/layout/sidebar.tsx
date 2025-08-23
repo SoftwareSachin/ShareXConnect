@@ -3,18 +3,29 @@ import { useAuthStore } from "@/store/auth-store";
 import { getRoleName } from "@shared/permissions";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { 
+  LayoutDashboard, 
+  FolderOpen, 
+  Search, 
+  FileCheck, 
+  Users, 
+  Star,
+  GraduationCap,
+  BookOpen,
+  LogOut 
+} from "lucide-react";
 
 export function Sidebar() {
   const { user, logout } = useAuthStore();
   const [location] = useLocation();
 
   const navItems = [
-    { path: "/dashboard", label: "Dashboard", showForGuest: true },
-    { path: "/projects", label: "My Projects", roles: ["STUDENT"] },
-    { path: "/discover", label: "Discover Projects", showForGuest: true },
-    { path: "/reviews", label: "Review Assignments", roles: ["FACULTY"] },
-    { path: "/users", label: "Manage Users", roles: ["ADMIN"] },
-    { path: "/starred", label: "Starred Projects", roles: ["STUDENT", "FACULTY", "ADMIN"] },
+    { path: "/dashboard", label: "Dashboard", showForGuest: true, icon: LayoutDashboard },
+    { path: "/projects", label: "My Projects", roles: ["STUDENT"], icon: FolderOpen },
+    { path: "/discover", label: "Discover Projects", showForGuest: true, icon: Search },
+    { path: "/reviews", label: "Review Assignments", roles: ["FACULTY"], icon: FileCheck },
+    { path: "/users", label: "Manage Users", roles: ["ADMIN"], icon: Users },
+    { path: "/starred", label: "Starred Projects", roles: ["STUDENT", "FACULTY", "ADMIN"], icon: Star },
   ];
 
   const getInitials = (firstName: string, lastName: string) => {
@@ -34,7 +45,7 @@ export function Sidebar() {
       <div className="p-8 border-b border-slate-200/50 dark:border-slate-700/50">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-slate-900 dark:bg-slate-100 rounded-xl flex items-center justify-center">
-            <div className="w-6 h-6 bg-white dark:bg-slate-900 rounded"></div>
+            <BookOpen className="w-6 h-6 text-white dark:text-slate-900" />
           </div>
           <div>
             <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">ShareX</h1>
@@ -94,7 +105,7 @@ export function Sidebar() {
                       : 'bg-slate-200/50 dark:bg-slate-700/50'
                     }
                   `}>
-                    <div className={`w-4 h-4 rounded ${isActive ? 'bg-white dark:bg-slate-900' : 'bg-slate-500'}`}></div>
+                    <item.icon className={`w-4 h-4 ${isActive ? 'text-white dark:text-slate-900' : 'text-slate-600 dark:text-slate-400'}`} />
                   </div>
                   <span className="font-medium text-sm">{item.label}</span>
                 </div>
@@ -127,7 +138,7 @@ export function Sidebar() {
               onClick={handleLogout}
               className="w-8 h-8 p-0 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded-lg"
             >
-              <div className="w-4 h-4 bg-slate-400 rounded"></div>
+              <LogOut className="w-4 h-4" />
             </Button>
           </div>
         </div>

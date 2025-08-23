@@ -22,7 +22,15 @@ import {
   FileCheck, 
   ClipboardList,
   GraduationCap,
-  BarChart3 
+  BarChart3,
+  Plus,
+  UserCheck,
+  Search,
+  TrendingUp,
+  Eye,
+  ArrowRight,
+  Code,
+  GitBranch 
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -329,7 +337,7 @@ export default function Dashboard() {
                                 </Button>
                               )}
                               <div className="w-10 h-10 bg-slate-100/80 dark:bg-slate-800/80 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                                <div className="w-5 h-5 bg-slate-400 rounded"></div>
+                                <GitBranch className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                               </div>
                             </div>
                           </div>
@@ -339,7 +347,7 @@ export default function Dashboard() {
                   ) : (
                     <div className="text-center py-20">
                       <div className="w-20 h-20 bg-slate-100/80 dark:bg-slate-800/80 rounded-3xl flex items-center justify-center mx-auto mb-6 backdrop-blur-sm">
-                        <div className="w-10 h-10 bg-slate-300 dark:bg-slate-600 rounded-xl"></div>
+                        <FolderOpen className="w-10 h-10 text-slate-500 dark:text-slate-400" />
                       </div>
                       <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-3">No projects yet</h3>
                       <p className="text-slate-500 dark:text-slate-400 mb-8 text-lg">Create your first project to get started with collaboration</p>
@@ -373,7 +381,7 @@ export default function Dashboard() {
                       data-testid="button-create-project"
                     >
                       <div className="w-8 h-8 bg-white/20 dark:bg-slate-900/20 rounded-lg flex items-center justify-center mr-3">
-                        <div className="w-4 h-4 bg-white dark:bg-slate-900 rounded"></div>
+                        <Plus className="w-4 h-4 text-white dark:text-slate-900" />
                       </div>
                       <div className="text-left">
                         <div className="font-semibold">Create New Project</div>
@@ -403,7 +411,7 @@ export default function Dashboard() {
                         data-testid="button-assign-to-faculty"
                       >
                         <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-800/50 rounded-lg flex items-center justify-center mr-3">
-                          <div className="w-4 h-4 bg-emerald-600 dark:bg-emerald-400 rounded"></div>
+                          <UserCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                         </div>
                         <div className="text-left">
                           <div className="font-medium text-slate-900 dark:text-slate-100">Assign to Faculty</div>
@@ -412,7 +420,7 @@ export default function Dashboard() {
                       </Button>
                       <Button variant="outline" className="w-full justify-start h-12 bg-white/40 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/50 hover:bg-white/60 dark:hover:bg-slate-800/60 rounded-xl">
                         <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/50 rounded-lg flex items-center justify-center mr-3">
-                          <div className="w-4 h-4 bg-purple-500 rounded"></div>
+                          <Search className="w-4 h-4 text-purple-500" />
                         </div>
                         <div className="text-left">
                           <div className="font-medium text-slate-900 dark:text-slate-100">Find Collaborators</div>
@@ -421,7 +429,7 @@ export default function Dashboard() {
                       </Button>
                       <Button variant="outline" className="w-full justify-start h-12 bg-white/40 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/50 hover:bg-white/60 dark:hover:bg-slate-800/60 rounded-xl">
                         <div className="w-8 h-8 bg-amber-100 dark:bg-amber-900/50 rounded-lg flex items-center justify-center mr-3">
-                          <div className="w-4 h-4 bg-amber-500 rounded"></div>
+                          <TrendingUp className="w-4 h-4 text-amber-500" />
                         </div>
                         <div className="text-left">
                           <div className="font-medium text-slate-900 dark:text-slate-100">View Progress</div>
@@ -435,7 +443,7 @@ export default function Dashboard() {
                     <>
                       <Button variant="outline" className="w-full justify-start h-12 bg-white/40 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/50 hover:bg-white/60 dark:hover:bg-slate-800/60 rounded-xl">
                         <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/50 rounded-lg flex items-center justify-center mr-3">
-                          <div className="w-4 h-4 bg-emerald-500 rounded"></div>
+                          <FileCheck className="w-4 h-4 text-emerald-500" />
                         </div>
                         <div className="text-left">
                           <div className="font-medium text-slate-900 dark:text-slate-100">Review Projects</div>
@@ -444,7 +452,7 @@ export default function Dashboard() {
                       </Button>
                       <Button variant="outline" className="w-full justify-start h-12 bg-white/40 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/50 hover:bg-white/60 dark:hover:bg-slate-800/60 rounded-xl">
                         <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/50 rounded-lg flex items-center justify-center mr-3">
-                          <div className="w-4 h-4 bg-blue-500 rounded"></div>
+                          <GraduationCap className="w-4 h-4 text-blue-500" />
                         </div>
                         <div className="text-left">
                           <div className="font-medium text-slate-900 dark:text-slate-100">Manage Students</div>
@@ -466,7 +474,7 @@ export default function Dashboard() {
                   {projects?.length === 0 ? (
                     <div className="text-center py-12">
                       <div className="w-20 h-20 bg-slate-100/80 dark:bg-slate-800/80 rounded-3xl flex items-center justify-center mx-auto mb-6 backdrop-blur-sm">
-                        <div className="w-10 h-10 bg-slate-300 dark:bg-slate-600 rounded-xl"></div>
+                        <BarChart3 className="w-10 h-10 text-slate-500 dark:text-slate-400" />
                       </div>
                       <p className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3">No activity yet</p>
                       <p className="text-slate-500 dark:text-slate-400">Create your first project to start seeing activity here</p>
