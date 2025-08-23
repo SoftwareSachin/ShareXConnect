@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Plus } from "lucide-react";
 import { useState } from "react";
+import { RoleProtectedComponent } from "@/components/RoleProtectedComponent";
 
 interface HeaderProps {
   title: string;
@@ -48,10 +49,12 @@ export function Header({
             </form>
           )}
           {showCreateButton && onCreateProject && (
-            <Button onClick={onCreateProject} className="font-medium">
-              <Plus className="w-4 h-4 mr-2" />
-              New Project
-            </Button>
+            <RoleProtectedComponent permissions={['canCreateProject']}>
+              <Button onClick={onCreateProject} className="font-medium">
+                <Plus className="w-4 h-4 mr-2" />
+                New Project
+              </Button>
+            </RoleProtectedComponent>
           )}
         </div>
       </div>
