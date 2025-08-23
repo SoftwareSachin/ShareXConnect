@@ -927,6 +927,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
+  // Submit project review (POST)
+  app.post("/api/projects/:id/review", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      if (req.user!.role !== "FACULTY") {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const { grade, feedback, fileGrades } = req.body;
+      if (!grade || !feedback) {
+        return res.status(400).json({ message: "Grade and feedback are required" });
+      }
+
+      // Find the review assignment for this project and faculty member
+      const assignments = await storage.getFacultyAssignments(req.user!.id);
+      const assignment = assignments.find(a => a.project.id === req.params.id);
+      
+      if (!assignment) {
+        return res.status(404).json({ message: "You are not assigned to review this project" });
+      }
+
+      // Submit the review using the assignment ID
+      const updatedReview = await storage.submitReview(assignment.id, grade, feedback);
+      if (!updatedReview) {
+        return res.status(404).json({ message: "Failed to submit review" });
+      }
+
+      // Log the successful review submission
+      console.log(`✅ Review submitted for project ${req.params.id} by faculty ${req.user!.id}: Grade ${grade}`);
+
+      res.json({
+        ...updatedReview,
+        project: assignment.project
+      });
+    } catch (error) {
+      console.error('Error submitting project review:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }));
+
+  // Get all reviews for a project (for students to see faculty reviews)
+  app.get("/api/projects/:id/reviews", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      const project = await storage.getProject(req.params.id);
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+
+      // Only allow project owner, faculty, or admin to view reviews
+      const isOwner = project.ownerId === req.user!.id;
+      const isFacultyOrAdmin = req.user!.role === 'FACULTY' || req.user!.role === 'ADMIN';
+      
+      if (!isOwner && !isFacultyOrAdmin) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Get all reviews for this project
+      const reviews = await storage.getProjectReviewsForProject(req.params.id);
+      
+      res.json(reviews);
+    } catch (error) {
+      console.error('Error getting project reviews:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }));
+
   // Project collaborators
   app.post("/api/projects/:id/collaborators", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {

@@ -107,6 +107,7 @@ export interface IStorage {
   // Faculty assignment operations
   assignProjectToReviewer(projectId: string, reviewerId: string): Promise<ProjectReview>;
   getProjectReviews(reviewerId: string): Promise<(ProjectReview & { project: ProjectWithDetails })[]>;
+  getProjectReviewsForProject(projectId: string): Promise<(ProjectReview & { reviewer: any })[]>;
   submitReview(reviewId: string, grade: string, feedback: string): Promise<ProjectReview | undefined>;
   isProjectReviewer(projectId: string, reviewerId: string): Promise<boolean>;
 
@@ -943,6 +944,31 @@ export class DatabaseStorage implements IStorage {
       return reviewsWithDetails;
     } catch (error) {
       console.error('Error getting faculty assignments:', error);
+      return [];
+    }
+  }
+
+  async getProjectReviewsForProject(projectId: string): Promise<(ProjectReview & { reviewer: any })[]> {
+    try {
+      const reviews = await db
+        .select()
+        .from(projectReviews)
+        .innerJoin(users, eq(projectReviews.reviewerId, users.id))
+        .where(eq(projectReviews.projectId, projectId));
+
+      return reviews.map(result => ({
+        ...result.project_reviews,
+        reviewer: {
+          id: result.users.id,
+          firstName: result.users.firstName,
+          lastName: result.users.lastName,
+          email: result.users.email,
+          institution: result.users.institution,
+          department: result.users.department
+        }
+      }));
+    } catch (error) {
+      console.error('Error getting project reviews:', error);
       return [];
     }
   }

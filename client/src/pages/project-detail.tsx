@@ -220,6 +220,9 @@ export default function ProjectDetail() {
   const [fileComments, setFileComments] = useState<Record<string, string>>({});
   const [fileGrades, setFileGrades] = useState<Record<string, { score: number; feedback: string }>>({});
   const [activeTab, setActiveTab] = useState<'overview' | 'files' | 'criteria'>('overview');
+
+  // Student reviews state  
+  const [studentReviews, setStudentReviews] = useState<any[]>([]);
   const [submittingReview, setSubmittingReview] = useState(false);
   
   // Get current user from auth store (must be called before any conditional returns)
@@ -386,6 +389,13 @@ export default function ProjectDetail() {
     queryKey: [`/api/projects/${params.id}/review`],
     queryFn: () => apiGet(`/api/projects/${params.id}/review`),
     enabled: !!user && user.role === 'FACULTY' && !!isReviewer,
+  });
+
+  // Fetch reviews for students to see on their projects
+  const { data: projectReviews } = useQuery<any[]>({
+    queryKey: [`/api/projects/${params.id}/reviews`],
+    queryFn: () => apiGet(`/api/projects/${params.id}/reviews`),
+    enabled: !!user && user.role === 'STUDENT' && project?.ownerId === user?.id,
   });
 
   // Social features queries and mutations
@@ -1853,6 +1863,65 @@ export default function ProjectDetail() {
           </div>
         </div>
 
+        {/* Faculty Reviews Section (for Students) */}
+        {user?.role === 'STUDENT' && project?.ownerId === user?.id && projectReviews && projectReviews.length > 0 && (
+          <div className="mt-8">
+            <Card className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <CardHeader className="pb-4">
+                <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  <GraduationCap className="w-5 h-5" />
+                  Faculty Reviews ({projectReviews.length})
+                </h3>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {projectReviews.map((review: any) => (
+                    <div key={review.id} className="border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-start gap-3">
+                          <Avatar>
+                            <AvatarFallback className="bg-purple-100 text-purple-700 font-semibold">
+                              {review.reviewer.firstName[0]}{review.reviewer.lastName[0]}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-semibold text-slate-900 dark:text-slate-100">
+                              {review.reviewer.firstName} {review.reviewer.lastName}
+                            </p>
+                            <p className="text-sm text-slate-600 dark:text-slate-400">{review.reviewer.department || 'Faculty'}</p>
+                            <p className="text-xs text-slate-500">
+                              Reviewed {new Date(review.updatedAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        {review.grade && (
+                          <div className="flex items-center gap-2 bg-green-50 dark:bg-green-900/20 px-3 py-1 rounded-lg border border-green-200 dark:border-green-800">
+                            <Award className="w-4 h-4 text-green-700 dark:text-green-400" />
+                            <span className="text-sm font-semibold text-green-900 dark:text-green-100">Grade: {review.grade}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {review.feedback && (
+                        <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border border-slate-100 dark:border-slate-700">
+                          <h4 className="font-medium text-slate-900 dark:text-slate-100 mb-2 flex items-center gap-2">
+                            <MessageSquare className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                            Detailed Feedback
+                          </h4>
+                          <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">
+                            {review.feedback}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         {/* Comments Section */}
         <div className="mt-8">
           <Card className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
@@ -2181,7 +2250,7 @@ export default function ProjectDetail() {
 
       {/* Faculty Review Dialog */}
       <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
-        <DialogContent className="max-w-7xl w-[90vw] h-[90vh] max-h-[900px] overflow-hidden flex flex-col p-0">
+        <DialogContent className="max-w-7xl w-[90vw] h-[90vh] max-h-[900px] overflow-hidden flex flex-col p-0 bg-white">
           <DialogHeader className="border-b border-slate-200 pb-4 px-6 pt-6 flex-shrink-0 bg-white">
             <DialogTitle className="flex items-center gap-2 text-xl font-semibold text-slate-900">
               <GraduationCap className="w-6 h-6 text-purple-600" />
