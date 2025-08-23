@@ -228,12 +228,7 @@ export default function ProjectDetail() {
   // Mark review as read functionality
   const markReviewAsRead = async (reviewId: string) => {
     try {
-      const response = await fetch(`/api/projects/${params.id}/reviews/${reviewId}/mark-read`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await apiRequest('POST', `/api/projects/${params.id}/reviews/${reviewId}/mark-read`);
 
       if (response.ok) {
         toast({

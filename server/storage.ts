@@ -1069,22 +1069,6 @@ export class DatabaseStorage implements IStorage {
 
   async markReviewAsRead(reviewId: string, studentId: string): Promise<boolean> {
     try {
-      console.log(`🔍 Attempting to mark review ${reviewId} as read by student ${studentId}`);
-      
-      // First check if the review exists
-      const existingReview = await db
-        .select()
-        .from(projectReviews)
-        .where(eq(projectReviews.id, reviewId))
-        .limit(1);
-      
-      if (existingReview.length === 0) {
-        console.log(`❌ Review ${reviewId} not found`);
-        return false;
-      }
-      
-      console.log(`✅ Review exists:`, existingReview[0]);
-      
       // Update the review to mark it as read by student
       const result = await db
         .update(projectReviews)
@@ -1095,16 +1079,13 @@ export class DatabaseStorage implements IStorage {
         .where(eq(projectReviews.id, reviewId))
         .returning();
       
-      console.log(`🔄 Update result:`, result);
-      
       if (result.length > 0) {
         console.log(`✅ Review ${reviewId} marked as read by student ${studentId}`);
         return true;
       }
-      console.log(`❌ No rows updated for review ${reviewId}`);
       return false;
     } catch (error) {
-      console.error('❌ Error marking review as read:', error);
+      console.error('Error marking review as read:', error);
       return false;
     }
   }

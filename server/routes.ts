@@ -995,32 +995,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Mark a review as read by student
   app.post("/api/projects/:projectId/reviews/:reviewId/mark-read", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
-      console.log(`🔍 Mark as read request: projectId=${req.params.projectId}, reviewId=${req.params.reviewId}, userId=${req.user!.id}`);
-      
       const project = await storage.getProject(req.params.projectId);
       if (!project) {
-        console.log(`❌ Project not found: ${req.params.projectId}`);
         return res.status(404).json({ message: "Project not found" });
       }
 
       // Only allow project owner to mark reviews as read
       if (project.ownerId !== req.user!.id) {
-        console.log(`❌ Access denied: project owner ${project.ownerId} !== user ${req.user!.id}`);
         return res.status(403).json({ message: "Access denied" });
       }
 
-      console.log(`✅ Access granted, calling markReviewAsRead`);
       const success = await storage.markReviewAsRead(req.params.reviewId, req.user!.id);
-      
       if (success) {
-        console.log(`✅ Review marked as read successfully`);
         res.json({ message: "Review marked as read" });
       } else {
-        console.log(`❌ Failed to mark review as read`);
         res.status(500).json({ message: "Failed to mark review as read" });
       }
     } catch (error) {
-      console.error('❌ Error marking review as read:', error);
+      console.error('Error marking review as read:', error);
       res.status(500).json({ message: "Internal server error" });
     }
   }));
