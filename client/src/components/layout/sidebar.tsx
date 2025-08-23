@@ -12,8 +12,7 @@ export function Sidebar() {
     { path: "/dashboard", label: "Dashboard", showForGuest: true },
     { path: "/projects", label: "My Projects", roles: ["STUDENT"] },
     { path: "/discover", label: "Discover Projects", showForGuest: true },
-    { path: "/reviews", label: "Faculty Reviews", roles: ["FACULTY"] },
-    { path: "/assignments", label: "Assignments", roles: ["FACULTY"] },
+    { path: "/reviews", label: "Review Assignments", roles: ["FACULTY"] },
     { path: "/users", label: "Manage Users", roles: ["ADMIN"] },
     { path: "/starred", label: "Starred Projects", roles: ["STUDENT", "FACULTY", "ADMIN"] },
   ];
