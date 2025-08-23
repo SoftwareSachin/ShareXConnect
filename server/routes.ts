@@ -245,6 +245,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
+
   // Project routes
   app.get("/api/projects", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
@@ -281,6 +282,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const projects = await storage.getProjects(filters);
       res.json(projects);
     } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }));
+
+  // Filter options must come before :id route to avoid conflicts
+  app.get("/api/projects/filter-options", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      // Get actual departments from projects
+      const departmentsResult = await storage.query(`
+        SELECT DISTINCT department 
+        FROM projects 
+        WHERE department IS NOT NULL AND department != '' 
+        ORDER BY department
+      `);
+      
+      // Get actual tech stacks from projects
+      const techStackResult = await storage.query(`
+        SELECT DISTINCT unnest(tech_stack) as technology 
+        FROM projects 
+        WHERE tech_stack IS NOT NULL 
+        ORDER BY technology
+      `);
+      
+      // Get actual categories from projects
+      const categoriesResult = await storage.query(`
+        SELECT DISTINCT category 
+        FROM projects 
+        WHERE category IS NOT NULL AND category != '' 
+        ORDER BY category
+      `);
+      
+      res.json({
+        departments: departmentsResult.map((row: any) => row.department),
+        technologies: techStackResult.map((row: any) => row.technology),
+        categories: categoriesResult.map((row: any) => row.category)
+      });
+    } catch (error) {
+      console.error('Error fetching filter options:', error);
       res.status(500).json({ message: "Internal server error" });
     }
   }));

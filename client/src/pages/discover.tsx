@@ -37,6 +37,16 @@ export default function Discover() {
     ];
   };
 
+  // Fetch real filter options from database
+  const { data: filterOptions } = useQuery<{
+    departments: string[];
+    technologies: string[];
+    categories: string[];
+  }>({
+    queryKey: ["/api/projects/filter-options"],
+    queryFn: () => apiGet("/api/projects/filter-options"),
+  });
+
   const { data: projects, isLoading } = useQuery<ProjectWithDetails[]>({
     queryKey: ["/api/projects", { 
       category: categoryFilter !== "all" ? categoryFilter : undefined, 
@@ -56,14 +66,10 @@ export default function Discover() {
     },
   });
 
-  // Get unique tech stacks and departments from projects for filtering
-  const availableTech = Array.from(
-    new Set(projects?.flatMap(p => p.techStack || []) || [])
-  ).sort();
-  
-  const availableDepartments = Array.from(
-    new Set(projects?.map(p => p.department).filter(Boolean) || [])
-  ).sort();
+  // Use real filter options from database
+  const availableTech = filterOptions?.technologies || [];
+  const availableDepartments = filterOptions?.departments || [];
+  const availableCategories = filterOptions?.categories || [];
   
   const displayedTech = showAllTech ? availableTech : availableTech.slice(0, 6);
 
@@ -126,12 +132,9 @@ export default function Discover() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Categories</SelectItem>
-                      <SelectItem value="Web Development">Web Development</SelectItem>
-                      <SelectItem value="Mobile App">Mobile Apps</SelectItem>
-                      <SelectItem value="Data Science">Data Science</SelectItem>
-                      <SelectItem value="AI/Machine Learning">AI/ML</SelectItem>
-                      <SelectItem value="Game Development">Game Development</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
+                      {availableCategories.map((category) => (
+                        <SelectItem key={category} value={category}>{category}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -159,12 +162,9 @@ export default function Discover() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Departments</SelectItem>
-                      <SelectItem value="Computer Science">Computer Science</SelectItem>
-                      <SelectItem value="IT">Information Technology</SelectItem>
-                      <SelectItem value="Electronics">Electronics</SelectItem>
-                      <SelectItem value="Mechanical">Mechanical</SelectItem>
-                      <SelectItem value="Civil">Civil Engineering</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
+                      {availableDepartments.map((department) => (
+                        <SelectItem key={department} value={department}>{department}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

@@ -120,6 +120,9 @@ export interface IStorage {
 
   // College domain operations
   getCollegeDomains(): Promise<any[]>;
+  
+  // Raw SQL query support for dynamic filtering
+  query(sql: string): Promise<any[]>;
   getCollegeDomainByDomain(domain: string): Promise<any | undefined>;
   getCollegeDomainById(id: string): Promise<any | undefined>;
   createCollegeDomain(data: { collegeName: string; domain: string; adminId: string }): Promise<any>;
@@ -1379,6 +1382,17 @@ export class DatabaseStorage implements IStorage {
       return result;
     } catch (error) {
       console.error('Error getting college domains:', error);
+      return [];
+    }
+  }
+
+  // Raw SQL query support for dynamic filtering
+  async query(sql: string): Promise<any[]> {
+    try {
+      const result = await db.execute(sql);
+      return result.rows || [];
+    } catch (error) {
+      console.error('Error executing query:', error);
       return [];
     }
   }
