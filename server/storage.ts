@@ -108,6 +108,7 @@ export interface IStorage {
   assignProjectToReviewer(projectId: string, reviewerId: string): Promise<ProjectReview>;
   getProjectReviews(reviewerId: string): Promise<(ProjectReview & { project: ProjectWithDetails })[]>;
   submitReview(reviewId: string, grade: string, feedback: string): Promise<ProjectReview | undefined>;
+  isProjectReviewer(projectId: string, reviewerId: string): Promise<boolean>;
 
   // Dashboard statistics
   getDashboardStats(userId: string, role: string): Promise<DashboardStats>;
@@ -948,6 +949,26 @@ export class DatabaseStorage implements IStorage {
 
   async getProjectReviews(reviewerId: string): Promise<(ProjectReview & { project: ProjectWithDetails })[]> {
     return this.getFacultyAssignments(reviewerId);
+  }
+
+  async isProjectReviewer(projectId: string, reviewerId: string): Promise<boolean> {
+    try {
+      const result = await db
+        .select()
+        .from(projectReviews)
+        .where(
+          and(
+            eq(projectReviews.projectId, projectId),
+            eq(projectReviews.reviewerId, reviewerId)
+          )
+        )
+        .limit(1);
+      
+      return result.length > 0;
+    } catch (error) {
+      console.error('Error checking if user is project reviewer:', error);
+      return false;
+    }
   }
 
   async submitReview(reviewId: string, grade: string, feedback: string): Promise<ProjectReview | undefined> {

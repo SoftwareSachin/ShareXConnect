@@ -309,14 +309,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check permissions based on project visibility
       if (project.visibility === "PRIVATE") {
         if (!userId || project.ownerId !== userId) {
-          return res.status(403).json({ message: "Access denied - Private project" });
+          // Check if user is a faculty member assigned to review this project
+          const user = userId ? await storage.getUser(userId) : null;
+          if (!user || user.role !== "FACULTY" || !(await storage.isProjectReviewer(project.id, user.id))) {
+            return res.status(403).json({ message: "Access denied - Private project" });
+          }
         }
       } else if (project.visibility === "INSTITUTION") {
         if (!userId) {
           return res.status(403).json({ message: "Access denied - Institution project requires login" });
         }
         const user = await storage.getUser(userId);
-        if (!user || (project.owner.institution !== user.institution && project.ownerId !== userId)) {
+        if (!user) {
+          return res.status(403).json({ message: "Access denied - Institution project" });
+        }
+        
+        // Allow access if: owner, same institution, or faculty reviewer
+        const isOwner = project.ownerId === userId;
+        const sameInstitution = project.owner.institution === user.institution;
+        const isFacultyReviewer = user.role === "FACULTY" && await storage.isProjectReviewer(project.id, user.id);
+        
+        if (!isOwner && !sameInstitution && !isFacultyReviewer) {
           return res.status(403).json({ message: "Access denied - Institution project" });
         }
       }
