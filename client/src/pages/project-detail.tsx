@@ -2180,25 +2180,25 @@ export default function ProjectDetail() {
 
       {/* Faculty Review Dialog */}
       <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
-        <DialogContent className="max-w-[95vw] max-h-[95vh] overflow-hidden flex flex-col p-0">
-          <DialogHeader className="border-b border-slate-200 pb-4 px-6 pt-6 flex-shrink-0">
-            <DialogTitle className="flex items-center gap-2 text-xl">
-              <GraduationCap className="w-6 h-6 text-purple-600" />
+        <DialogContent className="max-w-[90vw] max-h-[85vh] overflow-hidden flex flex-col p-0 m-4">
+          <DialogHeader className="border-b border-slate-200 pb-3 px-6 pt-4 flex-shrink-0">
+            <DialogTitle className="flex items-center gap-2 text-lg font-semibold">
+              <GraduationCap className="w-5 h-5 text-purple-600" />
               {currentReview?.status === 'COMPLETED' ? 'Review Details' : 'Project Review & Grading'}
             </DialogTitle>
-            <DialogDescription className="text-slate-600">
+            <DialogDescription className="text-slate-600 text-sm">
               {currentReview?.status === 'COMPLETED' 
                 ? 'View your submitted review for this project.'
                 : 'Comprehensive evaluation with individual file grading and detailed feedback.'}
             </DialogDescription>
           </DialogHeader>
           
-          <div className="flex-1 flex flex-col min-h-0">
+          <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
             {/* Navigation Tabs */}
             <div className="flex border-b border-slate-200 flex-shrink-0 bg-white px-6">
               <button
                 onClick={() => setActiveTab('overview')}
-                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors relative ${
+                className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors relative ${
                   activeTab === 'overview'
                     ? 'border-purple-600 text-purple-600 bg-purple-50'
                     : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
@@ -2208,7 +2208,7 @@ export default function ProjectDetail() {
               </button>
               <button
                 onClick={() => setActiveTab('files')}
-                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors relative ${
+                className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors relative ${
                   activeTab === 'files'
                     ? 'border-purple-600 text-purple-600 bg-purple-50'
                     : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
@@ -2218,7 +2218,7 @@ export default function ProjectDetail() {
               </button>
               <button
                 onClick={() => setActiveTab('criteria')}
-                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors relative ${
+                className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors relative ${
                   activeTab === 'criteria'
                     ? 'border-purple-600 text-purple-600 bg-purple-50'
                     : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
@@ -2228,8 +2228,8 @@ export default function ProjectDetail() {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-6 py-6">
-              <div className="space-y-8">
+            <div className="flex-1 overflow-y-auto px-6 py-4">
+              <div className="space-y-6">
             {/* Overview Tab */}
             {activeTab === 'overview' && (
               <div className="space-y-6">
@@ -2704,7 +2704,7 @@ export default function ProjectDetail() {
             </div>
           </div>
           
-          <DialogFooter className="gap-3 border-t border-slate-200 pt-4 px-6 pb-6">
+          <DialogFooter className="gap-3 border-t border-slate-200 pt-3 px-6 pb-4 flex-shrink-0">
             <Button
               variant="outline"
               onClick={() => {
