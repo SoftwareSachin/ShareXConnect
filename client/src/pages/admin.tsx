@@ -10,6 +10,7 @@ import { Users, UserMinus, Building2, Shield, GraduationCap, Mail, Calendar, Use
 import { Header } from '@/components/layout/header';
 import { Sidebar } from '@/components/layout/sidebar';
 import { useToast } from '@/hooks/use-toast';
+import { useAuthStore } from '@/lib/auth';
 
 interface CollegeUser {
   id: string;
@@ -65,7 +66,7 @@ export default function AdminPage() {
       const response = await fetch(`/api/admin/users/${userId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${useAuthStore.getState().token}`,
           'Content-Type': 'application/json',
         },
       });
@@ -103,7 +104,7 @@ export default function AdminPage() {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${useAuthStore.getState().token}`,
         },
         body: JSON.stringify({ role: newRole }),
       });
