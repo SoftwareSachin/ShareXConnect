@@ -723,10 +723,25 @@ export class DatabaseStorage implements IStorage {
   // Collaboration methods
   async addCollaborator(projectId: string, userId: string): Promise<void> {
     try {
-      await db.insert(projectCollaborators).values({
-        projectId,
-        userId
-      });
+      // Check if already a collaborator
+      const existing = await db
+        .select()
+        .from(projectCollaborators)
+        .where(and(
+          eq(projectCollaborators.projectId, projectId),
+          eq(projectCollaborators.userId, userId)
+        ))
+        .limit(1);
+
+      if (existing.length === 0) {
+        await db.insert(projectCollaborators).values({
+          projectId,
+          userId
+        });
+        console.log(`✅ User ${userId} added as collaborator to project ${projectId}`);
+      } else {
+        console.log(`ℹ️ User ${userId} is already a collaborator on project ${projectId}`);
+      }
     } catch (error) {
       console.error('Error adding collaborator:', error);
       throw error;
