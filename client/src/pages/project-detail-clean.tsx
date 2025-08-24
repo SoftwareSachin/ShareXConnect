@@ -1,10 +1,17 @@
 import { useParams, useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { apiGet } from "@/lib/api";
-import type { ProjectWithDetails } from "@shared/schema";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Star, MessageCircle, Send } from "lucide-react";
+import { apiGet, apiPost, apiDelete } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/lib/auth";
+import type { ProjectWithDetails, ProjectComment } from "@shared/schema";
+import { useState } from "react";
 
 interface ProjectDetailParams {
   id: string;
@@ -13,6 +20,10 @@ interface ProjectDetailParams {
 export default function ProjectDetail() {
   const params = useParams<ProjectDetailParams>();
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const [newComment, setNewComment] = useState("");
   
   const { data: project, isLoading, error } = useQuery<ProjectWithDetails>({
     queryKey: [`/api/projects/${params.id}`],
@@ -29,6 +40,72 @@ export default function ProjectDetail() {
       }
     }
   });
+
+  // Fetch comments
+  const { data: commentsResponse, isLoading: isCommentsLoading } = useQuery({
+    queryKey: [`/api/projects/${params.id}/comments`],
+    queryFn: async () => {
+      const response = await apiGet(`/api/projects/${params.id}/comments`);
+      return response as { comments: ProjectComment[]; pagination: any };
+    },
+    enabled: !!params.id
+  });
+
+  // Star mutation
+  const starMutation = useMutation({
+    mutationFn: async () => {
+      if (project?.isStarred) {
+        await apiDelete(`/api/projects/${params.id}/star`);
+      } else {
+        await apiPost(`/api/projects/${params.id}/star`);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/projects/${params.id}`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      toast({
+        title: project?.isStarred ? "Project unstarred" : "Project starred",
+        description: project?.isStarred 
+          ? "Removed from your starred projects" 
+          : "Added to your starred projects",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update star status",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Comment mutation
+  const commentMutation = useMutation({
+    mutationFn: async (content: string) => {
+      return await apiPost(`/api/projects/${params.id}/comments`, { content });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/projects/${params.id}/comments`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/projects/${params.id}`] });
+      setNewComment("");
+      toast({
+        title: "Comment added",
+        description: "Your comment has been posted successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to add comment",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleCommentSubmit = () => {
+    if (!newComment.trim()) return;
+    commentMutation.mutate(newComment.trim());
+  };
 
   if (isLoading) {
     return (
@@ -99,12 +176,31 @@ export default function ProjectDetail() {
             
             {/* Quick Actions */}
             <div className="flex items-center gap-3">
-              <button className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                Star
-              </button>
-              <button className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                Comment
-              </button>
+              {user && (
+                <>
+                  <Button
+                    variant="ghost"
+                    onClick={() => starMutation.mutate()}
+                    disabled={starMutation.isPending}
+                    className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                    data-testid={`button-star-${project?.id}`}
+                  >
+                    <Star className={`w-4 h-4 mr-2 ${project?.isStarred ? "fill-current text-yellow-500" : ""}`} />
+                    {project?.isStarred ? 'Unstar' : 'Star'} ({project?.starCount || 0})
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      const commentsSection = document.getElementById('comments-section');
+                      commentsSection?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Comment ({project?.commentCount || 0})
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -422,67 +518,135 @@ export default function ProjectDetail() {
               <div className="p-6">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="text-center p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                    <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">0</div>
+                    <div className="text-2xl font-bold text-slate-900 dark:text-slate-100" data-testid={`text-stars-${project.id}`}>
+                      {project.starCount || 0}
+                    </div>
                     <div className="text-sm text-slate-600 dark:text-slate-400">Stars</div>
                   </div>
                   <div className="text-center p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                    <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">0</div>
-                    <div className="text-sm text-slate-600 dark:text-slate-400">Forks</div>
+                    <div className="text-2xl font-bold text-slate-900 dark:text-slate-100" data-testid={`text-comments-${project.id}`}>
+                      {project.commentCount || 0}
+                    </div>
+                    <div className="text-sm text-slate-600 dark:text-slate-400">Comments</div>
                   </div>
                   <div className="text-center p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                    <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">0</div>
-                    <div className="text-sm text-slate-600 dark:text-slate-400">Views</div>
+                    <div className="text-2xl font-bold text-slate-900 dark:text-slate-100" data-testid={`text-collaborators-${project.id}`}>
+                      {project.collaborators?.length || 0}
+                    </div>
+                    <div className="text-sm text-slate-600 dark:text-slate-400">Collaborators</div>
                   </div>
                   <div className="text-center p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                    <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">0</div>
-                    <div className="text-sm text-slate-600 dark:text-slate-400">Downloads</div>
+                    <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                      {project.visibility === 'PUBLIC' ? '∞' : '🔒'}
+                    </div>
+                    <div className="text-sm text-slate-600 dark:text-slate-400">Access</div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Code Preview */}
-            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+            {/* Comments Section */}
+            <div id="comments-section" className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
               <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
                 <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                  Code Preview
+                  Comments ({project.commentCount || 0})
                 </h3>
                 <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                  Sample code from the project
+                  Discussion and feedback from the community
                 </p>
               </div>
               
               <div className="p-6">
-                <div className="bg-slate-900 rounded-lg overflow-hidden border border-slate-700">
-                  <div className="flex items-center justify-between px-4 py-3 bg-slate-800 border-b border-slate-700">
-                    <div className="flex items-center gap-3">
-                      <div className="flex gap-2">
-                        <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                        <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                {/* Add Comment Form */}
+                {user && (
+                  <div className="mb-6 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <div className="flex items-start space-x-3">
+                      <Avatar className="w-8 h-8">
+                        <AvatarFallback className="text-xs">
+                          {user.firstName.charAt(0)}{user.lastName.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <Textarea
+                          placeholder="Share your thoughts about this project..."
+                          value={newComment}
+                          onChange={(e) => setNewComment(e.target.value)}
+                          className="min-h-[80px] resize-none"
+                          data-testid={`textarea-comment-${project.id}`}
+                        />
+                        <div className="flex justify-between items-center mt-3">
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            {newComment.length}/1000 characters
+                          </p>
+                          <Button
+                            onClick={handleCommentSubmit}
+                            disabled={!newComment.trim() || commentMutation.isPending}
+                            size="sm"
+                            className="bg-blue-600 hover:bg-blue-700"
+                            data-testid={`button-submit-comment-${project.id}`}
+                          >
+                            <Send className="w-4 h-4 mr-2" />
+                            {commentMutation.isPending ? 'Posting...' : 'Post Comment'}
+                          </Button>
+                        </div>
                       </div>
-                      <span className="text-sm font-mono text-slate-300">main.js</span>
                     </div>
-                    <div className="text-xs text-slate-400">javascript</div>
                   </div>
-                  
-                  <div className="p-6">
-                    <pre className="text-sm font-mono text-slate-300 leading-relaxed">
-                      <code>{`// Sample code preview
-function initializeApp() {
-  console.log('Application starting...');
-  
-  const config = {
-    version: '1.0.0',
-    environment: 'production'
-  };
-  
-  return config;
-}
+                )}
 
-export default initializeApp;`}</code>
-                    </pre>
-                  </div>
+                {/* Comments List */}
+                <div className="space-y-4">
+                  {isCommentsLoading ? (
+                    <div className="text-center py-8">
+                      <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">Loading comments...</p>
+                    </div>
+                  ) : commentsResponse?.comments && commentsResponse.comments.length > 0 ? (
+                    commentsResponse.comments.map((comment) => (
+                      <div key={comment.id} className="border-b border-slate-200 dark:border-slate-700 pb-4 last:border-b-0" data-testid={`comment-${comment.id}`}>
+                        <div className="flex items-start space-x-3">
+                          <Avatar className="w-8 h-8">
+                            <AvatarFallback className="text-xs">
+                              {comment.author.firstName.charAt(0)}{comment.author.lastName.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2 mb-1">
+                              <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                                {comment.author.firstName} {comment.author.lastName}
+                              </h4>
+                              <span className="text-xs text-slate-500 dark:text-slate-400">
+                                {comment.author.institution}
+                              </span>
+                              <span className="text-xs text-slate-400 dark:text-slate-500">
+                                •
+                              </span>
+                              <span className="text-xs text-slate-500 dark:text-slate-400">
+                                {new Date(comment.createdAt).toLocaleDateString('en-US', { 
+                                  year: 'numeric', 
+                                  month: 'short', 
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </span>
+                            </div>
+                            <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                              {comment.content}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <MessageCircle className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                      <p className="text-slate-500 dark:text-slate-400 mb-2">No comments yet</p>
+                      <p className="text-sm text-slate-400 dark:text-slate-500">
+                        {user ? "Be the first to share your thoughts!" : "Sign in to add a comment"}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
