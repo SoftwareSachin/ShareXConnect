@@ -47,11 +47,11 @@ export default function Dashboard() {
 
   const handleInvitationResponse = async (invitationId: string, status: 'APPROVED' | 'REJECTED') => {
     try {
-      await apiRequest({
-        url: `/api/projects/collaborate/requests/${invitationId}/respond`,
-        method: 'POST',
-        body: { status },
-      });
+      await apiRequest(
+        'POST',
+        `/api/projects/collaborate/requests/${invitationId}/respond`,
+        { status }
+      );
       
       refetchInvitations();
       
