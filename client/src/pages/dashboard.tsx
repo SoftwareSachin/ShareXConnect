@@ -10,6 +10,7 @@ import { apiGet } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { DashboardStats, ProjectWithDetails } from "@shared/schema";
 import { useState } from "react";
+import { Link } from "wouter";
 import { CreateProjectModal } from "@/components/modals/create-project-modal";
 import { AssignFacultyModal } from "@/components/modals/assign-faculty-modal";
 import { RoleProtectedComponent, usePermissions } from "@/components/RoleProtectedComponent";
@@ -417,24 +418,28 @@ export default function Dashboard() {
                           <div className="text-xs text-slate-500 dark:text-slate-400">Get your project reviewed</div>
                         </div>
                       </Button>
-                      <Button variant="outline" className="w-full justify-start h-12 bg-white/40 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/50 hover:bg-white/60 dark:hover:bg-slate-800/60 rounded-xl">
-                        <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/50 rounded-lg flex items-center justify-center mr-3">
-                          <Search className="w-4 h-4 text-purple-500" />
-                        </div>
-                        <div className="text-left">
-                          <div className="font-medium text-slate-900 dark:text-slate-100">Find Collaborators</div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400">Connect with peers</div>
-                        </div>
-                      </Button>
-                      <Button variant="outline" className="w-full justify-start h-12 bg-white/40 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/50 hover:bg-white/60 dark:hover:bg-slate-800/60 rounded-xl">
-                        <div className="w-8 h-8 bg-amber-100 dark:bg-amber-900/50 rounded-lg flex items-center justify-center mr-3">
-                          <TrendingUp className="w-4 h-4 text-amber-500" />
-                        </div>
-                        <div className="text-left">
-                          <div className="font-medium text-slate-900 dark:text-slate-100">View Progress</div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400">Track your work</div>
-                        </div>
-                      </Button>
+                      <Link href="/projects?tab=explore">
+                        <Button variant="outline" className="w-full justify-start h-12 bg-white/40 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/50 hover:bg-white/60 dark:hover:bg-slate-800/60 rounded-xl">
+                          <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/50 rounded-lg flex items-center justify-center mr-3">
+                            <Search className="w-4 h-4 text-purple-500" />
+                          </div>
+                          <div className="text-left">
+                            <div className="font-medium text-slate-900 dark:text-slate-100">Find Collaborators</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400">Connect with peers</div>
+                          </div>
+                        </Button>
+                      </Link>
+                      <Link href="/projects?view=my">
+                        <Button variant="outline" className="w-full justify-start h-12 bg-white/40 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/50 hover:bg-white/60 dark:hover:bg-slate-800/60 rounded-xl">
+                          <div className="w-8 h-8 bg-amber-100 dark:bg-amber-900/50 rounded-lg flex items-center justify-center mr-3">
+                            <TrendingUp className="w-4 h-4 text-amber-500" />
+                          </div>
+                          <div className="text-left">
+                            <div className="font-medium text-slate-900 dark:text-slate-100">View Progress</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400">Track your work</div>
+                          </div>
+                        </Button>
+                      </Link>
                     </>
                   )}
                   
