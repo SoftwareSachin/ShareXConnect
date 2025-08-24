@@ -68,7 +68,7 @@ export default function Reviews() {
     return (
       <div className="flex h-screen bg-gray-50">
         <Sidebar />
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 flex items-center justify-center ml-80">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
             <p className="text-muted-foreground">This page is only available to faculty members.</p>
@@ -81,7 +81,7 @@ export default function Reviews() {
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden ml-80">
         <Header
           title="Faculty Reviews"
           description="Review and grade assigned student projects"

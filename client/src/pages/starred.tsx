@@ -18,7 +18,7 @@ export default function Starred() {
   return (
     <div className="flex h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden ml-80">
         <Header
           title="Starred Projects"
           description="Projects you've bookmarked for easy access"
