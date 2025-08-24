@@ -59,7 +59,9 @@ export function requireRole(allowedRoles: string | string[], options: {
 
       // Additional validation using storage layer
       if (options.allowSameInstitution && user.institution) {
-        const isValid = await storage.validateUserPermission(user.id, user.role, user.institution);
+        // Pass the required role instead of user's current role for proper validation
+        const requiredRole = Array.isArray(allowedRoles) ? allowedRoles[0] : allowedRoles;
+        const isValid = await storage.validateUserPermission(user.id, requiredRole, user.institution);
         if (!isValid) {
           console.warn(`🚫 Storage validation failed: User ${user.id} failed institution validation`);
           return res.status(403).json({
