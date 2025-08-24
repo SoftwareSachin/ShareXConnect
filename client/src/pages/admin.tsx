@@ -56,8 +56,8 @@ export default function AdminPage() {
   });
 
   // Extract data from enhanced responses
-  const facultyUsers = facultyResponse?.success ? facultyResponse.data : [];
-  const studentUsers = studentResponse?.success ? studentResponse.data : [];
+  const facultyUsers = (facultyResponse as any)?.success ? (facultyResponse as any).data : [];
+  const studentUsers = (studentResponse as any)?.success ? (studentResponse as any).data : [];
 
   // Enhanced mutations for managing users with detailed error handling
   const removeUserMutation = useMutation({
@@ -224,7 +224,7 @@ export default function AdminPage() {
       <div className="flex h-screen">
         <Sidebar />
         <div className="flex-1 flex flex-col ml-80">
-          <Header />
+          <Header title="Admin Panel" description="Manage your institution" />
           <main className="flex-1 p-6">
             <div className="text-center py-12">
               <Shield className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
@@ -242,10 +242,10 @@ export default function AdminPage() {
   return (
     <div className="flex h-screen">
       <Sidebar />
-      <div className="flex-1 flex flex-col">
-        <Header />
+      <div className="flex-1 flex flex-col ml-80">
+        <Header title="College Administration" description="Manage faculty and students" />
         <main className="flex-1 p-8 overflow-auto bg-gradient-to-br from-slate-50/30 to-blue-50/20 dark:from-slate-900/30 dark:to-blue-900/20">
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-6xl mx-auto">
             <div className="mb-8">
               <div className="flex items-center space-x-4 mb-4">
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-3xl flex items-center justify-center shadow-xl">
@@ -276,9 +276,9 @@ export default function AdminPage() {
                   <p className="text-sm text-emerald-600 dark:text-emerald-400 mt-1">
                     {facultyError ? 'Error loading data' : 'Active faculty members'}
                   </p>
-                  {facultyResponse?.institution && (
+                  {(facultyResponse as any)?.institution && (
                     <p className="text-xs text-emerald-500 dark:text-emerald-400 mt-2 px-2 py-1 bg-emerald-100 dark:bg-emerald-800/30 rounded-lg">
-                      Institution: {facultyResponse.institution}
+                      Institution: {(facultyResponse as any).institution}
                     </p>
                   )}
                 </CardContent>
@@ -298,9 +298,9 @@ export default function AdminPage() {
                   <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">
                     {studentError ? 'Error loading data' : 'Registered students'}
                   </p>
-                  {studentResponse?.institution && (
+                  {(studentResponse as any)?.institution && (
                     <p className="text-xs text-blue-500 dark:text-blue-400 mt-2 px-2 py-1 bg-blue-100 dark:bg-blue-800/30 rounded-lg">
-                      Institution: {studentResponse.institution}
+                      Institution: {(studentResponse as any).institution}
                     </p>
                   )}
                 </CardContent>
