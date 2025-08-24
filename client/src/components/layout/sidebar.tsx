@@ -29,7 +29,7 @@ export function Sidebar() {
     { path: "/discover", label: "Discover Projects", showForGuest: true, icon: Search },
     { path: "/reviews", label: "Review Assignments", roles: ["FACULTY"], icon: FileCheck },
     { path: "/users", label: "Manage Users", roles: ["ADMIN"], icon: Users },
-    { path: "/starred", label: "Starred Projects", roles: ["STUDENT", "FACULTY", "ADMIN"], icon: Star },
+    { path: "/starred", label: "Starred Projects", roles: ["STUDENT", "FACULTY"], icon: Star },
   ];
 
   const getInitials = (firstName: string, lastName: string) => {
