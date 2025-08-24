@@ -772,27 +772,39 @@ export default function ProjectDetail() {
                     </div>
                     
                     <div className="flex items-center gap-3">
-                      {currentReview?.status === 'COMPLETED' ? (
+                      {projectReviews?.some((review: any) => review.isFinal) ? (
                         <Button
                           variant="outline"
                           onClick={() => {
-                            setReviewGrade(currentReview?.grade?.toString() || '');
-                            setReviewFeedback(currentReview?.feedback || '');
+                            // Load the most recent review data for viewing
+                            const latestReview = projectReviews?.reduce((latest: any, current: any) => 
+                              !latest || new Date(current.createdAt) > new Date(latest.createdAt) ? current : latest
+                            );
+                            if (latestReview) {
+                              setReviewGrade(latestReview.grade?.toString() || '');
+                              setReviewFeedback(latestReview.feedback || '');
+                            }
                             setShowReviewDialog(true);
                           }}
                           className="text-purple-700 border-purple-200 hover:bg-purple-50"
                         >
                           <FileText className="w-4 h-4 mr-2" />
-                          View Review
+                          View Final Review
                         </Button>
                       ) : (
                         <Button
-                          onClick={() => setShowReviewDialog(true)}
+                          onClick={() => {
+                            // Reset form for new review
+                            setReviewGrade('');
+                            setReviewFeedback('');
+                            setIsFinalReview(false);
+                            setShowReviewDialog(true);
+                          }}
                           className="bg-purple-600 hover:bg-purple-700 text-white"
                           data-testid="button-start-review"
                         >
                           <Award className="w-4 h-4 mr-2" />
-                          Start Review
+                          {currentReview ? 'Submit Another Review' : 'Start Review'}
                         </Button>
                       )}
                     </div>
@@ -2548,7 +2560,7 @@ export default function ProjectDetail() {
                             checked={isFinalReview}
                             onChange={(e) => setIsFinalReview(e.target.checked)}
                             className="w-4 h-4 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 focus:ring-2"
-                            disabled={currentReview?.status === 'COMPLETED'}
+                            disabled={projectReviews?.some((review: any) => review.isFinal)}
                             data-testid="checkbox-final-review"
                           />
                           <label htmlFor="final-review-checkbox" className="font-semibold text-slate-900">
@@ -2912,7 +2924,7 @@ export default function ProjectDetail() {
               {currentReview?.status === 'COMPLETED' ? 'Close' : 'Cancel'}
             </Button>
             
-            {currentReview?.status !== 'COMPLETED' && !projectReviews?.some((review: any) => review.isFinal) && (
+            {!projectReviews?.some((review: any) => review.isFinal) && (
               <div className="flex items-center gap-3">
                 {(!reviewGrade || !reviewFeedback) && (
                   <div className="text-sm text-amber-600 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200 flex items-center gap-2">
