@@ -45,11 +45,19 @@ export async function apiGet<T>(url: string): Promise<T> {
 
 export async function apiPost<T>(url: string, data?: unknown, options: { skipAuth?: boolean } = {}): Promise<T> {
   const response = await apiRequest('POST', url, data, options);
+  // Handle 204 responses (no content) which don't have JSON to parse
+  if (response.status === 204) {
+    return undefined as T;
+  }
   return response.json();
 }
 
 export async function apiPatch<T>(url: string, data?: unknown): Promise<T> {
   const response = await apiRequest('PATCH', url, data);
+  // Handle 204 responses (no content) which don't have JSON to parse
+  if (response.status === 204) {
+    return undefined as T;
+  }
   return response.json();
 }
 
