@@ -1160,8 +1160,9 @@ export class DatabaseStorage implements IStorage {
         })
         .returning();
       
-      // If this is a final review, update the project status to APPROVED
+      // If this is a final review, update the project status to APPROVED and mark all pending reviews as completed
       if (isFinal && result[0]) {
+        // Update project status to APPROVED
         await db
           .update(projects)
           .set({ 
@@ -1170,7 +1171,20 @@ export class DatabaseStorage implements IStorage {
           })
           .where(eq(projects.id, projectId));
         
+        // Update all pending review assignments for this project to COMPLETED
+        await db
+          .update(projectReviews)
+          .set({ 
+            status: "COMPLETED",
+            updatedAt: new Date()
+          })
+          .where(and(
+            eq(projectReviews.projectId, projectId),
+            eq(projectReviews.status, "PENDING")
+          ));
+        
         console.log(`✅ Project ${projectId} marked as APPROVED due to final review`);
+        console.log(`✅ All pending reviews for project ${projectId} marked as COMPLETED`);
       }
       
       console.log(`✅ ${isFinal ? 'Final' : 'Regular'} review created for project ${projectId} by faculty ${reviewerId}: Grade ${grade}`);
@@ -1267,35 +1281,40 @@ export class DatabaseStorage implements IStorage {
           collaborators
         };
       } else if (role === "FACULTY") {
-        // Total assignments
+        // Count distinct projects assigned to this faculty (total assignments)
         const totalResults = await db
-          .select({ count: count() })
+          .selectDistinct({ projectId: projectReviews.projectId })
           .from(projectReviews)
           .where(eq(projectReviews.reviewerId, userId));
         
-        const totalProjects = totalResults[0]?.count || 0;
+        const totalProjects = totalResults.length;
 
-        // Pending reviews
+        // Pending reviews (distinct projects with pending status)
         const inReviewResults = await db
-          .select({ count: count() })
+          .selectDistinct({ projectId: projectReviews.projectId })
           .from(projectReviews)
           .where(and(
             eq(projectReviews.reviewerId, userId),
             eq(projectReviews.status, "PENDING")
           ));
         
-        const inReview = inReviewResults[0]?.count || 0;
+        const inReview = inReviewResults.length;
 
-        // Completed reviews
+        // Completed reviews (distinct projects with completed status or final reviews)
         const approvedResults = await db
-          .select({ count: count() })
+          .selectDistinct({ projectId: projectReviews.projectId })
           .from(projectReviews)
           .where(and(
             eq(projectReviews.reviewerId, userId),
-            eq(projectReviews.status, "COMPLETED")
+            or(
+              eq(projectReviews.status, "COMPLETED"),
+              eq(projectReviews.isFinal, true)
+            )
           ));
         
-        const approved = approvedResults[0]?.count || 0;
+        const approved = approvedResults.length;
+
+        console.log(`📊 Faculty ${userId} stats: {totalProjects: ${totalProjects}, inReview: ${inReview}, approved: ${approved}}`);
 
         return {
           totalProjects,
