@@ -139,6 +139,7 @@ export interface IStorage {
   inviteCollaborator(projectId: string, inviteeId: string, senderId: string, message?: string): Promise<CollaborationRequest>;
   getCollaborationRequests(projectId: string): Promise<(CollaborationRequest & { requester?: User; invitee?: User; sender: User })[]>;
   getUserInvitations(userId: string): Promise<(CollaborationRequest & { project: Project; sender: User })[]>;
+  getOwnerCollaborationRequests(ownerId: string): Promise<(CollaborationRequest & { project: Project; requester: User })[]>;
   respondToCollaborationRequest(requestId: string, status: 'APPROVED' | 'REJECTED', reviewerId: string): Promise<CollaborationRequest | undefined>;
   addCollaboratorByEmail(projectId: string, email: string, ownerId: string): Promise<void>;
   
@@ -1869,6 +1870,37 @@ export class DatabaseStorage implements IStorage {
       }));
     } catch (error) {
       console.error('Error getting user invitations:', error);
+      return [];
+    }
+  }
+
+  async getOwnerCollaborationRequests(ownerId: string): Promise<(CollaborationRequest & { project: Project; requester: User })[]> {
+    try {
+      const requests = await db
+        .select({
+          request: collaborationRequests,
+          project: projects,
+          requester: users
+        })
+        .from(collaborationRequests)
+        .innerJoin(projects, eq(collaborationRequests.projectId, projects.id))
+        .innerJoin(users, eq(collaborationRequests.requesterId, users.id))
+        .where(
+          and(
+            eq(projects.ownerId, ownerId),
+            eq(collaborationRequests.type, "REQUEST"),
+            eq(collaborationRequests.status, "PENDING")
+          )
+        )
+        .orderBy(desc(collaborationRequests.createdAt));
+
+      return requests.map(result => ({
+        ...result.request,
+        project: result.project,
+        requester: result.requester
+      }));
+    } catch (error) {
+      console.error('Error getting owner collaboration requests:', error);
       return [];
     }
   }

@@ -34,7 +34,8 @@ import {
   Code,
   GitBranch,
   Mail,
-  X
+  X,
+  Check
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -97,6 +98,13 @@ export default function Dashboard() {
   type UserInvitation = CollaborationRequest & { project: Project; sender: User };
   const { data: invitations, refetch: refetchInvitations } = useQuery<UserInvitation[]>({
     queryKey: ["/api/user/invitations"],
+    enabled: !!user,
+  });
+
+  // Fetch collaboration requests for project owners
+  type IncomingRequest = CollaborationRequest & { project: Project; requester: User };
+  const { data: incomingRequests = [] } = useQuery<IncomingRequest[]>({
+    queryKey: ["/api/owner/collaboration-requests"],
     enabled: !!user,
   });
 
@@ -599,6 +607,78 @@ export default function Dashboard() {
                   )}
                 </div>
               </div>
+              
+              {/* Collaboration Requests Section for Project Owners */}
+              {incomingRequests && incomingRequests.length > 0 && (
+                <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/20 dark:border-slate-700/30 rounded-3xl overflow-hidden shadow-xl shadow-slate-900/5 dark:shadow-black/10">
+                  <div className="p-8 border-b border-white/10 dark:border-slate-700/30">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">Collaboration Requests</h2>
+                        <p className="text-slate-500 dark:text-slate-400">Users wanting to collaborate on your projects</p>
+                      </div>
+                      <div className="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-3 py-1 rounded-full text-sm font-medium">
+                        {incomingRequests.length} pending
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-8 space-y-4">
+                    {incomingRequests.map((request) => (
+                      <div key={request.id} className="bg-white/60 dark:bg-slate-800/60 border border-white/30 dark:border-slate-700/30 rounded-2xl p-6 hover:bg-white/80 dark:hover:bg-slate-800/80 transition-all duration-300">
+                        <div className="flex items-start gap-4">
+                          <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/50 rounded-2xl flex items-center justify-center flex-shrink-0">
+                            <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between mb-3">
+                              <div>
+                                <h3 className="font-bold text-slate-900 dark:text-slate-100 mb-1">
+                                  {request.requester.firstName} {request.requester.lastName}
+                                </h3>
+                                <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">
+                                  {request.requester.email} • @{request.requester.username}
+                                </p>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">
+                                  wants to collaborate on <span className="font-medium text-slate-700 dark:text-slate-300">{request.project.title}</span>
+                                </p>
+                              </div>
+                              <div className="text-sm text-slate-500 dark:text-slate-400">
+                                {new Date(request.createdAt).toLocaleDateString()}
+                              </div>
+                            </div>
+                            {request.message && (
+                              <div className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-xl mb-4">
+                                <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
+                                  "{request.message}"
+                                </p>
+                              </div>
+                            )}
+                            <div className="flex gap-3">
+                              <Button
+                                size="sm"
+                                onClick={() => handleInvitationResponse(request.id, 'APPROVED')}
+                                className="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 border-0"
+                              >
+                                <Check className="w-4 h-4 mr-2" />
+                                Accept
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleInvitationResponse(request.id, 'REJECTED')}
+                                className="bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
+                              >
+                                <X className="w-4 h-4 mr-2" />
+                                Decline
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               
               {/* Modern Activity Feed */}
               <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/20 dark:border-slate-700/30 rounded-3xl overflow-hidden shadow-xl shadow-slate-900/5 dark:shadow-black/10">

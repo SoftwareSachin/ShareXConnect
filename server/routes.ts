@@ -767,6 +767,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
+  // Get collaboration requests for project owners (requests sent to their projects)
+  app.get("/api/owner/collaboration-requests", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      const requests = await storage.getOwnerCollaborationRequests(req.user!.id);
+      res.json(requests);
+    } catch (error) {
+      console.error('Error fetching owner collaboration requests:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }));
+
   // Repository management routes
   app.get("/api/projects/:id/repository", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
