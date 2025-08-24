@@ -177,9 +177,8 @@ export default function Dashboard() {
         <Header
           title="Dashboard"
           description="Welcome back! Here's your project overview."
-          onCreateProject={() => setShowCreateModal(true)}
           showSearch={false}
-          showCreateButton={canAccess('canCreateProject')}
+          showCreateButton={false}
         />
 
         {/* Modern Background Elements */}
