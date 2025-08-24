@@ -1922,14 +1922,24 @@ export default function ProjectDetail() {
                           </div>
                         </div>
                         
-                        {(review.letterGrade || review.grade) && review.grade !== 0 && (
-                          <div className="flex items-center gap-2 bg-green-50 dark:bg-green-900/20 px-3 py-1 rounded-lg border border-green-200 dark:border-green-800">
-                            <Award className="w-4 h-4 text-green-700 dark:text-green-400" />
-                            <span className="text-sm font-semibold text-green-900 dark:text-green-100">
-                              Grade: {review.letterGrade || review.grade}
-                            </span>
-                          </div>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {(review.letterGrade || review.grade) && review.grade !== 0 && (
+                            <div className="flex items-center gap-2 bg-green-50 dark:bg-green-900/20 px-3 py-1 rounded-lg border border-green-200 dark:border-green-800">
+                              <Award className="w-4 h-4 text-green-700 dark:text-green-400" />
+                              <span className="text-sm font-semibold text-green-900 dark:text-green-100">
+                                Grade: {review.letterGrade || review.grade}
+                              </span>
+                            </div>
+                          )}
+                          {review.isFinal && (
+                            <div className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                              <CheckCircle className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
+                              <span className="text-sm font-semibold text-emerald-900 dark:text-emerald-100">
+                                Final Review
+                              </span>
+                            </div>
+                          )}
+                        </div>
 
                         {review.status === 'COMPLETED' && (
                           <button
@@ -2508,6 +2518,61 @@ export default function ProjectDetail() {
                     </div>
                   </div>
                 </div>
+
+                {/* Final Review Section */}
+                <div className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
+                  <h4 className="font-semibold text-slate-900 mb-4 flex items-center gap-3">
+                    <div className="w-8 h-8 bg-emerald-50 rounded-lg flex items-center justify-center">
+                      <CheckCircle className="w-4 h-4 text-emerald-700" />
+                    </div>
+                    Final Review Status
+                  </h4>
+                  <div className="space-y-4">
+                    {/* Check if final review already exists */}
+                    {projectReviews?.some((review: any) => review.isFinal) ? (
+                      <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                        <div className="flex items-center gap-3 mb-2">
+                          <CheckCircle className="w-5 h-5 text-emerald-600" />
+                          <span className="font-semibold text-emerald-800">Final Review Complete</span>
+                        </div>
+                        <p className="text-sm text-emerald-700">
+                          This project has already received a final review. No additional reviews can be submitted.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="checkbox"
+                            id="final-review-checkbox"
+                            checked={isFinalReview}
+                            onChange={(e) => setIsFinalReview(e.target.checked)}
+                            className="w-4 h-4 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 focus:ring-2"
+                            disabled={currentReview?.status === 'COMPLETED'}
+                            data-testid="checkbox-final-review"
+                          />
+                          <label htmlFor="final-review-checkbox" className="font-semibold text-slate-900">
+                            Mark as Final Review
+                          </label>
+                        </div>
+                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                          <div className="flex items-start gap-3">
+                            <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                            <div className="text-sm text-amber-800">
+                              <p className="font-medium mb-1">Important:</p>
+                              <ul className="space-y-1 text-xs">
+                                <li>• Final reviews automatically approve the project</li>
+                                <li>• Only one final review is allowed per project</li>
+                                <li>• Once submitted, no additional reviews can be added</li>
+                                <li>• Students will see this as their official grade</li>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 
@@ -2847,7 +2912,7 @@ export default function ProjectDetail() {
               {currentReview?.status === 'COMPLETED' ? 'Close' : 'Cancel'}
             </Button>
             
-            {currentReview?.status !== 'COMPLETED' && (
+            {currentReview?.status !== 'COMPLETED' && !projectReviews?.some((review: any) => review.isFinal) && (
               <div className="flex items-center gap-3">
                 {(!reviewGrade || !reviewFeedback) && (
                   <div className="text-sm text-amber-600 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200 flex items-center gap-2">
@@ -2876,10 +2941,16 @@ export default function ProjectDetail() {
                   ) : (
                     <>
                       <Award className="w-4 h-4 mr-2" />
-                      Submit Review
+                      {isFinalReview ? 'Submit Final Review' : 'Submit Review'}
                     </>
                   )}
                 </Button>
+              </div>
+            )}
+            {projectReviews?.some((review: any) => review.isFinal) && (
+              <div className="text-sm text-emerald-600 bg-emerald-50 px-4 py-2 rounded-lg border border-emerald-200 flex items-center gap-2">
+                <CheckCircle className="w-4 h-4" />
+                This project has received a final review and cannot be reviewed again.
               </div>
             )}
           </DialogFooter>
