@@ -6,7 +6,9 @@ import { z } from "zod";
 import fs from "fs";
 import path from "path";
 import { storage } from "./storage";
-import { loginSchema, registerSchema, insertProjectSchema, insertCommentSchema, updateProfileSchema, type User } from "@shared/schema";
+import { loginSchema, registerSchema, insertProjectSchema, insertCommentSchema, updateProfileSchema, type User, projectCollaborators } from "@shared/schema";
+import { db } from "./database/connection";
+import { eq } from "drizzle-orm";
 import { 
   requireAdmin, 
   validateParams, 
@@ -1652,6 +1654,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     async (req, res) => {
     try {
       const user = req.user as any;
+      const { page = "1", limit = "10", search = "", verified } = req.query;
       
       // Comprehensive role validation
       if (!user) {
@@ -1680,16 +1683,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Get faculty members with enhanced error handling
+      // Get faculty members with enhanced filtering and pagination
       const faculty = await storage.getUsersByInstitution(user.institution);
-      const facultyMembers = faculty.filter(u => u.role === 'FACULTY');
+      let facultyMembers = faculty.filter(u => u.role === 'FACULTY');
       
-      console.log(`✅ Admin ${user.id} accessed faculty list: ${facultyMembers.length} members`);
+      // Apply search filter if provided
+      if (search && typeof search === 'string') {
+        const searchLower = search.toLowerCase();
+        facultyMembers = facultyMembers.filter(f => 
+          f.firstName?.toLowerCase().includes(searchLower) ||
+          f.lastName?.toLowerCase().includes(searchLower) ||
+          f.email.toLowerCase().includes(searchLower) ||
+          f.username.toLowerCase().includes(searchLower)
+        );
+      }
+      
+      // Apply verification filter if provided
+      if (verified !== undefined) {
+        const isVerified = verified === 'true';
+        facultyMembers = facultyMembers.filter(f => f.isVerified === isVerified);
+      }
+      
+      // Add enhanced user data with stats
+      const enrichedFaculty = await Promise.all(
+        facultyMembers.map(async (faculty) => {
+          const projects = await storage.getProjects({ ownerId: faculty.id });
+          const reviews = await storage.getProjectReviews(faculty.id);
+          
+          return {
+            ...faculty,
+            stats: {
+              projectCount: projects.length,
+              reviewCount: reviews.length,
+              lastLogin: faculty.updatedAt || null
+            }
+          };
+        })
+      );
+      
+      // Calculate pagination
+      const pageNum = parseInt(page as string) || 1;
+      const limitNum = Math.min(parseInt(limit as string) || 10, 50);
+      const startIndex = (pageNum - 1) * limitNum;
+      const endIndex = startIndex + limitNum;
+      const paginatedFaculty = enrichedFaculty.slice(startIndex, endIndex);
+      
+      console.log(`✅ Admin ${user.id} accessed faculty list: ${facultyMembers.length} total, ${paginatedFaculty.length} returned`);
       res.json({
         success: true,
-        data: facultyMembers,
-        count: facultyMembers.length,
-        institution: user.institution
+        data: paginatedFaculty,
+        pagination: {
+          total: enrichedFaculty.length,
+          page: pageNum,
+          limit: limitNum,
+          totalPages: Math.ceil(enrichedFaculty.length / limitNum)
+        },
+        filters: {
+          search: search || null,
+          verified: verified || null
+        },
+        institution: user.institution,
+        timestamp: new Date().toISOString()
       });
     } catch (error: any) {
       console.error('❌ Error fetching faculty:', error);
@@ -1717,6 +1771,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     async (req, res) => {
     try {
       const user = req.user as any;
+      const { page = "1", limit = "10", search = "", verified, department } = req.query;
       
       // Comprehensive role validation
       if (!user) {
@@ -1745,16 +1800,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Get students with enhanced error handling
+      // Get students with enhanced filtering and pagination
       const students = await storage.getUsersByInstitution(user.institution);
-      const studentMembers = students.filter(u => u.role === 'STUDENT');
+      let studentMembers = students.filter(u => u.role === 'STUDENT');
       
-      console.log(`✅ Admin ${user.id} accessed student list: ${studentMembers.length} members`);
+      // Apply search filter if provided
+      if (search && typeof search === 'string') {
+        const searchLower = search.toLowerCase();
+        studentMembers = studentMembers.filter(s => 
+          s.firstName?.toLowerCase().includes(searchLower) ||
+          s.lastName?.toLowerCase().includes(searchLower) ||
+          s.email.toLowerCase().includes(searchLower) ||
+          s.username.toLowerCase().includes(searchLower)
+        );
+      }
+      
+      // Apply verification filter if provided
+      if (verified !== undefined) {
+        const isVerified = verified === 'true';
+        studentMembers = studentMembers.filter(s => s.isVerified === isVerified);
+      }
+      
+      // Apply department filter if provided
+      if (department && typeof department === 'string') {
+        studentMembers = studentMembers.filter(s => s.department === department);
+      }
+      
+      // Add enhanced user data with project stats
+      const enrichedStudents = await Promise.all(
+        studentMembers.map(async (student) => {
+          const projects = await storage.getProjects({ ownerId: student.id });
+          // Get collaborations for the student across all projects  
+          const collaborationResults = await db.select()
+            .from(projectCollaborators)
+            .where(eq(projectCollaborators.userId, student.id));
+          
+          
+          return {
+            ...student,
+            stats: {
+              projectCount: projects.length,
+              collaborationCount: collaborationResults.length,
+              lastLogin: student.updatedAt || null
+            }
+          };
+        })
+      );
+      
+      // Calculate pagination
+      const pageNum = parseInt(page as string) || 1;
+      const limitNum = Math.min(parseInt(limit as string) || 10, 50);
+      const startIndex = (pageNum - 1) * limitNum;
+      const endIndex = startIndex + limitNum;
+      const paginatedStudents = enrichedStudents.slice(startIndex, endIndex);
+      
+      console.log(`✅ Admin ${user.id} accessed student list: ${studentMembers.length} total, ${paginatedStudents.length} returned`);
       res.json({
         success: true,
-        data: studentMembers,
-        count: studentMembers.length,
-        institution: user.institution
+        data: paginatedStudents,
+        pagination: {
+          total: enrichedStudents.length,
+          page: pageNum,
+          limit: limitNum,
+          totalPages: Math.ceil(enrichedStudents.length / limitNum)
+        },
+        filters: {
+          search: search || null,
+          verified: verified || null,
+          department: department || null
+        },
+        institution: user.institution,
+        timestamp: new Date().toISOString()
       });
     } catch (error: any) {
       console.error('❌ Error fetching students:', error);

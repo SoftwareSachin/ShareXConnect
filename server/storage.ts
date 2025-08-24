@@ -257,7 +257,13 @@ export class DatabaseStorage implements IStorage {
         throw new Error('Invalid institution parameter');
       }
       
-      const institutionUsers = await db.select().from(users).where(eq(users.institution, institution));
+      // Fetch users with available columns only
+      const institutionUsers = await db.select()
+        .from(users)
+        .where(eq(users.institution, institution))
+        .orderBy(desc(users.createdAt));
+      
+      console.log(`📊 Fetched ${institutionUsers.length} users for institution: ${institution}`);
       return institutionUsers;
     } catch (error) {
       console.error('❌ Error fetching users by institution:', error);
@@ -352,7 +358,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  // Method to safely remove user with validation
+  // Method to safely remove user with validation and cleanup
   async removeUser(userId: string, adminUserId: string): Promise<boolean> {
     try {
       const targetUser = await this.getUser(userId);
@@ -386,12 +392,51 @@ export class DatabaseStorage implements IStorage {
         throw new Error('Cannot remove yourself');
       }
 
-      // Remove user using transaction
+      // Get user's projects and collaborations before removal
+      const userProjects = await this.getProjects({ ownerId: userId });
+      const collaborations = await db.select()
+        .from(projectCollaborators)
+        .where(eq(projectCollaborators.userId, userId));
+
+      // Remove user using transaction with proper cleanup
       await db.transaction(async (tx) => {
+        // Remove from project collaborations
+        await tx.delete(projectCollaborators)
+          .where(eq(projectCollaborators.userId, userId));
+        
+        // Remove project stars
+        await tx.delete(projectStars)
+          .where(eq(projectStars.userId, userId));
+        
+        // Update projects owned by user to mark as archived or transfer ownership
+        if (userProjects.length > 0) {
+          for (const project of userProjects) {
+            // Mark projects as archived instead of deleting them
+            await tx.update(projects)
+              .set({ 
+                status: 'ARCHIVED' as any,
+                updatedAt: new Date(),
+                // Keep project data but mark as former user
+                description: `${project.description}\n\n[Note: Original owner account was removed]`
+              })
+              .where(eq(projects.id, project.id));
+          }
+        }
+        
+        // Remove project comments by the user
+        await tx.delete(projectComments)
+          .where(eq(projectComments.authorId, userId));
+        
+        // Remove project reviews by the user (if faculty)
+        await tx.delete(projectReviews)
+          .where(eq(projectReviews.reviewerId, userId));
+        
+        // Finally remove the user
         await tx.delete(users).where(eq(users.id, userId));
       });
 
-      console.log(`✅ User removed: ${userId} by admin ${adminUserId}`);
+      console.log(`✅ User removed with cleanup: ${userId} (${targetUser.email}) by admin ${adminUserId}`);
+      console.log(`📊 Cleanup summary: ${userProjects.length} projects archived, ${collaborations.length} collaborations removed`);
       return true;
     } catch (error) {
       console.error('❌ Error removing user:', error);
