@@ -8,7 +8,7 @@ This document provides a complete reference for all database components used in 
 - **Total Enums**: 9
 - **Foreign Key Relationships**: 19
 - **Unique Constraints**: 4
-- **Performance Indexes**: 55
+- **Performance Indexes**: 28
 
 ---
 
@@ -54,7 +54,7 @@ This document provides a complete reference for all database components used in 
 
 ## Tables
 
-### 1. users (14 columns)
+### 1. users (21 columns)
 **Purpose**: User account management with roles and verification
 
 | Column | Type | Length | Nullable | Default | Description |
@@ -71,6 +71,13 @@ This document provides a complete reference for all database components used in 
 | is_verified | boolean | - | NO | false | Account verification status |
 | created_at | timestamp | - | NO | now() | Account creation time |
 | updated_at | timestamp | - | NO | now() | Last update time |
+| profile_image_url | varchar | 500 | YES | - | User profile image URL |
+| bio | text | - | YES | - | User biography/description |
+| location | varchar | 100 | YES | - | User location |
+| github_url | varchar | 500 | YES | - | GitHub profile URL |
+| linkedin_url | varchar | 500 | YES | - | LinkedIn profile URL |
+| twitter_url | varchar | 500 | YES | - | Twitter profile URL |
+| website_url | varchar | 500 | YES | - | Personal website URL |
 | department | varchar | 100 | YES | - | Faculty department |
 | tech_expertise | text | - | YES | - | Faculty technical expertise |
 
@@ -157,7 +164,7 @@ This document provides a complete reference for all database components used in 
 | user_id | uuid | - | NO | - | Foreign key to users |
 | created_at | timestamp | - | NO | now() | Star time |
 
-### 7. project_reviews (8 columns)
+### 7. project_reviews (9 columns)
 **Purpose**: Faculty review and grading system
 
 | Column | Type | Length | Nullable | Default | Description |
@@ -168,6 +175,7 @@ This document provides a complete reference for all database components used in 
 | grade | integer | - | YES | - | Numeric grade |
 | feedback | text | - | YES | - | Review feedback |
 | status | review_status enum | - | NO | - | Review status |
+| is_read_by_student | boolean | - | NO | false | Student read status |
 | created_at | timestamp | - | NO | now() | Review creation time |
 | updated_at | timestamp | - | NO | now() | Last update time |
 
@@ -321,37 +329,25 @@ This document provides a complete reference for all database components used in 
 - `idx_projects_category` - Category filtering
 - `idx_projects_search` - Full-text search (GIN index)
 
-### Project Relationships (8 indexes)
+### Project Relationships (6 indexes)
 - `idx_project_collaborators_project` - Project collaborator lookups
 - `idx_project_collaborators_user` - User collaboration history
 - `idx_project_stars_project` - Project star counts
 - `idx_project_stars_user` - User starred projects
-- `idx_comments_project` - Project comments
-- `idx_comments_author` - User comment history
 - `idx_comments_created` - Comment chronology
-- `idx_reviews_project` - Project reviews
 - `idx_reviews_reviewer` - Reviewer activity
 - `idx_reviews_status` - Review status filtering
 
-### Repository Management (3 indexes)
-- `idx_project_repository_project` - Project file listings
-- `idx_project_repository_parent` - Folder structure navigation
-- `idx_project_repository_path` - Path-based file lookups
-
-### Collaboration Workflow (6 indexes)
-- `idx_collaboration_requests_project` - Project collaboration requests
+### Collaboration Workflow (4 indexes)
 - `idx_collaboration_requests_requester` - User request history
 - `idx_collaboration_requests_status` - Request status filtering
-- `idx_project_change_requests_project` - Project change requests
 - `idx_project_change_requests_requester` - User change history
 - `idx_project_change_requests_status` - Change status filtering
 
-### File Management (2 indexes)
-- `idx_project_files_project` - Project file listings
+### File Management (1 index)
 - `idx_project_files_type` - File type filtering
 
-### Audit and Security (4 indexes)
-- `idx_audit_logs_user` - User activity tracking
+### Audit and Security (3 indexes)
 - `idx_audit_logs_action` - Action-based filtering
 - `idx_audit_logs_resource` - Resource-based queries
 - `idx_audit_logs_created` - Time-based audit trails
