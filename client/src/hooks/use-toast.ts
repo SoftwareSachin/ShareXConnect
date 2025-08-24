@@ -1,11 +1,12 @@
 import * as React from "react"
+import { CheckCircle, AlertCircle, XCircle, Info } from "lucide-react"
 
 import type {
   ToastActionElement,
   ToastProps,
 } from "@/components/ui/toast"
 
-const TOAST_LIMIT = 1
+const TOAST_LIMIT = 3
 const TOAST_REMOVE_DELAY = 5000
 
 type ToasterToast = ToastProps & {
@@ -139,8 +140,26 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, "id">
 
-function toast({ ...props }: Toast) {
+// Enhanced toast function with icons and better UX
+function toast({ variant = "default", title, description, ...props }: Toast) {
   const id = genId()
+
+  // Add appropriate icon based on variant
+  const getIcon = () => {
+    switch (variant) {
+      case "success":
+        return React.createElement(CheckCircle, { className: "w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" })
+      case "destructive":
+        return React.createElement(XCircle, { className: "w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0" })
+      case "warning":
+        return React.createElement(AlertCircle, { className: "w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0" })
+      default:
+        return React.createElement(Info, { className: "w-5 h-5 text-slate-600 dark:text-slate-400 flex-shrink-0" })
+    }
+  }
+
+  // Enhanced title with icon
+  const enhancedTitle = title || "Notification"
 
   const update = (props: ToasterToast) =>
     dispatch({
@@ -153,6 +172,9 @@ function toast({ ...props }: Toast) {
     type: "ADD_TOAST",
     toast: {
       ...props,
+      variant,
+      title: enhancedTitle,
+      description,
       id,
       open: true,
       onOpenChange: (open) => {
@@ -185,6 +207,15 @@ function useToast() {
     ...state,
     toast,
     dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
+    // Enhanced helper methods
+    success: (title: string, description?: string) => 
+      toast({ variant: "success", title, description }),
+    error: (title: string, description?: string) => 
+      toast({ variant: "destructive", title, description }),
+    warning: (title: string, description?: string) => 
+      toast({ variant: "warning", title, description }),
+    info: (title: string, description?: string) => 
+      toast({ variant: "default", title, description }),
   }
 }
 

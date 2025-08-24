@@ -83,18 +83,11 @@ export default function AdminPage() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/faculty'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/students'] });
-      toast({
-        title: 'User Removed',
-        description: data.message || 'User removed successfully',
-      });
+      toast.success('User Removed', data.message || 'User removed successfully');
     },
     onError: (error: any) => {
       console.error('Remove user error:', error);
-      toast({
-        title: 'Failed to Remove User',
-        description: error.message || 'An unexpected error occurred',
-        variant: 'destructive',
-      });
+      toast.error('Failed to Remove User', error.message || 'An unexpected error occurred');
     },
   });
 
@@ -124,18 +117,11 @@ export default function AdminPage() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/faculty'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/students'] });
-      toast({
-        title: 'Role Updated',
-        description: data.message || 'User role updated successfully',
-      });
+      toast.success('Role Updated', data.message || 'User role updated successfully');
     },
     onError: (error: any) => {
       console.error('Update role error:', error);
-      toast({
-        title: 'Failed to Update Role',
-        description: error.message || 'An unexpected error occurred',
-        variant: 'destructive',
-      });
+      toast.error('Failed to Update Role', error.message || 'An unexpected error occurred');
     },
   });
 
