@@ -68,6 +68,7 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUserProfile(id: string, profileData: Partial<User>): Promise<User | undefined>;
   getUsersByInstitution(institution: string): Promise<User[]>;
 
   // Authentication
@@ -227,6 +228,26 @@ export class DatabaseStorage implements IStorage {
       }
       
       throw new Error(`Failed to create user: ${error.message}`);
+    }
+  }
+
+  async updateUserProfile(id: string, profileData: Partial<User>): Promise<User | undefined> {
+    try {
+      // Filter out fields that shouldn't be updated via profile
+      const { id: _, password, createdAt, updatedAt, isVerified, role, ...allowedFields } = profileData;
+      
+      const result = await db.update(users)
+        .set({
+          ...allowedFields,
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, id))
+        .returning();
+      
+      return result[0] || undefined;
+    } catch (error) {
+      console.error('❌ Error updating user profile:', error);
+      throw new Error(`Failed to update profile: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 

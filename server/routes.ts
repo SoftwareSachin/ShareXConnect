@@ -6,7 +6,7 @@ import { z } from "zod";
 import fs from "fs";
 import path from "path";
 import { storage } from "./storage";
-import { loginSchema, registerSchema, insertProjectSchema, insertCommentSchema, type User } from "@shared/schema";
+import { loginSchema, registerSchema, insertProjectSchema, insertCommentSchema, updateProfileSchema, type User } from "@shared/schema";
 import { 
   requireAdmin, 
   validateParams, 
@@ -216,6 +216,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Internal server error" });
     }
   });
+
+  // Profile management endpoints
+  // Get current user profile
+  app.get("/api/profile", authenticateToken, withAuth(async (req: AuthRequest, res: Response) => {
+    try {
+      const user = await storage.getUser(req.user.id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Remove password from response
+      const { password, ...userProfile } = user;
+      res.json(userProfile);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      res.status(500).json({ message: "Failed to fetch profile" });
+    }
+  }));
+
+  // Update user profile
+  app.put("/api/profile", authenticateToken, withAuth(async (req: AuthRequest, res: Response) => {
+    try {
+      const profileData = updateProfileSchema.parse(req.body);
+      
+      const updatedUser = await storage.updateUserProfile(req.user.id, profileData);
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Remove password from response
+      const { password, ...userProfile } = updatedUser;
+      res.json({ 
+        message: "Profile updated successfully", 
+        user: userProfile 
+      });
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid profile data", 
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ message: "Failed to update profile" });
+    }
+  }));
 
   app.get("/api/auth/me", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     const { password, ...userWithoutPassword } = req.user;

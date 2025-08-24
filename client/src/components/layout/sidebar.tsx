@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuthStore } from "@/store/auth-store";
 import { getRoleName } from "@shared/permissions";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { EditProfileModal } from "@/components/modals/edit-profile-modal";
 import { 
   LayoutDashboard, 
   FolderOpen, 
@@ -12,12 +14,14 @@ import {
   Star,
   GraduationCap,
   BookOpen,
-  LogOut 
+  LogOut,
+  Edit3 
 } from "lucide-react";
 
 export function Sidebar() {
   const { user, logout } = useAuthStore();
   const [location] = useLocation();
+  const [showEditProfile, setShowEditProfile] = useState(false);
 
   const navItems = [
     { path: "/dashboard", label: "Dashboard", showForGuest: true, icon: LayoutDashboard },
@@ -132,17 +136,34 @@ export function Sidebar() {
                 {user.email}
               </p>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleLogout}
-              className="w-9 h-9 p-0 text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all duration-300 hover:scale-105"
-            >
-              <LogOut className="w-4 h-4" />
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowEditProfile(true)}
+                className="w-9 h-9 p-0 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all duration-300 hover:scale-105"
+                data-testid="button-edit-profile"
+              >
+                <Edit3 className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className="w-9 h-9 p-0 text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all duration-300 hover:scale-105"
+              >
+                <LogOut className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
       )}
+      
+      {/* Profile Edit Modal */}
+      <EditProfileModal 
+        open={showEditProfile} 
+        onOpenChange={setShowEditProfile} 
+      />
     </div>
   );
 }

@@ -45,6 +45,14 @@ export const users = pgTable("users", {
   collegeDomain: varchar("college_domain", { length: 100 }), // for students/faculty verification
   department: varchar("department", { length: 100 }), // for faculty
   techExpertise: text("tech_expertise"), // for faculty - comma separated or JSON array of technologies
+  // Profile fields
+  profileImageUrl: varchar("profile_image_url", { length: 500 }),
+  bio: text("bio"),
+  location: varchar("location", { length: 100 }),
+  githubUrl: varchar("github_url", { length: 500 }),
+  linkedinUrl: varchar("linkedin_url", { length: 500 }),
+  twitterUrl: varchar("twitter_url", { length: 500 }),
+  websiteUrl: varchar("website_url", { length: 500 }),
   isVerified: boolean("is_verified").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -455,6 +463,21 @@ export const insertCommentSchema = z.object({
   content: z.string().min(1, "Comment content is required").max(1000, "Comment is too long"),
 });
 
+// User profile update schema
+export const updateProfileSchema = z.object({
+  firstName: z.string().min(1, "First name is required").max(50, "First name too long"),
+  lastName: z.string().min(1, "Last name is required").max(50, "Last name too long"),
+  bio: z.string().max(500, "Bio must be 500 characters or less").optional(),
+  location: z.string().max(100, "Location too long").optional(),
+  department: z.string().max(100, "Department too long").optional(),
+  techExpertise: z.string().optional(),
+  profileImageUrl: z.string().url("Invalid image URL").optional().or(z.literal("")),
+  githubUrl: z.string().url("Invalid GitHub URL").optional().or(z.literal("")),
+  linkedinUrl: z.string().url("Invalid LinkedIn URL").optional().or(z.literal("")),
+  twitterUrl: z.string().url("Invalid Twitter URL").optional().or(z.literal("")),
+  websiteUrl: z.string().url("Invalid website URL").optional().or(z.literal("")),
+});
+
 // Extended types for frontend use
 export type ProjectWithDetails = Project & {
   owner: User;
@@ -475,3 +498,4 @@ export type DashboardStats = {
 // Type definitions
 export type LoginData = z.infer<typeof loginSchema>;
 export type RegisterData = z.infer<typeof registerSchema>;
+export type UpdateProfileData = z.infer<typeof updateProfileSchema>;
