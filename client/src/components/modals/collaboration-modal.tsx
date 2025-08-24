@@ -448,18 +448,18 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
                         >
                           <div className="flex items-start gap-3 mb-4">
                             <Avatar className="h-12 w-12">
-                              <AvatarFallback className={`font-semibold text-white ${getAvatarColor(request.requester.role)}`}>
-                                {getInitials(request.requester.firstName || '', request.requester.lastName || '')}
+                              <AvatarFallback className={`font-semibold text-white ${getAvatarColor(request.requester?.role || 'STUDENT')}`}>
+                                {getInitials(request.requester?.firstName || '', request.requester?.lastName || '')}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex-1">
                               <div className="flex items-center justify-between">
                                 <div>
                                   <p className="font-semibold text-black">
-                                    {request.requester.firstName} {request.requester.lastName}
+                                    {request.requester?.firstName || 'Unknown'} {request.requester?.lastName || 'User'}
                                   </p>
                                   <p className="text-sm text-gray-700">
-                                    {request.requester.email} • @{request.requester.username}
+                                    {request.requester?.email || 'No email'} • @{request.requester?.username || 'unknown'}
                                   </p>
                                 </div>
                                 <span className="text-sm text-gray-600">
@@ -469,11 +469,13 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
                             </div>
                           </div>
                           
-                          <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                            <p className="text-gray-900 leading-relaxed">
-                              {request.message}
-                            </p>
-                          </div>
+                          {request.message && (
+                            <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                              <p className="text-gray-900 leading-relaxed">
+                                {request.message}
+                              </p>
+                            </div>
+                          )}
                           
                           <div className="flex gap-3">
                             <Button
