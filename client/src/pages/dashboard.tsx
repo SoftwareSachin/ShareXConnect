@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ProjectCard } from "@/components/project-card";
 import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
-import { useAuthStore } from "@/store/auth-store";
+import { useAuthStore } from "@/lib/auth";
 import { apiGet } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { DashboardStats, ProjectWithDetails } from "@shared/schema";
@@ -179,7 +179,8 @@ export default function Dashboard() {
           title="Dashboard"
           description="Welcome back! Here's your project overview."
           showSearch={false}
-          showCreateButton={false}
+          showCreateButton={canAccess('canCreateProject')}
+          onCreateProject={() => setShowCreateModal(true)}
         />
 
         {/* Modern Background Elements */}

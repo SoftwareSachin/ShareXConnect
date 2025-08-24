@@ -14,7 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Eye, EyeOff, User, Mail, Lock, Building2, UserCheck, Shield, GraduationCap, Code } from "lucide-react";
 import { registerSchema } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
-import { useAuthStore } from "@/store/auth-store";
+import { useAuthStore } from "@/lib/auth";
 import type { z } from "zod";
 
 type RegisterFormData = z.infer<typeof registerSchema>;

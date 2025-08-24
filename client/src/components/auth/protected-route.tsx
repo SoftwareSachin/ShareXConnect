@@ -1,4 +1,4 @@
-import { useAuthStore } from "@/store/auth-store";
+import { useAuthStore } from "@/lib/auth";
 import { Route, Redirect, RouteComponentProps } from "wouter";
 import { ComponentType } from "react";
 

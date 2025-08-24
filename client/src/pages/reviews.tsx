@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
-import { useAuthStore } from "@/store/auth-store";
+import { useAuthStore } from "@/lib/auth";
 import { apiGet } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 

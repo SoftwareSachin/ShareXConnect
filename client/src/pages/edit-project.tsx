@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiGet, apiRequest } from "@/lib/api";
-import { useAuthStore } from "@/store/auth-store";
+import { useAuthStore } from "@/lib/auth";
 import { ArrowLeft, Save, X, Upload, File, Trash2, Download } from "lucide-react";
 import type { ProjectWithDetails } from "@shared/schema";
 

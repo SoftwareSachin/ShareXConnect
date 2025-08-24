@@ -13,7 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { GraduationCap, BookOpen, Users, Shield, Mail, Lock, Eye, EyeOff, User, Building2, UserCheck, AtSign, KeyRound, Code } from "lucide-react";
 import { loginSchema, registerSchema } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
-import { useAuthStore } from "@/store/auth-store";
+import { useAuthStore } from "@/lib/auth";
 import type { z } from "zod";
 
 type LoginFormData = z.infer<typeof loginSchema>;

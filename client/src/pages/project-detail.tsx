@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { apiGet, apiRequest } from "@/lib/api";
-import { useAuthStore } from "@/store/auth-store";
+import { useAuthStore } from "@/lib/auth";
 import CollaborationModal from "@/components/modals/collaboration-modal";
 import type { ProjectWithDetails, User, ProjectComment } from "@shared/schema";
 import { 
