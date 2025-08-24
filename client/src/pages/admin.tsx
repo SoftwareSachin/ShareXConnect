@@ -244,16 +244,16 @@ export default function AdminPage() {
       <Sidebar />
       <div className="flex-1 flex flex-col ml-80">
         <Header title="College Administration" description="Manage faculty and students" />
-        <main className="flex-1 p-8 overflow-auto bg-gradient-to-br from-slate-50/30 to-blue-50/20 dark:from-slate-900/30 dark:to-blue-900/20">
-          <div className="max-w-6xl mx-auto">
-            <div className="mb-8">
-              <div className="flex items-center space-x-4 mb-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-3xl flex items-center justify-center shadow-xl">
-                  <Building2 className="w-8 h-8 text-white" />
+        <main className="flex-1 p-6 overflow-auto bg-gradient-to-br from-slate-50/30 to-blue-50/20 dark:from-slate-900/30 dark:to-blue-900/20">
+          <div className="max-w-5xl mx-auto space-y-6">
+            <div className="mb-6">
+              <div className="flex items-center space-x-3 mb-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <Building2 className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent">College Administration</h1>
-                  <p className="text-lg text-muted-foreground mt-1">
+                  <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent">College Administration</h1>
+                  <p className="text-base text-muted-foreground">
                     Manage faculty and students in your institution
                   </p>
                 </div>
@@ -261,7 +261,7 @@ export default function AdminPage() {
             </div>
 
             {/* Enhanced Stats Cards with Error Handling */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <Card className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                   <CardTitle className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">Total Faculty</CardTitle>
@@ -340,31 +340,31 @@ export default function AdminPage() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-6">
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
-                  <TabsList className="grid w-full grid-cols-2 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
-                    <TabsTrigger value="faculty" className="rounded-lg py-3 px-6 font-semibold data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-blue-600 transition-all duration-200">
+                  <TabsList className="grid w-full grid-cols-2 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl mb-4">
+                    <TabsTrigger value="faculty" className="rounded-lg py-2 px-4 font-semibold data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-blue-600 transition-all duration-200">
                       <GraduationCap className="w-4 h-4 mr-2" />
                       Faculty Members
                     </TabsTrigger>
-                    <TabsTrigger value="students" className="rounded-lg py-3 px-6 font-semibold data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-blue-600 transition-all duration-200">
+                    <TabsTrigger value="students" className="rounded-lg py-2 px-4 font-semibold data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-blue-600 transition-all duration-200">
                       <Users className="w-4 h-4 mr-2" />
                       Students
                     </TabsTrigger>
                   </TabsList>
 
-                  <TabsContent value="faculty" className="mt-6">
-                    <div className="space-y-4">
+                  <TabsContent value="faculty" className="mt-4">
+                    <div className="space-y-3">
                       {facultyLoading ? (
-                        <div className="text-center py-8">
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                          <p className="mt-2 text-muted-foreground">Loading faculty...</p>
+                        <div className="text-center py-6">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
+                          <p className="mt-2 text-sm text-muted-foreground">Loading faculty...</p>
                         </div>
                       ) : facultyUsers.length === 0 ? (
-                        <div className="text-center py-8">
-                          <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                          <h3 className="text-lg font-medium mb-2">No Faculty Members</h3>
-                          <p className="text-muted-foreground">
+                        <div className="text-center py-6">
+                          <GraduationCap className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                          <h3 className="text-base font-medium mb-1">No Faculty Members</h3>
+                          <p className="text-sm text-muted-foreground">
                             No faculty members found in your college.
                           </p>
                         </div>
@@ -376,18 +376,18 @@ export default function AdminPage() {
                     </div>
                   </TabsContent>
 
-                  <TabsContent value="students" className="mt-6">
-                    <div className="space-y-4">
+                  <TabsContent value="students" className="mt-4">
+                    <div className="space-y-3">
                       {studentsLoading ? (
-                        <div className="text-center py-8">
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                          <p className="mt-2 text-muted-foreground">Loading students...</p>
+                        <div className="text-center py-6">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
+                          <p className="mt-2 text-sm text-muted-foreground">Loading students...</p>
                         </div>
                       ) : studentUsers.length === 0 ? (
-                        <div className="text-center py-8">
-                          <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                          <h3 className="text-lg font-medium mb-2">No Students</h3>
-                          <p className="text-muted-foreground">
+                        <div className="text-center py-6">
+                          <Users className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                          <h3 className="text-base font-medium mb-1">No Students</h3>
+                          <p className="text-sm text-muted-foreground">
                             No students found in your college.
                           </p>
                         </div>
@@ -404,32 +404,22 @@ export default function AdminPage() {
           </div>
         </main>
 
-        {/* Professional Footer Branding */}
-        <div className="relative py-8 mt-12">
-          <div className="max-w-7xl mx-auto px-8">
-            <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/20 dark:border-slate-700/30 rounded-3xl overflow-hidden shadow-xl shadow-slate-900/5 dark:shadow-black/10">
-              <div className="p-8 text-center space-y-2">
-                <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
-                  © 2025 ShareXConnect. All rights reserved.
-                </p>
-                <p className="text-xs text-slate-500 dark:text-slate-500">
-                  Designed and developed by{" "}
-                  <a 
-                    href="https://aptivonsolin.vercel.app/" 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200 underline-offset-2 hover:underline"
-                  >
-                    Aptivon Solution
-                  </a>
-                  <span className="italic text-slate-400 dark:text-slate-500 ml-1">
-                    (Building Trust...)
-                  </span>
-                </p>
-              </div>
-            </div>
+        {/* Compact Footer */}
+        <footer className="border-t border-slate-200/60 dark:border-slate-700/60 bg-slate-50/50 dark:bg-slate-900/50 p-4">
+          <div className="max-w-5xl mx-auto text-center">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              © 2025 ShareXConnect. All rights reserved. | 
+              <a 
+                href="https://aptivonsolin.vercel.app/" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 ml-1"
+              >
+                Aptivon Solution
+              </a>
+            </p>
           </div>
-        </div>
+        </footer>
       </div>
     </div>
   );
