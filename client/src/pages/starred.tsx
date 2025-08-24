@@ -92,6 +92,33 @@ export default function Starred() {
             </div>
           )}
         </main>
+
+        {/* Professional Footer Branding */}
+        <div className="relative py-8 mt-12">
+          <div className="max-w-7xl mx-auto px-8">
+            <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/20 dark:border-slate-700/30 rounded-3xl overflow-hidden shadow-xl shadow-slate-900/5 dark:shadow-black/10">
+              <div className="p-8 text-center space-y-2">
+                <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                  © 2025 ShareXConnect. All rights reserved.
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-500">
+                  Designed and developed by{" "}
+                  <a 
+                    href="https://aptivonsolin.vercel.app/" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200 underline-offset-2 hover:underline"
+                  >
+                    Aptivon Solution
+                  </a>
+                  <span className="italic text-slate-400 dark:text-slate-500 ml-1">
+                    (Building Trust...)
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -416,6 +416,29 @@ export default function Login() {
                         </button>
                       </p>
                     </div>
+
+                    {/* Professional Footer Branding */}
+                    <div className="mt-8 pt-6 border-t border-slate-200/50 dark:border-slate-600/50">
+                      <div className="text-center space-y-2">
+                        <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                          © 2025 ShareXConnect. All rights reserved.
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-500">
+                          Designed and developed by{" "}
+                          <a 
+                            href="https://aptivonsolin.vercel.app/" 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200 underline-offset-2 hover:underline"
+                          >
+                            Aptivon Solution
+                          </a>
+                          <span className="italic text-slate-400 dark:text-slate-500 ml-1">
+                            (Building Trust...)
+                          </span>
+                        </p>
+                      </div>
+                    </div>
                   </form>
                 </Form>
               )}
