@@ -637,11 +637,35 @@ export default function ProjectDetail() {
             
             {/* Quick Actions */}
             <div className="flex items-center gap-3">
-              <button className="inline-flex items-center gap-2 px-4 py-2.5 border border-slate-300 rounded-xl hover:border-slate-400 hover:bg-slate-50 transition-all duration-200 text-slate-600 hover:text-slate-900">
-                <Star className="w-4 h-4" />
-                Star
+              <button 
+                onClick={() => starMutation.mutate()}
+                disabled={starMutation.isPending}
+                className={`inline-flex items-center gap-2 px-4 py-2.5 border rounded-xl transition-all duration-200 ${
+                  project?.isStarred 
+                    ? 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100' 
+                    : 'border-slate-300 hover:border-slate-400 hover:bg-slate-50 text-slate-600 hover:text-slate-900'
+                }`}
+                data-testid="button-star-project"
+              >
+                <Star className={`w-4 h-4 ${project?.isStarred ? 'fill-current' : ''}`} />
+                {project?.isStarred ? 'Starred' : 'Star'}
               </button>
-              <button className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-100 rounded-xl hover:bg-slate-200 transition-all duration-200 text-slate-600 hover:text-slate-900">
+              <button 
+                onClick={() => {
+                  // Scroll to comments section
+                  const commentsSection = document.getElementById('comments-section');
+                  if (commentsSection) {
+                    commentsSection.scrollIntoView({ behavior: 'smooth' });
+                    // Focus on comment input if it exists
+                    setTimeout(() => {
+                      const commentInput = document.querySelector('textarea[placeholder*="comment"]') as HTMLTextAreaElement;
+                      if (commentInput) commentInput.focus();
+                    }, 500);
+                  }
+                }}
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-100 rounded-xl hover:bg-slate-200 transition-all duration-200 text-slate-600 hover:text-slate-900"
+                data-testid="button-comment-project"
+              >
                 <MessageCircle className="w-4 h-4" />
                 Comment
               </button>
