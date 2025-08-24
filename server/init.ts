@@ -25,7 +25,7 @@ export async function initializeDatabase() {
         firstName: 'System',
         lastName: 'Administrator',
         role: 'ADMIN',
-        institution: 'ShareX University'
+        institution: 'ShareXConnect University'
       });
       
       console.log(`✅ Default admin created: ${defaultAdmin.email}`);
@@ -46,7 +46,7 @@ export async function initializeDatabase() {
         firstName: 'John',
         lastName: 'Professor',
         role: 'FACULTY',
-        institution: 'ShareX University'
+        institution: 'ShareXConnect University'
       });
       
       console.log(`✅ Default faculty created: ${defaultFaculty.email}`);
