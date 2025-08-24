@@ -1689,6 +1689,90 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async getCollaborationRequestsForUser(projectId: string, currentUserId: string): Promise<(CollaborationRequest & { requester?: User; invitee?: User; sender: User })[]> {
+    try {
+      // Check if the current user is the project owner
+      const [project] = await db
+        .select({ ownerId: projects.ownerId })
+        .from(projects)
+        .where(eq(projects.id, projectId));
+
+      if (!project) {
+        return [];
+      }
+
+      const isProjectOwner = project.ownerId === currentUserId;
+
+      let whereConditions;
+
+      if (isProjectOwner) {
+        // Project owner should only see incoming requests (type = REQUEST and status = PENDING)
+        whereConditions = and(
+          eq(collaborationRequests.projectId, projectId),
+          eq(collaborationRequests.type, "REQUEST"),
+          eq(collaborationRequests.status, "PENDING")
+        );
+      } else {
+        // Regular users should only see invitations sent to them (type = INVITATION, inviteeId = currentUserId, status = PENDING)
+        whereConditions = and(
+          eq(collaborationRequests.projectId, projectId),
+          eq(collaborationRequests.type, "INVITATION"),
+          eq(collaborationRequests.inviteeId, currentUserId),
+          eq(collaborationRequests.status, "PENDING")
+        );
+      }
+
+      const requests = await db
+        .select()
+        .from(collaborationRequests)
+        .where(whereConditions)
+        .orderBy(desc(collaborationRequests.createdAt));
+
+      const enrichedRequests = [];
+      for (const requestData of requests) {
+        let requester, invitee, sender;
+
+        // Get requester if this is a REQUEST
+        if (requestData.requesterId) {
+          const [requesterData] = await db
+            .select()
+            .from(users)
+            .where(eq(users.id, requestData.requesterId));
+          requester = requesterData;
+        }
+
+        // Get invitee if this is an INVITATION
+        if (requestData.inviteeId) {
+          const [inviteeData] = await db
+            .select()
+            .from(users)
+            .where(eq(users.id, requestData.inviteeId));
+          invitee = inviteeData;
+        }
+
+        // Get sender
+        const [senderData] = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, requestData.senderId));
+        sender = senderData;
+
+        enrichedRequests.push({
+          ...requestData,
+          requester,
+          invitee,
+          sender
+        });
+      }
+
+      return enrichedRequests;
+    } catch (error) {
+      console.error('Error getting collaboration requests for user:', error);
+      return [];
+    }
+  }
+
+  // Keep the original method for backward compatibility
   async getCollaborationRequests(projectId: string): Promise<(CollaborationRequest & { requester?: User; invitee?: User; sender: User })[]> {
     try {
       const requests = await db

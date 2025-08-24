@@ -671,7 +671,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/projects/:id/collaborate/requests", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
-      const requests = await storage.getCollaborationRequests(req.params.id);
+      const requests = await storage.getCollaborationRequestsForUser(req.params.id, req.user!.id);
       res.json(requests);
     } catch (error) {
       console.error('Error fetching collaboration requests:', error);
