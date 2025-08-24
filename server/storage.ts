@@ -136,7 +136,9 @@ export interface IStorage {
 
   // GitHub-like collaboration operations
   requestCollaboration(projectId: string, requesterId: string, message: string): Promise<CollaborationRequest>;
-  getCollaborationRequests(projectId: string): Promise<(CollaborationRequest & { requester: User })[]>;
+  inviteCollaborator(projectId: string, inviteeId: string, senderId: string, message?: string): Promise<CollaborationRequest>;
+  getCollaborationRequests(projectId: string): Promise<(CollaborationRequest & { requester?: User; invitee?: User; sender: User })[]>;
+  getUserInvitations(userId: string): Promise<(CollaborationRequest & { project: Project; sender: User })[]>;
   respondToCollaborationRequest(requestId: string, status: 'APPROVED' | 'REJECTED', reviewerId: string): Promise<CollaborationRequest | undefined>;
   addCollaboratorByEmail(projectId: string, email: string, ownerId: string): Promise<void>;
   
@@ -1650,6 +1652,8 @@ export class DatabaseStorage implements IStorage {
         .values({
           projectId,
           requesterId,
+          senderId: requesterId,
+          type: "REQUEST",
           message,
           status: "PENDING"
         })
@@ -1663,27 +1667,125 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async getCollaborationRequests(projectId: string): Promise<(CollaborationRequest & { requester: User })[]> {
+  async inviteCollaborator(projectId: string, inviteeId: string, senderId: string, message?: string): Promise<CollaborationRequest> {
+    try {
+      const [invitation] = await db
+        .insert(collaborationRequests)
+        .values({
+          projectId,
+          inviteeId,
+          senderId,
+          type: "INVITATION",
+          message: message || `You've been invited to collaborate on this project`,
+          status: "PENDING"
+        })
+        .returning();
+      
+      console.log(`📨 Collaboration invitation sent for project ${projectId} to user ${inviteeId} by ${senderId}`);
+      return invitation;
+    } catch (error) {
+      console.error('Error creating collaboration invitation:', error);
+      throw error;
+    }
+  }
+
+  async getCollaborationRequests(projectId: string): Promise<(CollaborationRequest & { requester?: User; invitee?: User; sender: User })[]> {
     try {
       const requests = await db
         .select()
         .from(collaborationRequests)
-        .innerJoin(users, eq(collaborationRequests.requesterId, users.id))
+        .leftJoin(users, eq(collaborationRequests.requesterId, users.id))
         .where(eq(collaborationRequests.projectId, projectId))
         .orderBy(desc(collaborationRequests.createdAt));
 
-      return requests.map(result => ({
-        ...result.collaboration_requests,
-        requester: result.users
-      }));
+      const enrichedRequests = [];
+      for (const request of requests) {
+        const requestData = request.collaboration_requests;
+        let requester, invitee, sender;
+
+        // Get requester if this is a REQUEST
+        if (requestData.requesterId) {
+          const [requesterData] = await db
+            .select()
+            .from(users)
+            .where(eq(users.id, requestData.requesterId));
+          requester = requesterData;
+        }
+
+        // Get invitee if this is an INVITATION
+        if (requestData.inviteeId) {
+          const [inviteeData] = await db
+            .select()
+            .from(users)
+            .where(eq(users.id, requestData.inviteeId));
+          invitee = inviteeData;
+        }
+
+        // Get sender
+        const [senderData] = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, requestData.senderId));
+        sender = senderData;
+
+        enrichedRequests.push({
+          ...requestData,
+          requester,
+          invitee,
+          sender
+        });
+      }
+
+      return enrichedRequests;
     } catch (error) {
       console.error('Error getting collaboration requests:', error);
       return [];
     }
   }
 
+  async getUserInvitations(userId: string): Promise<(CollaborationRequest & { project: Project; sender: User })[]> {
+    try {
+      const invitations = await db
+        .select({
+          request: collaborationRequests,
+          project: projects,
+          sender: users
+        })
+        .from(collaborationRequests)
+        .innerJoin(projects, eq(collaborationRequests.projectId, projects.id))
+        .innerJoin(users, eq(collaborationRequests.senderId, users.id))
+        .where(
+          and(
+            eq(collaborationRequests.inviteeId, userId),
+            eq(collaborationRequests.type, "INVITATION"),
+            eq(collaborationRequests.status, "PENDING")
+          )
+        )
+        .orderBy(desc(collaborationRequests.createdAt));
+
+      return invitations.map(result => ({
+        ...result.request,
+        project: result.project,
+        sender: result.sender
+      }));
+    } catch (error) {
+      console.error('Error getting user invitations:', error);
+      return [];
+    }
+  }
+
   async respondToCollaborationRequest(requestId: string, status: 'APPROVED' | 'REJECTED', reviewerId: string): Promise<CollaborationRequest | undefined> {
     try {
+      // Get the request details first
+      const [existingRequest] = await db
+        .select()
+        .from(collaborationRequests)
+        .where(eq(collaborationRequests.id, requestId));
+
+      if (!existingRequest) {
+        throw new Error('Collaboration request not found');
+      }
+
       const [updatedRequest] = await db
         .update(collaborationRequests)
         .set({
@@ -1695,10 +1797,18 @@ export class DatabaseStorage implements IStorage {
 
       // If approved, add as collaborator
       if (status === 'APPROVED' && updatedRequest) {
-        await this.addCollaborator(updatedRequest.projectId, updatedRequest.requesterId);
-        console.log(`✅ Collaboration request ${requestId} approved - user added as collaborator`);
+        // For requests: add the requester
+        // For invitations: add the invitee
+        const collaboratorId = existingRequest.type === 'REQUEST' 
+          ? existingRequest.requesterId 
+          : existingRequest.inviteeId;
+        
+        if (collaboratorId) {
+          await this.addCollaborator(updatedRequest.projectId, collaboratorId);
+          console.log(`✅ Collaboration ${existingRequest.type.toLowerCase()} ${requestId} approved - user added as collaborator`);
+        }
       } else {
-        console.log(`❌ Collaboration request ${requestId} rejected`);
+        console.log(`❌ Collaboration ${existingRequest.type.toLowerCase()} ${requestId} rejected`);
       }
 
       return updatedRequest;

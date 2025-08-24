@@ -18,6 +18,7 @@ export const visibilityEnum = pgEnum("visibility", ["PRIVATE", "INSTITUTION", "P
 export const projectStatusEnum = pgEnum("project_status", ["DRAFT", "SUBMITTED", "UNDER_REVIEW", "APPROVED"]);
 export const reviewStatusEnum = pgEnum("review_status", ["PENDING", "COMPLETED"]);
 export const requestStatusEnum = pgEnum("request_status", ["PENDING", "APPROVED", "REJECTED"]);
+export const requestTypeEnum = pgEnum("request_type", ["REQUEST", "INVITATION"]);
 export const repoItemTypeEnum = pgEnum("repo_item_type", ["FILE", "FOLDER"]);
 export const changeTypeEnum = pgEnum("change_type", ["ADD", "MODIFY", "DELETE", "SUGGEST"]);
 export const changeStatusEnum = pgEnum("change_status", ["OPEN", "APPROVED", "REJECTED", "MERGED"]);
@@ -233,7 +234,10 @@ export const projectFilesRelations = relations(projectFiles, ({ one }) => ({
 export const collaborationRequests = pgTable("collaboration_requests", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   projectId: uuid("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
-  requesterId: uuid("requester_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  requesterId: uuid("requester_id").references(() => users.id, { onDelete: "cascade" }), // User requesting to join (nullable for invitations)
+  inviteeId: uuid("invitee_id").references(() => users.id, { onDelete: "cascade" }), // User being invited (nullable for requests)
+  senderId: uuid("sender_id").references(() => users.id, { onDelete: "cascade" }).notNull(), // Person creating the request/invitation
+  type: requestTypeEnum("type").default("REQUEST").notNull(), // REQUEST or INVITATION
   message: text("message"),
   status: requestStatusEnum("status").default("PENDING").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -280,6 +284,14 @@ export const collaborationRequestsRelations = relations(collaborationRequests, (
   }),
   requester: one(users, {
     fields: [collaborationRequests.requesterId],
+    references: [users.id],
+  }),
+  invitee: one(users, {
+    fields: [collaborationRequests.inviteeId],
+    references: [users.id],
+  }),
+  sender: one(users, {
+    fields: [collaborationRequests.senderId],
     references: [users.id],
   }),
 }));

@@ -193,23 +193,23 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
     },
   });
 
-  // Add collaborator by email mutation
-  const addCollaboratorByEmail = useMutation({
-    mutationFn: async ({ email }: { email: string }) => {
-      await apiRequest('POST', `/api/projects/${projectId}/collaborators/email`, { email });
+  // Invite collaborator by email mutation
+  const inviteCollaboratorByEmail = useMutation({
+    mutationFn: async ({ email, message }: { email: string; message?: string }) => {
+      await apiRequest('POST', `/api/projects/${projectId}/collaborators/invite`, { email, message });
     },
     onSuccess: () => {
       toast({
-        title: "Collaborator added",
-        description: "Successfully added collaborator to the project.",
+        title: "Invitation sent",
+        description: "Collaboration invitation sent successfully. The user will need to accept before becoming a collaborator.",
       });
       setCollaboratorEmail("");
-      queryClient.invalidateQueries({ queryKey: ['/api/projects', projectId, 'collaborators'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/projects', projectId, 'collaborate/requests'] });
     },
     onError: (error: Error) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to add collaborator",
+        description: error.message || "Failed to send invitation",
         variant: "destructive",
       });
     },
@@ -219,18 +219,21 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
   const batchInviteUsers = useMutation({
     mutationFn: async (users: SearchUser[]) => {
       for (const user of users) {
-        await apiRequest('POST', `/api/projects/${projectId}/collaborators/email`, { email: user.email });
+        await apiRequest('POST', `/api/projects/${projectId}/collaborators/invite`, { 
+          email: user.email, 
+          message: `You've been invited to collaborate on this project` 
+        });
       }
     },
     onSuccess: () => {
       toast({
         title: "Invitations sent",
-        description: `Successfully invited ${selectedUsers.length} users to collaborate.`,
+        description: `Successfully sent ${selectedUsers.length} collaboration invitations. Users will need to accept before becoming collaborators.`,
       });
       setSelectedUsers([]);
       setSearchQuery("");
       setShowSearchResults(false);
-      queryClient.invalidateQueries({ queryKey: ['/api/projects', projectId, 'collaborators'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/projects', projectId, 'collaborate/requests'] });
     },
     onError: (error: Error) => {
       toast({
@@ -274,7 +277,7 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
     requestCollaboration.mutate({ message: requestMessage });
   };
 
-  const handleAddCollaborator = () => {
+  const handleInviteCollaborator = () => {
     if (!collaboratorEmail.trim()) {
       toast({
         title: "Email required",
@@ -283,7 +286,7 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
       });
       return;
     }
-    addCollaboratorByEmail.mutate({ email: collaboratorEmail });
+    inviteCollaboratorByEmail.mutate({ email: collaboratorEmail });
   };
 
   const handleSelectUser = (user: SearchUser) => {
@@ -513,8 +516,8 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
                 <div className="space-y-6">
                   {/* Search Section */}
                   <div>
-                    <h3 className="text-base font-semibold text-black mb-2">Add collaborator</h3>
-                    <p className="text-gray-700 mb-4">Search for users to add as collaborators to your project.</p>
+                    <h3 className="text-base font-semibold text-black mb-2">Invite collaborator</h3>
+                    <p className="text-gray-700 mb-4">Search for users to invite as collaborators to your project. They will need to accept your invitation before becoming collaborators.</p>
                     
                     <div className="relative mb-4">
                       <Search className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
@@ -593,7 +596,7 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
                   {/* Email Section */}
                   <div className="border-t border-gray-200 pt-6">
                     <div className="space-y-3">
-                      <Label htmlFor="email-input" className="text-sm font-semibold text-black">Or add by email address</Label>
+                      <Label htmlFor="email-input" className="text-sm font-semibold text-black">Or invite by email address</Label>
                       <div className="flex gap-2">
                         <Input
                           id="email-input"
@@ -605,12 +608,12 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
                           className="border-gray-300 text-black placeholder-gray-500"
                         />
                         <Button
-                          data-testid="button-add-collaborator"
-                          onClick={handleAddCollaborator}
-                          disabled={addCollaboratorByEmail.isPending}
+                          data-testid="button-invite-collaborator"
+                          onClick={handleInviteCollaborator}
+                          disabled={inviteCollaboratorByEmail.isPending}
                           className="bg-blue-600 hover:bg-blue-700 text-white"
                         >
-                          Add
+                          Invite
                         </Button>
                       </div>
                     </div>

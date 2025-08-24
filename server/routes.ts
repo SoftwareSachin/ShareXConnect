@@ -694,20 +694,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
-  app.post("/api/projects/:id/collaborators/email", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+  app.post("/api/projects/:id/collaborators/invite", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
-      const { email } = req.body;
+      const { email, message } = req.body;
       if (!email || typeof email !== 'string') {
         return res.status(400).json({ message: "Valid email is required" });
       }
       
-      await storage.addCollaboratorByEmail(req.params.id, email, req.user!.id);
-      res.status(200).json({ message: "Collaborator added successfully" });
-    } catch (error) {
-      if (error instanceof Error && error.message.includes('not found')) {
-        return res.status(404).json({ message: error.message });
+      // Find user by email
+      const inviteeUser = await storage.getUserByEmail(email);
+      if (!inviteeUser) {
+        return res.status(404).json({ message: "User with this email not found" });
       }
-      console.error('Error adding collaborator by email:', error);
+      
+      // Check if already a collaborator
+      const isAlreadyCollaborator = await storage.isProjectCollaborator(req.params.id, inviteeUser.id);
+      if (isAlreadyCollaborator) {
+        return res.status(400).json({ message: "User is already a collaborator on this project" });
+      }
+      
+      // Send invitation
+      const invitation = await storage.inviteCollaborator(
+        req.params.id, 
+        inviteeUser.id, 
+        req.user!.id,
+        message
+      );
+      
+      res.status(201).json({ 
+        message: "Collaboration invitation sent successfully",
+        invitation 
+      });
+    } catch (error) {
+      console.error('Error inviting collaborator:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }));
+
+  // Get user's invitations (invitations sent to them)
+  app.get("/api/user/invitations", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      const invitations = await storage.getUserInvitations(req.user!.id);
+      res.json(invitations);
+    } catch (error) {
+      console.error('Error fetching user invitations:', error);
       res.status(500).json({ message: "Internal server error" });
     }
   }));
