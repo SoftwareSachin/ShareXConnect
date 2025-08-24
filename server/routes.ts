@@ -682,15 +682,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/projects/collaborate/requests/:requestId/respond", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {
       const { status } = req.body;
+      const { requestId } = req.params;
+      const userId = req.user!.id;
+
+      console.log(`🔄 Processing collaboration response:`, {
+        requestId,
+        status,
+        userId,
+        userRole: req.user!.role
+      });
+
       if (!['APPROVED', 'REJECTED'].includes(status)) {
+        console.log('❌ Invalid status provided:', status);
         return res.status(400).json({ message: "Invalid status" });
       }
       
-      const request = await storage.respondToCollaborationRequest(req.params.requestId, status, req.user!.id);
+      const request = await storage.respondToCollaborationRequest(requestId, status, userId);
+      
+      if (!request) {
+        console.log('❌ Request processing failed - no result returned');
+        return res.status(400).json({ message: "Failed to respond to invitation. Please check permissions." });
+      }
+
+      console.log(`✅ Collaboration response successful:`, {
+        requestId: request.id,
+        newStatus: request.status
+      });
+
       res.json(request);
     } catch (error) {
-      console.error('Error responding to collaboration request:', error);
-      res.status(500).json({ message: "Internal server error" });
+      console.error('❌ Error responding to collaboration request:', error);
+      res.status(500).json({ 
+        message: "Failed to respond to invitation. Please try again.",
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   }));
 

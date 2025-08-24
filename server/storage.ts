@@ -1875,6 +1875,8 @@ export class DatabaseStorage implements IStorage {
 
   async respondToCollaborationRequest(requestId: string, status: 'APPROVED' | 'REJECTED', reviewerId: string): Promise<CollaborationRequest | undefined> {
     try {
+      console.log(`🔍 Processing collaboration response: ${requestId} -> ${status} by user ${reviewerId}`);
+      
       // Get the request details first
       const [existingRequest] = await db
         .select()
@@ -1882,7 +1884,22 @@ export class DatabaseStorage implements IStorage {
         .where(eq(collaborationRequests.id, requestId));
 
       if (!existingRequest) {
+        console.error(`❌ Collaboration request not found: ${requestId}`);
         throw new Error('Collaboration request not found');
+      }
+
+      console.log(`📋 Found request:`, {
+        type: existingRequest.type,
+        status: existingRequest.status,
+        requesterId: existingRequest.requesterId,
+        inviteeId: existingRequest.inviteeId,
+        senderId: existingRequest.senderId
+      });
+
+      // Check if already responded
+      if (existingRequest.status !== 'PENDING') {
+        console.error(`❌ Request already ${existingRequest.status}: ${requestId}`);
+        throw new Error(`This collaboration ${existingRequest.type.toLowerCase()} has already been ${existingRequest.status.toLowerCase()}`);
       }
 
       // Validate permissions based on request type
@@ -1894,14 +1911,18 @@ export class DatabaseStorage implements IStorage {
           .where(eq(projects.id, existingRequest.projectId));
         
         if (!project || project.ownerId !== reviewerId) {
+          console.error(`❌ Permission denied: User ${reviewerId} cannot respond to REQUEST from project owned by ${project?.ownerId}`);
           throw new Error('Only project owner can respond to collaboration requests');
         }
       } else if (existingRequest.type === 'INVITATION') {
         // For invitations: Only the invited user can approve/reject
         if (existingRequest.inviteeId !== reviewerId) {
+          console.error(`❌ Permission denied: User ${reviewerId} cannot respond to INVITATION for user ${existingRequest.inviteeId}`);
           throw new Error('Only the invited user can respond to this invitation');
         }
       }
+
+      console.log(`✅ Permission check passed for ${existingRequest.type}`);
 
       const [updatedRequest] = await db
         .update(collaborationRequests)
@@ -1911,6 +1932,13 @@ export class DatabaseStorage implements IStorage {
         })
         .where(eq(collaborationRequests.id, requestId))
         .returning();
+
+      if (!updatedRequest) {
+        console.error(`❌ Failed to update collaboration request: ${requestId}`);
+        throw new Error('Failed to update collaboration request');
+      }
+
+      console.log(`✅ Request status updated to ${status}`);
 
       // If approved, add as collaborator
       if (status === 'APPROVED' && updatedRequest) {
@@ -1923,6 +1951,8 @@ export class DatabaseStorage implements IStorage {
         if (collaboratorId) {
           await this.addCollaborator(updatedRequest.projectId, collaboratorId);
           console.log(`✅ Collaboration ${existingRequest.type.toLowerCase()} ${requestId} approved - user added as collaborator`);
+        } else {
+          console.error(`❌ No collaborator ID found for ${existingRequest.type}`);
         }
       } else {
         console.log(`❌ Collaboration ${existingRequest.type.toLowerCase()} ${requestId} rejected`);
@@ -1930,8 +1960,13 @@ export class DatabaseStorage implements IStorage {
 
       return updatedRequest;
     } catch (error) {
-      console.error('Error responding to collaboration request:', error);
-      return undefined;
+      console.error('❌ Error in respondToCollaborationRequest:', {
+        requestId,
+        status,
+        reviewerId,
+        error: error instanceof Error ? error.message : error
+      });
+      throw error; // Re-throw the error instead of returning undefined
     }
   }
 
