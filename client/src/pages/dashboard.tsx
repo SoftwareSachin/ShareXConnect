@@ -8,9 +8,10 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { useAuthStore } from "@/lib/auth";
 import { apiGet } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { DashboardStats, ProjectWithDetails } from "@shared/schema";
+import type { DashboardStats, ProjectWithDetails, CollaborationRequest, User, Project } from "@shared/schema";
 import { useState } from "react";
 import { Link } from "wouter";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { CreateProjectModal } from "@/components/modals/create-project-modal";
 import { AssignFacultyModal } from "@/components/modals/assign-faculty-modal";
 import { RoleProtectedComponent, usePermissions } from "@/components/RoleProtectedComponent";
@@ -31,7 +32,9 @@ import {
   Eye,
   ArrowRight,
   Code,
-  GitBranch 
+  GitBranch,
+  Mail,
+  X
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -41,6 +44,38 @@ export default function Dashboard() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState<ProjectWithDetails | null>(null);
+
+  const handleInvitationResponse = async (invitationId: string, status: 'APPROVED' | 'REJECTED') => {
+    try {
+      await apiRequest(`/api/projects/collaborate/requests/${invitationId}/respond`, {
+        method: 'POST',
+        body: JSON.stringify({ status }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      refetchInvitations();
+      
+      // Invalidate related queries
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+      
+      toast({
+        title: status === 'APPROVED' ? "Invitation Accepted" : "Invitation Declined",
+        description: status === 'APPROVED' 
+          ? "You've successfully joined the project!" 
+          : "You've declined the collaboration invitation.",
+      });
+    } catch (error) {
+      console.error('Error responding to invitation:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to respond to invitation. Please try again.",
+      });
+    }
+  };
 
   const { data: stats, isLoading: statsLoading } = useQuery<DashboardStats>({
     queryKey: ["/api/dashboard/stats"],
@@ -57,6 +92,13 @@ export default function Dashboard() {
   const { data: projects } = useQuery<ProjectWithDetails[]>({
     queryKey: ["/api/projects"],
     queryFn: () => apiGet("/api/projects"),
+    enabled: !!user,
+  });
+
+  // Fetch user invitations
+  type UserInvitation = CollaborationRequest & { project: Project; sender: User };
+  const { data: invitations, refetch: refetchInvitations } = useQuery<UserInvitation[]>({
+    queryKey: ["/api/user/invitations"],
     enabled: !!user,
   });
 
@@ -191,6 +233,97 @@ export default function Dashboard() {
         </div>
 
         <main className="relative p-8 space-y-10">
+          {/* Collaboration Invitations Section */}
+          {invitations && invitations.length > 0 && (
+            <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/20 dark:border-slate-700/30 rounded-3xl overflow-hidden shadow-xl shadow-slate-900/5 dark:shadow-black/10">
+              <div className="p-8 border-b border-white/10 dark:border-slate-700/30 bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-900/20 dark:to-purple-900/20">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-blue-500/10 dark:bg-blue-400/20 rounded-2xl flex items-center justify-center">
+                    <Mail className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
+                      Collaboration Invitations ({invitations.length})
+                    </h2>
+                    <p className="text-slate-500 dark:text-slate-400">
+                      You've been invited to collaborate on these projects
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="p-8 space-y-6">
+                {invitations.map((invitation) => (
+                  <div
+                    key={invitation.id}
+                    className="flex items-start gap-6 p-6 rounded-2xl bg-white/60 dark:bg-slate-800/60 border border-white/30 dark:border-slate-700/30 hover:bg-white/80 dark:hover:bg-slate-800/80 transition-all duration-300"
+                    data-testid={`invitation-${invitation.id}`}
+                  >
+                    <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                      <span className="text-white font-bold text-lg">
+                        {invitation.sender.firstName?.[0]}{invitation.sender.lastName?.[0]}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100 mb-2">
+                            {invitation.project.title}
+                          </h3>
+                          <p className="text-slate-600 dark:text-slate-400 mb-3 line-clamp-2">
+                            {invitation.project.description}
+                          </p>
+                          <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
+                            <span className="font-medium">
+                              Invited by {invitation.sender.firstName} {invitation.sender.lastName}
+                            </span>
+                            <span>•</span>
+                            <span>{new Date(invitation.createdAt).toLocaleDateString()}</span>
+                          </div>
+                          {invitation.message && (
+                            <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                              <p className="text-sm text-slate-600 dark:text-slate-300 italic">
+                                "{invitation.message}"
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Button
+                          onClick={() => handleInvitationResponse(invitation.id, 'APPROVED')}
+                          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-xl font-medium shadow-lg shadow-green-600/20 transition-all duration-300 hover:shadow-green-600/30 hover:scale-105"
+                          data-testid={`button-accept-invitation-${invitation.id}`}
+                        >
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Accept
+                        </Button>
+                        <Button
+                          onClick={() => handleInvitationResponse(invitation.id, 'REJECTED')}
+                          variant="outline"
+                          className="border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 px-6 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105"
+                          data-testid={`button-decline-invitation-${invitation.id}`}
+                        >
+                          <X className="w-4 h-4 mr-2" />
+                          Decline
+                        </Button>
+                        <Link href={`/projects/${invitation.project.id}`}>
+                          <Button
+                            variant="ghost"
+                            className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 px-6 py-2 rounded-xl font-medium"
+                            data-testid={`button-view-project-${invitation.project.id}`}
+                          >
+                            <Eye className="w-4 h-4 mr-2" />
+                            View Project
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Ultra-Modern Statistics Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {statCards.map((card, index) => (
