@@ -1870,6 +1870,24 @@ export class DatabaseStorage implements IStorage {
         throw new Error('Collaboration request not found');
       }
 
+      // Validate permissions based on request type
+      if (existingRequest.type === 'REQUEST') {
+        // For requests: Only project owner can approve/reject
+        const [project] = await db
+          .select({ ownerId: projects.ownerId })
+          .from(projects)
+          .where(eq(projects.id, existingRequest.projectId));
+        
+        if (!project || project.ownerId !== reviewerId) {
+          throw new Error('Only project owner can respond to collaboration requests');
+        }
+      } else if (existingRequest.type === 'INVITATION') {
+        // For invitations: Only the invited user can approve/reject
+        if (existingRequest.inviteeId !== reviewerId) {
+          throw new Error('Only the invited user can respond to this invitation');
+        }
+      }
+
       const [updatedRequest] = await db
         .update(collaborationRequests)
         .set({

@@ -47,12 +47,10 @@ export default function Dashboard() {
 
   const handleInvitationResponse = async (invitationId: string, status: 'APPROVED' | 'REJECTED') => {
     try {
-      await apiRequest(`/api/projects/collaborate/requests/${invitationId}/respond`, {
+      await apiRequest({
+        url: `/api/projects/collaborate/requests/${invitationId}/respond`,
         method: 'POST',
-        body: JSON.stringify({ status }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        body: { status },
       });
       
       refetchInvitations();
@@ -306,7 +304,7 @@ export default function Dashboard() {
                           <X className="w-4 h-4 mr-2" />
                           Decline
                         </Button>
-                        <Link href={`/projects/${invitation.project.id}`}>
+                        <Link href={`/project/${invitation.project.id}`}>
                           <Button
                             variant="ghost"
                             className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 px-6 py-2 rounded-xl font-medium"
