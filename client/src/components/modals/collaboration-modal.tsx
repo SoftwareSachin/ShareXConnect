@@ -18,6 +18,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/api";
+import { useAuthStore } from "@/lib/auth";
 import { 
   Users, Send, Check, X, Clock, UserPlus, Search, Trash2
 } from "lucide-react";
@@ -100,17 +101,40 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
     }
     
     try {
-      const response = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`, {
+      const token = useAuthStore.getState().token;
+      if (!token) {
+        console.error('No authentication token available');
+        return;
+      }
+      
+      const response = await fetch(`/api/users/search?q=${encodeURIComponent(query)}&projectId=${projectId}`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+        console.error('Search error:', errorData.message);
+        toast({
+          title: "Search Error",
+          description: errorData.message || "Failed to search users",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       const results: SearchUser[] = await response.json();
       setSearchResults(results);
       setShowSearchResults(true);
     } catch (error) {
       console.error('Search error:', error);
+      toast({
+        title: "Search Error", 
+        description: "Failed to search users. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
