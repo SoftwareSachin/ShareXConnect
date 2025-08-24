@@ -217,6 +217,7 @@ export default function ProjectDetail() {
   const [showReviewDialog, setShowReviewDialog] = useState(false);
   const [reviewGrade, setReviewGrade] = useState('');
   const [reviewFeedback, setReviewFeedback] = useState('');
+  const [isFinalReview, setIsFinalReview] = useState(false);
   const [fileComments, setFileComments] = useState<Record<string, string>>({});
   const [fileGrades, setFileGrades] = useState<Record<string, { score: number; feedback: string }>>({});
   const [activeTab, setActiveTab] = useState<'overview' | 'files' | 'criteria'>('overview');
@@ -511,7 +512,8 @@ export default function ProjectDetail() {
       return apiRequest('POST', `/api/projects/${params.id}/review`, {
         grade: reviewGrade,
         feedback: reviewFeedback,
-        fileGrades: fileGrades
+        fileGrades: fileGrades,
+        isFinal: isFinalReview
       });
     },
     onSuccess: () => {
@@ -521,6 +523,7 @@ export default function ProjectDetail() {
       setShowReviewDialog(false);
       setReviewGrade('');
       setReviewFeedback('');
+      setIsFinalReview(false);
     },
     onError: (error: any) => {
       toast({ 

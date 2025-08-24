@@ -1099,7 +1099,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Access denied" });
       }
 
-      const { grade, feedback, fileGrades } = req.body;
+      const { grade, feedback, fileGrades, isFinal } = req.body;
       if (!grade || !feedback) {
         return res.status(400).json({ message: "Grade and feedback are required" });
       }
@@ -1113,13 +1113,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Submit a new review (allows multiple reviews from same faculty)
-      const newReview = await storage.submitReview(req.params.id, req.user!.id, grade, feedback);
+      const newReview = await storage.submitReview(req.params.id, req.user!.id, grade, feedback, isFinal);
       if (!newReview) {
         return res.status(404).json({ message: "Failed to submit review" });
       }
 
       // Log the successful review submission
-      console.log(`✅ Review submitted for project ${req.params.id} by faculty ${req.user!.id}: Grade ${grade}`);
+      console.log(`✅ ${isFinal ? 'Final' : 'Regular'} review submitted for project ${req.params.id} by faculty ${req.user!.id}: Grade ${grade}`);
 
       res.json({
         ...newReview,

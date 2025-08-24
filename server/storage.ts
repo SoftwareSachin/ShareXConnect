@@ -111,7 +111,7 @@ export interface IStorage {
   assignProjectToReviewer(projectId: string, reviewerId: string): Promise<ProjectReview>;
   getProjectReviews(reviewerId: string): Promise<(ProjectReview & { project: ProjectWithDetails })[]>;
   getProjectReviewsForProject(projectId: string): Promise<(ProjectReview & { reviewer: any })[]>;
-  submitReview(projectId: string, reviewerId: string, grade: string, feedback: string): Promise<ProjectReview | undefined>;
+  submitReview(projectId: string, reviewerId: string, grade: string, feedback: string, isFinal?: boolean): Promise<ProjectReview | undefined>;
   markReviewAsRead(reviewId: string, studentId: string): Promise<boolean>;
   isProjectReviewer(projectId: string, reviewerId: string): Promise<boolean>;
 
@@ -1115,8 +1115,25 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async submitReview(projectId: string, reviewerId: string, grade: string, feedback: string): Promise<ProjectReview | undefined> {
+  async submitReview(projectId: string, reviewerId: string, grade: string, feedback: string, isFinal: boolean = false): Promise<ProjectReview | undefined> {
     try {
+      // Check if this project already has a final review
+      if (isFinal) {
+        const existingFinalReview = await db
+          .select()
+          .from(projectReviews)
+          .where(and(
+            eq(projectReviews.projectId, projectId),
+            eq(projectReviews.isFinal, true)
+          ))
+          .limit(1);
+        
+        if (existingFinalReview.length > 0) {
+          console.log(`❌ Project ${projectId} already has a final review`);
+          throw new Error("This project already has a final review. No more reviews can be submitted.");
+        }
+      }
+
       // Convert letter grades to numeric values for database storage
       const gradeMapping: Record<string, number> = {
         'A+': 97, 'A': 93, 'A-': 90,
@@ -1129,7 +1146,7 @@ export class DatabaseStorage implements IStorage {
       const numericGrade = gradeMapping[grade] || parseInt(grade) || 0;
       
       // CREATE a new review instead of updating existing one
-      // This allows faculty to submit multiple reviews
+      // This allows faculty to submit multiple reviews (but only one final review)
       const result = await db
         .insert(projectReviews)
         .values({
@@ -1138,15 +1155,29 @@ export class DatabaseStorage implements IStorage {
           grade: numericGrade,
           feedback: `${grade}|${feedback}`, // Store original grade with feedback
           status: "COMPLETED",
+          isFinal,
           isReadByStudent: false
         })
         .returning();
       
-      console.log(`✅ New review created for project ${projectId} by faculty ${reviewerId}: Grade ${grade}`);
+      // If this is a final review, update the project status to APPROVED
+      if (isFinal && result[0]) {
+        await db
+          .update(projects)
+          .set({ 
+            status: "APPROVED",
+            updatedAt: new Date()
+          })
+          .where(eq(projects.id, projectId));
+        
+        console.log(`✅ Project ${projectId} marked as APPROVED due to final review`);
+      }
+      
+      console.log(`✅ ${isFinal ? 'Final' : 'Regular'} review created for project ${projectId} by faculty ${reviewerId}: Grade ${grade}`);
       return result[0] || undefined;
     } catch (error) {
       console.error('Error submitting review:', error);
-      return undefined;
+      throw error;
     }
   }
 
@@ -1199,13 +1230,14 @@ export class DatabaseStorage implements IStorage {
         
         const inReview = inReviewResults[0]?.count || 0;
 
-        // Approved projects
+        // Approved projects (projects with final reviews)
         const approvedResults = await db
           .select({ count: count() })
           .from(projects)
+          .innerJoin(projectReviews, eq(projects.id, projectReviews.projectId))
           .where(and(
             eq(projects.ownerId, userId),
-            eq(projects.status, "APPROVED")
+            eq(projectReviews.isFinal, true)
           ));
         
         const approved = approvedResults[0]?.count || 0;
