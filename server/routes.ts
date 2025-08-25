@@ -474,10 +474,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check permissions based on project visibility
       if (project.visibility === "PRIVATE") {
         if (!userId || project.ownerId !== userId) {
-          // Check if user is a faculty member assigned to review this project
-          const user = userId ? await storage.getUser(userId) : null;
-          if (!user || user.role !== "FACULTY" || !(await storage.isProjectReviewer(project.id, user.id))) {
-            return res.status(403).json({ message: "Access denied - Private project" });
+          // Check if user is a collaborator
+          const isCollaborator = project.collaborators.some(collaborator => collaborator.id === userId);
+          if (isCollaborator) {
+            // Collaborator has access
+          } else {
+            // Check if user is a faculty member assigned to review this project
+            const user = userId ? await storage.getUser(userId) : null;
+            if (!user || user.role !== "FACULTY" || !(await storage.isProjectReviewer(project.id, user.id))) {
+              return res.status(403).json({ message: "Access denied - Private project" });
+            }
           }
         }
       } else if (project.visibility === "INSTITUTION") {
@@ -489,12 +495,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(403).json({ message: "Access denied - Institution project" });
         }
         
-        // Allow access if: owner, same institution, or faculty reviewer
+        // Allow access if: owner, collaborator, same institution, or faculty reviewer
         const isOwner = project.ownerId === userId;
+        const isCollaborator = project.collaborators.some(collaborator => collaborator.id === userId);
         const sameInstitution = project.owner.institution === user.institution;
         const isFacultyReviewer = user.role === "FACULTY" && await storage.isProjectReviewer(project.id, user.id);
         
-        if (!isOwner && !sameInstitution && !isFacultyReviewer) {
+        if (!isOwner && !isCollaborator && !sameInstitution && !isFacultyReviewer) {
           return res.status(403).json({ message: "Access denied - Institution project" });
         }
       }
