@@ -19,8 +19,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth";
+import { useLocation } from "wouter";
 import { 
-  Users, Send, Check, X, Clock, UserPlus, Search, Trash2
+  Users, Send, Check, X, Clock, UserPlus, Search, Trash2, ExternalLink
 } from "lucide-react";
 
 interface CollaborationModalProps {
@@ -78,8 +79,10 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
   const [selectedUsers, setSelectedUsers] = useState<SearchUser[]>([]);
   const [activeTab, setActiveTab] = useState("team");
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [acceptedProjectId, setAcceptedProjectId] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
 
   // Fetch current collaborators
   const { data: collaborators = [] } = useQuery<Collaborator[]>({
@@ -149,6 +152,13 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  // Reset accepted project state when modal closes
+  useEffect(() => {
+    if (!open) {
+      setAcceptedProjectId(null);
+    }
+  }, [open]);
+
   // Request collaboration mutation (for non-owners)
   const requestCollaboration = useMutation({
     mutationFn: async ({ message }: { message: string }) => {
@@ -175,12 +185,21 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
   const respondToRequest = useMutation({
     mutationFn: async ({ requestId, status }: { requestId: string; status: 'APPROVED' | 'REJECTED' }) => {
       await apiRequest('POST', `/api/projects/collaborate/requests/${requestId}/respond`, { status });
+      return { status, projectId };
     },
-    onSuccess: () => {
-      toast({
-        title: "Response sent",
-        description: "Collaboration request response has been sent.",
-      });
+    onSuccess: (data) => {
+      if (data.status === 'APPROVED') {
+        setAcceptedProjectId(data.projectId);
+        toast({
+          title: "Invitation accepted!",
+          description: "You're now a collaborator on this project.",
+        });
+      } else {
+        toast({
+          title: "Response sent",
+          description: "Collaboration request response has been sent.",
+        });
+      }
       queryClient.invalidateQueries({ queryKey: ['/api/projects', projectId, 'collaborate/requests'] });
       queryClient.invalidateQueries({ queryKey: ['/api/projects', projectId, 'collaborators'] });
     },
@@ -478,33 +497,50 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
                           )}
                           
                           <div className="flex gap-3">
-                            <Button
-                              size="sm"
-                              data-testid={`button-approve-${request.id}`}
-                              onClick={() => respondToRequest.mutate({ 
-                                requestId: request.id, 
-                                status: 'APPROVED' 
-                              })}
-                              disabled={respondToRequest.isPending}
-                              className="bg-green-600 hover:bg-green-700 text-white"
-                            >
-                              <Check className="h-4 w-4 mr-2" />
-                              Accept
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              data-testid={`button-reject-${request.id}`}
-                              onClick={() => respondToRequest.mutate({ 
-                                requestId: request.id, 
-                                status: 'REJECTED' 
-                              })}
-                              disabled={respondToRequest.isPending}
-                              className="border-gray-300 text-gray-700 hover:bg-gray-50"
-                            >
-                              <X className="h-4 w-4 mr-2" />
-                              Decline
-                            </Button>
+                            {acceptedProjectId ? (
+                              <Button
+                                size="sm"
+                                data-testid="button-view-project"
+                                onClick={() => {
+                                  setLocation(`/projects/${acceptedProjectId}`);
+                                  setOpen(false);
+                                }}
+                                className="bg-blue-600 hover:bg-blue-700 text-white"
+                              >
+                                <ExternalLink className="h-4 w-4 mr-2" />
+                                View Your Project
+                              </Button>
+                            ) : (
+                              <>
+                                <Button
+                                  size="sm"
+                                  data-testid={`button-approve-${request.id}`}
+                                  onClick={() => respondToRequest.mutate({ 
+                                    requestId: request.id, 
+                                    status: 'APPROVED' 
+                                  })}
+                                  disabled={respondToRequest.isPending}
+                                  className="bg-green-600 hover:bg-green-700 text-white"
+                                >
+                                  <Check className="h-4 w-4 mr-2" />
+                                  Accept
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  data-testid={`button-reject-${request.id}`}
+                                  onClick={() => respondToRequest.mutate({ 
+                                    requestId: request.id, 
+                                    status: 'REJECTED' 
+                                  })}
+                                  disabled={respondToRequest.isPending}
+                                  className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                                >
+                                  <X className="h-4 w-4 mr-2" />
+                                  Decline
+                                </Button>
+                              </>
+                            )}
                           </div>
                         </div>
                       ))}
