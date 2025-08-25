@@ -411,6 +411,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
+  // Collaborative projects endpoint must come before :id route to avoid conflicts
+  app.get("/api/projects/collaborations", authenticateToken, withAuth(async (req: AuthRequest, res) => {
+    try {
+      const filters = {
+        ownerId: req.user!.id,
+        collaborationsOnly: true
+      };
+      
+      const projects = await storage.getProjects(filters);
+      res.json(projects);
+    } catch (error) {
+      console.error('Error fetching collaborative projects:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }));
+
   // Filter options must come before :id route to avoid conflicts
   app.get("/api/projects/filter-options", authenticateToken, withAuth(async (req: AuthRequest, res) => {
     try {

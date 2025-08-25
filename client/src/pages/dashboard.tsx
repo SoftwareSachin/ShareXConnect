@@ -35,7 +35,8 @@ import {
   GitBranch,
   Mail,
   X,
-  Check
+  Check,
+  ExternalLink
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -84,6 +85,12 @@ export default function Dashboard() {
   const { data: recentProjects, isLoading: projectsLoading } = useQuery<ProjectWithDetails[]>({
     queryKey: ["/api/projects", { my: "true", limit: 3 }],
     queryFn: () => apiGet("/api/projects?my=true"),
+    enabled: !!user,
+  });
+
+  // Fetch collaborative projects where user is collaborator but not owner
+  const { data: collaborativeProjects, isLoading: collaborativeLoading } = useQuery<ProjectWithDetails[]>({
+    queryKey: ["/api/projects/collaborations"],
     enabled: !!user,
   });
 
@@ -504,6 +511,107 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
+
+            {/* Collaborative Projects Section */}
+            {collaborativeProjects && collaborativeProjects.length > 0 && (
+              <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/20 dark:border-slate-700/30 rounded-3xl overflow-hidden shadow-xl shadow-slate-900/5 dark:shadow-black/10">
+                <div className="p-8 border-b border-white/10 dark:border-slate-700/30 bg-gradient-to-r from-emerald-50/50 to-blue-50/50 dark:from-emerald-900/20 dark:to-blue-900/20">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 bg-emerald-500/10 dark:bg-emerald-400/20 rounded-2xl flex items-center justify-center">
+                      <Users className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
+                        Collaborative Projects ({collaborativeProjects.length})
+                      </h2>
+                      <p className="text-slate-500 dark:text-slate-400">
+                        Projects where you're a collaborator
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-8">
+                  {collaborativeLoading ? (
+                    <div className="space-y-6">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="p-6 rounded-2xl bg-white/40 dark:bg-slate-800/40 border border-white/20 dark:border-slate-700/20">
+                          <div className="flex items-center space-x-6">
+                            <div className="w-16 h-16 bg-slate-200/50 dark:bg-slate-700/50 rounded-2xl animate-pulse"></div>
+                            <div className="flex-1 space-y-3">
+                              <div className="h-5 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg animate-pulse"></div>
+                              <div className="h-4 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg animate-pulse w-3/4"></div>
+                              <div className="h-3 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg animate-pulse w-1/2"></div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {collaborativeProjects.map((project) => (
+                        <div key={project.id} className="group p-6 rounded-2xl bg-white/40 dark:bg-slate-800/40 border border-white/20 dark:border-slate-700/20 hover:bg-white/60 dark:hover:bg-slate-800/60 hover:border-white/40 dark:hover:border-slate-600/40 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                          <div className="flex items-start space-x-6">
+                            <div className="w-16 h-16 bg-emerald-500 dark:bg-emerald-600 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                              <span className="text-white text-lg font-bold">
+                                {project.techStack?.[0]?.slice(0, 2) || "CO"}
+                              </span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-2">
+                                <h4 className="text-xl font-bold text-slate-900 dark:text-slate-100 truncate">{project.title}</h4>
+                                <div className="px-2 py-1 text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 rounded-lg">
+                                  Collaborator
+                                </div>
+                              </div>
+                              <p className="text-slate-600 dark:text-slate-400 mb-3 line-clamp-2 leading-relaxed">{project.description}</p>
+                              <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-8 h-8 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center">
+                                    <span className="text-slate-600 dark:text-slate-300 text-xs font-semibold">
+                                      {project.owner.firstName?.[0]}{project.owner.lastName?.[0]}
+                                    </span>
+                                  </div>
+                                  <span className="text-sm text-slate-600 dark:text-slate-400">
+                                    Owner: {project.owner.firstName} {project.owner.lastName}
+                                  </span>
+                                </div>
+                                <div className={`
+                                  px-3 py-1.5 text-xs font-semibold rounded-xl
+                                  ${project.status === "APPROVED" 
+                                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300" 
+                                    : project.status === "UNDER_REVIEW"
+                                    ? "bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300"
+                                    : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                                  }
+                                `}>
+                                  {project.status.replace("_", " ")}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <Link href={`/project/${project.id}`}>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="bg-emerald-50/80 dark:bg-emerald-900/20 border-emerald-200/50 dark:border-emerald-700/50 hover:bg-emerald-100/80 dark:hover:bg-emerald-900/30"
+                                  data-testid={`button-view-collaboration-${project.id}`}
+                                >
+                                  <ExternalLink className="w-4 h-4 mr-2" />
+                                  <span className="text-emerald-600 dark:text-emerald-400 text-xs font-medium">View Project</span>
+                                </Button>
+                              </Link>
+                              <div className="w-10 h-10 bg-emerald-100/80 dark:bg-emerald-800/80 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                                <Users className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Ultra-Modern Sidebar */}
             <div className="space-y-8">

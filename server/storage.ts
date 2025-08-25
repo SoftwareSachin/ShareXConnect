@@ -566,6 +566,7 @@ export class DatabaseStorage implements IStorage {
     department?: string;
     techStack?: string[];
     includeCollaborations?: boolean;
+    collaborationsOnly?: boolean;
   }): Promise<ProjectWithDetails[]> {
     try {
       let query = db
@@ -576,7 +577,16 @@ export class DatabaseStorage implements IStorage {
       const conditions = [];
 
       if (filters?.ownerId) {
-        if (filters.includeCollaborations) {
+        if (filters.collaborationsOnly) {
+          // Only collaborative projects (user is collaborator but not owner)
+          const collaborationCondition = sql`EXISTS (
+            SELECT 1 FROM ${projectCollaborators} 
+            WHERE ${projectCollaborators.projectId} = ${projects.id} 
+            AND ${projectCollaborators.userId} = ${filters.ownerId}
+          )`;
+          const notOwnerCondition = sql`${projects.ownerId} != ${filters.ownerId}`;
+          conditions.push(and(collaborationCondition, notOwnerCondition));
+        } else if (filters.includeCollaborations) {
           // Include both owned projects and collaborations
           const collaborationCondition = sql`EXISTS (
             SELECT 1 FROM ${projectCollaborators} 
