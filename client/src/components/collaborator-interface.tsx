@@ -42,14 +42,18 @@ const CollaboratorInterface: React.FC<CollaboratorInterfaceProps> = ({ project }
   const queryClient = useQueryClient();
 
   // Fetch project comments
-  const { data: comments = [] } = useQuery<ProjectComment[]>({
+  const { data: commentsData } = useQuery<ProjectComment[]>({
     queryKey: ['/api/projects', project.id, 'comments'],
   });
+  
+  const comments = Array.isArray(commentsData) ? commentsData : [];
 
   // Fetch collaborators
-  const { data: collaborators = [] } = useQuery<User[]>({
+  const { data: collaboratorsData } = useQuery<User[]>({
     queryKey: ['/api/projects', project.id, 'collaborators'],
   });
+  
+  const collaborators = Array.isArray(collaboratorsData) ? collaboratorsData : [];
 
   // Mock tasks for demo - in real app this would come from API
   const [tasks] = useState<TaskItem[]>([
@@ -114,7 +118,7 @@ const CollaboratorInterface: React.FC<CollaboratorInterfaceProps> = ({ project }
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
                 <Code2 className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -359,11 +363,11 @@ const CollaboratorInterface: React.FC<CollaboratorInterfaceProps> = ({ project }
                 <div className="flex items-center gap-3">
                   <Avatar>
                     <AvatarFallback className="bg-blue-600 text-white">
-                      {getInitials(project.owner.firstName, project.owner.lastName)}
+                      {getInitials(project.owner.firstName || '', project.owner.lastName || '')}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium text-sm">{project.owner.firstName} {project.owner.lastName}</p>
+                    <p className="font-medium text-sm">{project.owner.firstName || ''} {project.owner.lastName || ''}</p>
                     <p className="text-xs text-slate-500">{project.owner.role}</p>
                   </div>
                 </div>
@@ -380,11 +384,11 @@ const CollaboratorInterface: React.FC<CollaboratorInterfaceProps> = ({ project }
                   <div key={collaborator.id} className="flex items-center gap-3">
                     <Avatar className="w-6 h-6">
                       <AvatarFallback className="text-xs">
-                        {getInitials(collaborator.firstName, collaborator.lastName)}
+                        {getInitials(collaborator.firstName || '', collaborator.lastName || '')}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
-                      <p className="text-sm font-medium">{collaborator.firstName} {collaborator.lastName}</p>
+                      <p className="text-sm font-medium">{collaborator.firstName || ''} {collaborator.lastName || ''}</p>
                       <p className="text-xs text-slate-500">{collaborator.role}</p>
                     </div>
                   </div>
