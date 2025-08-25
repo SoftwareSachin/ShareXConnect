@@ -532,76 +532,98 @@ export default function Dashboard() {
                 </div>
                 <div className="p-8">
                   {collaborativeLoading ? (
-                    <div className="space-y-6">
-                      {[1, 2, 3].map((i) => (
-                        <div key={i} className="p-6 rounded-2xl bg-white/40 dark:bg-slate-800/40 border border-white/20 dark:border-slate-700/20">
-                          <div className="flex items-center space-x-6">
-                            <div className="w-16 h-16 bg-slate-200/50 dark:bg-slate-700/50 rounded-2xl animate-pulse"></div>
-                            <div className="flex-1 space-y-3">
-                              <div className="h-5 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg animate-pulse"></div>
-                              <div className="h-4 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg animate-pulse w-3/4"></div>
-                              <div className="h-3 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg animate-pulse w-1/2"></div>
+                    <div className="space-y-8">
+                      {[1, 2].map((i) => (
+                        <div key={i} className="p-8 rounded-3xl bg-white/40 dark:bg-slate-800/40 border border-emerald-200/20 dark:border-emerald-700/20">
+                          <div className="flex items-start space-x-6">
+                            <div className="w-20 h-20 bg-slate-200/50 dark:bg-slate-700/50 rounded-3xl animate-pulse"></div>
+                            <div className="flex-1 space-y-4">
+                              <div className="space-y-3">
+                                <div className="h-7 bg-slate-200/50 dark:bg-slate-700/50 rounded-xl animate-pulse w-3/4"></div>
+                                <div className="h-5 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg animate-pulse w-full"></div>
+                                <div className="h-5 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg animate-pulse w-2/3"></div>
+                              </div>
+                              <div className="flex items-center justify-between pt-2">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 bg-slate-200/50 dark:bg-slate-700/50 rounded-full animate-pulse"></div>
+                                  <div className="space-y-2">
+                                    <div className="h-4 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg animate-pulse w-24"></div>
+                                    <div className="h-3 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg animate-pulse w-16"></div>
+                                  </div>
+                                </div>
+                                <div className="h-10 bg-slate-200/50 dark:bg-slate-700/50 rounded-xl animate-pulse w-32"></div>
+                              </div>
                             </div>
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="space-y-6">
+                    <div className="space-y-8">
                       {collaborativeProjects.map((project) => (
-                        <div key={project.id} className="group p-6 rounded-2xl bg-white/40 dark:bg-slate-800/40 border border-white/20 dark:border-slate-700/20 hover:bg-white/60 dark:hover:bg-slate-800/60 hover:border-white/40 dark:hover:border-slate-600/40 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                        <div key={project.id} className="group p-8 rounded-3xl bg-white/60 dark:bg-slate-800/60 border border-emerald-200/30 dark:border-emerald-700/30 hover:bg-white/80 dark:hover:bg-slate-800/80 hover:border-emerald-300/50 dark:hover:border-emerald-600/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 backdrop-blur-sm">
                           <div className="flex items-start space-x-6">
-                            <div className="w-16 h-16 bg-emerald-500 dark:bg-emerald-600 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
-                              <span className="text-white text-lg font-bold">
-                                {project.techStack?.[0]?.slice(0, 2) || "CO"}
+                            <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-emerald-600 dark:from-emerald-600 dark:to-emerald-700 rounded-3xl flex items-center justify-center flex-shrink-0 shadow-lg ring-4 ring-emerald-100/50 dark:ring-emerald-900/50">
+                              <span className="text-white text-xl font-bold">
+                                {project.techStack?.[0]?.slice(0, 2).toUpperCase() || "CO"}
                               </span>
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-2">
-                                <h4 className="text-xl font-bold text-slate-900 dark:text-slate-100 truncate">{project.title}</h4>
-                                <div className="px-2 py-1 text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 rounded-lg">
-                                  Collaborator
+                            <div className="flex-1 min-w-0 space-y-4">
+                              <div className="space-y-3">
+                                <div className="flex items-start justify-between gap-4">
+                                  <h4 className="text-2xl font-bold text-slate-900 dark:text-slate-100 leading-tight">{project.title}</h4>
+                                  <div className="flex items-center gap-2 flex-shrink-0">
+                                    <div className="px-3 py-1.5 text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 rounded-xl border border-emerald-200/50 dark:border-emerald-700/50">
+                                      Collaborator
+                                    </div>
+                                    <div className={`
+                                      px-3 py-1.5 text-xs font-semibold rounded-xl
+                                      ${project.status === "APPROVED" 
+                                        ? "bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-300 border border-green-200/50 dark:border-green-700/50" 
+                                        : project.status === "UNDER_REVIEW"
+                                        ? "bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 border border-amber-200/50 dark:border-amber-700/50"
+                                        : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200/50 dark:border-slate-700/50"
+                                      }
+                                    `}>
+                                      {project.status.replace("_", " ")}
+                                    </div>
+                                  </div>
                                 </div>
+                                <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-base line-clamp-2">{project.description}</p>
                               </div>
-                              <p className="text-slate-600 dark:text-slate-400 mb-3 line-clamp-2 leading-relaxed">{project.description}</p>
-                              <div className="flex items-center gap-4">
-                                <div className="flex items-center gap-2">
-                                  <div className="w-8 h-8 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center">
-                                    <span className="text-slate-600 dark:text-slate-300 text-xs font-semibold">
-                                      {project.owner.firstName?.[0]}{project.owner.lastName?.[0]}
+                              
+                              <div className="flex items-center justify-between pt-2">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600 rounded-full flex items-center justify-center ring-2 ring-white/50 dark:ring-slate-900/50">
+                                    <span className="text-slate-700 dark:text-slate-300 text-sm font-bold">
+                                      {project.owner.firstName?.[0]?.toUpperCase()}{project.owner.lastName?.[0]?.toUpperCase()}
                                     </span>
                                   </div>
-                                  <span className="text-sm text-slate-600 dark:text-slate-400">
-                                    Owner: {project.owner.firstName} {project.owner.lastName}
-                                  </span>
+                                  <div className="space-y-1">
+                                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                                      {project.owner.firstName} {project.owner.lastName}
+                                    </p>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                                      Project Owner
+                                    </p>
+                                  </div>
                                 </div>
-                                <div className={`
-                                  px-3 py-1.5 text-xs font-semibold rounded-xl
-                                  ${project.status === "APPROVED" 
-                                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300" 
-                                    : project.status === "UNDER_REVIEW"
-                                    ? "bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300"
-                                    : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
-                                  }
-                                `}>
-                                  {project.status.replace("_", " ")}
+                                
+                                <div className="flex items-center gap-3">
+                                  <Link href={`/project/${project.id}`}>
+                                    <Button
+                                      size="sm"
+                                      className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 px-6 py-2.5 rounded-xl font-medium"
+                                      data-testid={`button-view-collaboration-${project.id}`}
+                                    >
+                                      <ExternalLink className="w-4 h-4 mr-2" />
+                                      View Project
+                                    </Button>
+                                  </Link>
+                                  <div className="w-12 h-12 bg-emerald-100/80 dark:bg-emerald-800/80 rounded-2xl flex items-center justify-center backdrop-blur-sm ring-2 ring-emerald-200/30 dark:ring-emerald-700/30">
+                                    <Users className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                                  </div>
                                 </div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <Link href={`/project/${project.id}`}>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="bg-emerald-50/80 dark:bg-emerald-900/20 border-emerald-200/50 dark:border-emerald-700/50 hover:bg-emerald-100/80 dark:hover:bg-emerald-900/30"
-                                  data-testid={`button-view-collaboration-${project.id}`}
-                                >
-                                  <ExternalLink className="w-4 h-4 mr-2" />
-                                  <span className="text-emerald-600 dark:text-emerald-400 text-xs font-medium">View Project</span>
-                                </Button>
-                              </Link>
-                              <div className="w-10 h-10 bg-emerald-100/80 dark:bg-emerald-800/80 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                                <Users className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                               </div>
                             </div>
                           </div>
