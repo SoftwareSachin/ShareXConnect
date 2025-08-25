@@ -303,6 +303,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (my === "true") {
         filters.ownerId = req.user!.id;
+        filters.includeCollaborations = true;
       } else {
         // Enhanced role-based filtering logic
         const userRole = req.user!.role;

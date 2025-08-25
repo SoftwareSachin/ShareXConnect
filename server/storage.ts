@@ -565,6 +565,7 @@ export class DatabaseStorage implements IStorage {
     institution?: string;
     department?: string;
     techStack?: string[];
+    includeCollaborations?: boolean;
   }): Promise<ProjectWithDetails[]> {
     try {
       let query = db
@@ -575,7 +576,22 @@ export class DatabaseStorage implements IStorage {
       const conditions = [];
 
       if (filters?.ownerId) {
-        conditions.push(eq(projects.ownerId, filters.ownerId));
+        if (filters.includeCollaborations) {
+          // Include both owned projects and collaborations
+          const collaborationCondition = sql`EXISTS (
+            SELECT 1 FROM ${projectCollaborators} 
+            WHERE ${projectCollaborators.projectId} = ${projects.id} 
+            AND ${projectCollaborators.userId} = ${filters.ownerId}
+          )`;
+          conditions.push(
+            or(
+              eq(projects.ownerId, filters.ownerId),
+              collaborationCondition
+            )
+          );
+        } else {
+          conditions.push(eq(projects.ownerId, filters.ownerId));
+        }
       }
       if (filters?.visibility) {
         conditions.push(eq(projects.visibility, filters.visibility as any));
@@ -1274,14 +1290,13 @@ export class DatabaseStorage implements IStorage {
         
         const approved = approvedResults[0]?.count || 0;
 
-        // Collaborators count (total across all user's projects)
-        const collaboratorResults = await db
+        // Projects where user is collaborating (not counting own projects)
+        const collaborationResults = await db
           .select({ count: count() })
           .from(projectCollaborators)
-          .innerJoin(projects, eq(projectCollaborators.projectId, projects.id))
-          .where(eq(projects.ownerId, userId));
+          .where(eq(projectCollaborators.userId, userId));
         
-        const collaborators = collaboratorResults[0]?.count || 0;
+        const collaborators = collaborationResults[0]?.count || 0;
 
         console.log(`📊 Student ${userId} stats: {totalProjects: ${totalProjects}, inReview: ${inReview}, approved: ${approved}, collaborators: ${collaborators}}`);
         

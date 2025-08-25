@@ -194,6 +194,10 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
           title: "Invitation accepted!",
           description: "You're now a collaborator on this project.",
         });
+        // Invalidate dashboard stats and project listings since user is now a collaborator
+        queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/user/invitations'] });
       } else {
         toast({
           title: "Response sent",
@@ -274,6 +278,9 @@ const CollaborationModal: React.FC<CollaborationModalProps> = ({
         description: "Collaborator has been removed from the project.",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/projects', projectId, 'collaborators'] });
+      // Invalidate dashboard stats since collaboration counts have changed
+      queryClient.invalidateQueries({ queryKey: ['/api/dashboard/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
     },
     onError: (error: Error) => {
       toast({
