@@ -559,72 +559,92 @@ export default function Dashboard() {
                       ))}
                     </div>
                   ) : (
-                    <div className="space-y-8">
+                    <div className="space-y-6">
                       {collaborativeProjects.map((project) => (
-                        <div key={project.id} className="group p-8 rounded-3xl bg-white/60 dark:bg-slate-800/60 border border-emerald-200/30 dark:border-emerald-700/30 hover:bg-white/80 dark:hover:bg-slate-800/80 hover:border-emerald-300/50 dark:hover:border-emerald-600/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 backdrop-blur-sm">
-                          <div className="flex items-start space-x-6">
-                            <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-emerald-600 dark:from-emerald-600 dark:to-emerald-700 rounded-3xl flex items-center justify-center flex-shrink-0 shadow-lg ring-4 ring-emerald-100/50 dark:ring-emerald-900/50">
-                              <span className="text-white text-xl font-bold">
-                                {project.techStack?.[0]?.slice(0, 2).toUpperCase() || "CO"}
-                              </span>
-                            </div>
-                            <div className="flex-1 min-w-0 space-y-4">
-                              <div className="space-y-3">
-                                <div className="flex items-start justify-between gap-4">
-                                  <h4 className="text-2xl font-bold text-slate-900 dark:text-slate-100 leading-tight">{project.title}</h4>
-                                  <div className="flex items-center gap-2 flex-shrink-0">
-                                    <div className="px-3 py-1.5 text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 rounded-xl border border-emerald-200/50 dark:border-emerald-700/50">
-                                      Collaborator
-                                    </div>
-                                    <div className={`
-                                      px-3 py-1.5 text-xs font-semibold rounded-xl
-                                      ${project.status === "APPROVED" 
-                                        ? "bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-300 border border-green-200/50 dark:border-green-700/50" 
-                                        : project.status === "UNDER_REVIEW"
-                                        ? "bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 border border-amber-200/50 dark:border-amber-700/50"
-                                        : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200/50 dark:border-slate-700/50"
-                                      }
-                                    `}>
-                                      {project.status.replace("_", " ")}
-                                    </div>
-                                  </div>
-                                </div>
-                                <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-base line-clamp-2">{project.description}</p>
+                        <div key={project.id} className="group p-6 rounded-2xl bg-white/70 dark:bg-slate-800/70 border border-emerald-200/40 dark:border-emerald-700/40 hover:bg-white/90 dark:hover:bg-slate-800/90 hover:border-emerald-300/60 dark:hover:border-emerald-600/60 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/10 backdrop-blur-sm">
+                          {/* Header with Title and Badges */}
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-start gap-4 flex-1">
+                              {/* Project Avatar */}
+                              <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-emerald-600 dark:from-emerald-600 dark:to-emerald-700 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-md">
+                                <span className="text-white text-lg font-bold">
+                                  {project.techStack?.[0]?.slice(0, 2).toUpperCase() || "CO"}
+                                </span>
                               </div>
                               
-                              <div className="flex items-center justify-between pt-2">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-10 h-10 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600 rounded-full flex items-center justify-center ring-2 ring-white/50 dark:ring-slate-900/50">
-                                    <span className="text-slate-700 dark:text-slate-300 text-sm font-bold">
-                                      {project.owner.firstName?.[0]?.toUpperCase()}{project.owner.lastName?.[0]?.toUpperCase()}
-                                    </span>
-                                  </div>
-                                  <div className="space-y-1">
-                                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                                      {project.owner.firstName} {project.owner.lastName}
-                                    </p>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                                      Project Owner
-                                    </p>
-                                  </div>
-                                </div>
+                              {/* Project Info */}
+                              <div className="flex-1 min-w-0">
+                                <h4 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-1 line-clamp-1">{project.title}</h4>
+                                <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed line-clamp-2 mb-3">{project.description}</p>
                                 
-                                <div className="flex items-center gap-3">
-                                  <Link href={`/project/${project.id}`}>
-                                    <Button
-                                      size="sm"
-                                      className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 px-6 py-2.5 rounded-xl font-medium"
-                                      data-testid={`button-view-collaboration-${project.id}`}
-                                    >
-                                      <ExternalLink className="w-4 h-4 mr-2" />
-                                      View Project
-                                    </Button>
-                                  </Link>
-                                  <div className="w-12 h-12 bg-emerald-100/80 dark:bg-emerald-800/80 rounded-2xl flex items-center justify-center backdrop-blur-sm ring-2 ring-emerald-200/30 dark:ring-emerald-700/30">
-                                    <Users className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                                {/* Tech Stack */}
+                                {project.techStack && project.techStack.length > 0 && (
+                                  <div className="flex items-center gap-2 mb-2">
+                                    {project.techStack.slice(0, 3).map((tech) => (
+                                      <span key={tech} className="px-2 py-1 text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-md">
+                                        {tech}
+                                      </span>
+                                    ))}
+                                    {project.techStack.length > 3 && (
+                                      <span className="px-2 py-1 text-xs bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 rounded-md">
+                                        +{project.techStack.length - 3}
+                                      </span>
+                                    )}
                                   </div>
-                                </div>
+                                )}
                               </div>
+                            </div>
+                            
+                            {/* Status Badges */}
+                            <div className="flex flex-col gap-2 items-end flex-shrink-0 ml-4">
+                              <div className="px-3 py-1.5 text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 rounded-lg border border-emerald-200/50 dark:border-emerald-700/50">
+                                Collaborator
+                              </div>
+                              <div className={`
+                                px-3 py-1.5 text-xs font-semibold rounded-lg
+                                ${project.status === "APPROVED" 
+                                  ? "bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-300 border border-green-200/50 dark:border-green-700/50" 
+                                  : project.status === "UNDER_REVIEW"
+                                  ? "bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 border border-amber-200/50 dark:border-amber-700/50"
+                                  : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200/50 dark:border-slate-700/50"
+                                }
+                              `}>
+                                {project.status.replace("_", " ")}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Footer with Owner and Actions */}
+                          <div className="flex items-center justify-between pt-4 border-t border-slate-200/50 dark:border-slate-700/50">
+                            {/* Project Owner Info */}
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600 rounded-full flex items-center justify-center">
+                                <span className="text-slate-700 dark:text-slate-300 text-xs font-semibold">
+                                  {project.owner.firstName?.[0]?.toUpperCase()}{project.owner.lastName?.[0]?.toUpperCase()}
+                                </span>
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                                  {project.owner.firstName} {project.owner.lastName}
+                                </p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                  Project Owner
+                                </p>
+                              </div>
+                            </div>
+                            
+                            {/* Action Buttons */}
+                            <div className="flex items-center gap-2">
+                              <Link href={`/project/${project.id}`}>
+                                <Button
+                                  size="sm"
+                                  className="bg-emerald-500 hover:bg-emerald-600 text-white shadow-md hover:shadow-lg transition-all duration-300 px-4 py-2 rounded-lg font-medium text-sm"
+                                  data-testid={`button-view-collaboration-${project.id}`}
+                                >
+                                  <ExternalLink className="w-4 h-4 mr-1.5" />
+                                  View Project
+                                </Button>
+                              </Link>
                             </div>
                           </div>
                         </div>
